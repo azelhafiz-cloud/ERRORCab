@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Account Profile & Settings - ERRORCab</title>
+    <!-- Early theme resolution prevents dark/light flash -->
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('errorcab_theme') || 'system';
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const resolved = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+                document.documentElement.setAttribute('data-theme', resolved);
+                document.documentElement.setAttribute('data-theme-preference', saved);
+            } catch (e) {}
+        })();
+    </script>
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .profile-hero {
@@ -52,7 +64,7 @@
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
             margin-bottom: 12px;
-            background: white;
+            background: var(--bg-card);
             transition: all var(--transition-fast);
         }
 
@@ -69,7 +81,7 @@
         }
 
         .sos-helpline-card {
-            background: var(--bg-main);
+            background: var(--bg-card-subtle);
             border: 1px solid var(--border);
             padding: 12px 16px;
             border-radius: var(--radius-md);
@@ -87,7 +99,7 @@
                 ❮ Dashboard
             </a>
             <div>
-                <div style="font-size: 18px; font-weight: 800; letter-spacing: -0.3px; color: var(--text-dark);">
+                <div style="font-size: 18px; font-weight: 800; letter-spacing: -0.3px; color: var(--text-primary);">
                     Account Profile
                 </div>
                 <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">
@@ -96,7 +108,25 @@
             </div>
         </div>
 
-        <button onclick="App.logout()" class="btn btn-outline btn-sm">Sign Out</button>
+        <div class="topbar-actions">
+            <div id="themeSelectorSlot">
+                <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
+                    <span class="theme-control-label">Appearance:</span>
+                    <div class="theme-switcher">
+                        <button type="button" class="theme-btn" data-theme-choice="light" onclick="App.setTheme('light')" title="Light theme" aria-label="Select Light theme">
+                            <span>&#9728; Light</span>
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
+                            <span>&#127769; Dark</span>
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
+                            <span>&#9881; System</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <button onclick="App.logout()" class="btn btn-outline btn-sm">Sign Out</button>
+        </div>
     </header>
 
     <main class="container" style="max-width: 840px; padding-bottom: 100px; padding-top: 24px;">
@@ -122,7 +152,7 @@
         <div class="card" id="favoritesSection" style="margin-bottom: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                 <div>
-                    <h2 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0;">Saved Favorite Places</h2>
+                    <h2 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">Saved Favorite Places</h2>
                     <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Quick 1-tap destinations for your daily cab bookings across Kochi.</p>
                 </div>
                 <button type="button" onclick="App.openModal('addFavModal')" class="btn btn-primary btn-sm" style="font-weight: 700;">
@@ -138,13 +168,25 @@
             </div>
         </div>
 
+        <!-- Appearance & Theme Preferences -->
+        <div class="card" style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="width: 28px; height: 28px; border-radius: 6px; background: var(--primary-subtle); display: flex; align-items: center; justify-content: center; color: var(--primary);" id="themeCardIconSlot"></div>
+                <h2 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">Appearance & Theme</h2>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 16px;">
+                Choose how ERRORCab looks to you. Select Light, Dark, or System mode.
+            </p>
+            <div id="profileThemeSlot"></div>
+        </div>
+
         <!-- Safety & Emergency SOS Directory -->
         <div class="card" style="margin-bottom: 24px;">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                 <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: var(--danger);">
                     <span id="safetyShieldIcon"></span>
                 </div>
-                <h2 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0;">
+                <h2 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">
                     Kerala Emergency Helpline Directory
                 </h2>
             </div>
@@ -156,7 +198,7 @@
             <div class="sos-helpline-grid">
                 <div class="sos-helpline-card">
                     <div>
-                        <div style="font-size: 13px; font-weight: 700; color: var(--text-dark);">Kerala Police</div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Kerala Police</div>
                         <div style="font-size: 11px; color: var(--text-muted);">Emergency Response</div>
                     </div>
                     <a href="tel:112" class="badge badge-primary" style="font-size: 13px; font-weight: 800; text-decoration: none;">112</a>
@@ -164,7 +206,7 @@
 
                 <div class="sos-helpline-card">
                     <div>
-                        <div style="font-size: 13px; font-weight: 700; color: var(--text-dark);">Women Helpline</div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Women Helpline</div>
                         <div style="font-size: 11px; color: var(--text-muted);">24x7 Transit Safety</div>
                     </div>
                     <a href="tel:1091" class="badge badge-primary" style="font-size: 13px; font-weight: 800; text-decoration: none;">1091</a>
@@ -172,7 +214,7 @@
 
                 <div class="sos-helpline-card">
                     <div>
-                        <div style="font-size: 13px; font-weight: 700; color: var(--text-dark);">Medical Ambulance</div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Medical Ambulance</div>
                         <div style="font-size: 11px; color: var(--text-muted);">Emergency Care</div>
                     </div>
                     <a href="tel:108" class="badge badge-primary" style="font-size: 13px; font-weight: 800; text-decoration: none;">108</a>
@@ -180,7 +222,7 @@
 
                 <div class="sos-helpline-card">
                     <div>
-                        <div style="font-size: 13px; font-weight: 700; color: var(--text-dark);">Fire & Rescue</div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Fire & Rescue</div>
                         <div style="font-size: 11px; color: var(--text-muted);">Kochi Emergency Grid</div>
                     </div>
                     <a href="tel:101" class="badge badge-primary" style="font-size: 13px; font-weight: 800; text-decoration: none;">101</a>
@@ -194,7 +236,7 @@
 
         <!-- Account Controls -->
         <div class="card">
-            <h2 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 12px;">Account Controls</h2>
+            <h2 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0 0 12px;">Account Controls</h2>
             <button type="button" onclick="App.logout()" class="btn btn-outline btn-block" style="color: var(--danger); border-color: var(--danger); font-weight: 800; height: 44px;">
                 Sign Out from ERRORCab
             </button>
@@ -206,7 +248,7 @@
     <div class="modal-backdrop" id="addFavModal">
         <div class="modal-card" style="max-width: 440px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0;">Add Favorite Place</h3>
+                <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Add Favorite Place</h3>
                 <button onclick="App.closeModal('addFavModal')" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
             </div>
 
@@ -253,6 +295,12 @@
         const user = App.requireAuth();
 
         window.addEventListener('DOMContentLoaded', async () => {
+            App.initTheme();
+            const topbarThemeSlot = document.getElementById('themeSelectorSlot');
+            if (topbarThemeSlot) topbarThemeSlot.innerHTML = App.renderThemeSelectorHTML();
+            const profileThemeSlot = document.getElementById('profileThemeSlot');
+            if (profileThemeSlot) profileThemeSlot.innerHTML = App.renderThemeSelectorHTML();
+            document.getElementById('themeCardIconSlot').innerHTML = App.icon('sun', 18);
             // Render SVG icons
             document.getElementById('avatarIconSlot').innerHTML = App.icon('user', 36, '#38BDF8');
             document.getElementById('safetyShieldIcon').innerHTML = App.icon('shield', 18, '#EF4444');

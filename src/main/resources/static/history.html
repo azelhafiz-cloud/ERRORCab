@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ride History & Receipts - ERRORCab</title>
+    <!-- Early theme resolution prevents dark/light flash -->
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('errorcab_theme') || 'system';
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const resolved = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+                document.documentElement.setAttribute('data-theme', resolved);
+                document.documentElement.setAttribute('data-theme-preference', saved);
+            } catch (e) {}
+        })();
+    </script>
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .filter-bar {
@@ -26,13 +38,13 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: white;
+            background: var(--bg-card);
             border: 1px solid var(--border);
             padding: 8px 18px;
             border-radius: var(--radius-full);
             font-size: 13px;
             font-weight: 700;
-            color: var(--text-dark);
+            color: var(--text-secondary);
             cursor: pointer;
             transition: all var(--transition-fast);
             white-space: nowrap;
@@ -45,9 +57,9 @@
         }
 
         .filter-pill.active {
-            background: var(--surface-dark);
+            background: var(--primary);
             color: white;
-            border-color: var(--surface-dark);
+            border-color: var(--primary);
         }
 
         .search-input-wrap {
@@ -105,13 +117,13 @@
         .micro-route-line {
             width: 1px;
             height: 10px;
-            background: #CBD5E1;
+            background: var(--border);
             margin-left: 3.5px;
         }
 
         /* Tax Invoice Receipt Card */
         .invoice-paper {
-            background: white;
+            background: var(--bg-card);
             border-radius: var(--radius-lg);
             border: 1px solid var(--border);
             padding: 28px;
@@ -145,7 +157,7 @@
             align-items: center;
             font-size: 13px;
             margin-bottom: 10px;
-            color: var(--text-dark);
+            color: var(--text-primary);
         }
 
         .invoice-divider {
@@ -186,7 +198,7 @@
                 ❮ Back
             </a>
             <div>
-                <div style="font-size: 18px; font-weight: 800; letter-spacing: -0.3px; color: var(--text-dark);">
+                <div style="font-size: 18px; font-weight: 800; letter-spacing: -0.3px; color: var(--text-primary);">
                     Ride History & Invoices
                 </div>
                 <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">
@@ -195,8 +207,24 @@
             </div>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div id="userPill" class="hidden-mobile" style="display: flex; align-items: center; gap: 8px; background: var(--bg-main); padding: 6px 14px; border-radius: var(--radius-full); font-size: 13px; font-weight: 700; border: 1px solid var(--border);">
+        <div class="topbar-actions">
+            <div id="themeSelectorSlot">
+                <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
+                    <span class="theme-control-label">Appearance:</span>
+                    <div class="theme-switcher">
+                        <button type="button" class="theme-btn" data-theme-choice="light" onclick="App.setTheme('light')" title="Light theme" aria-label="Select Light theme">
+                            <span>&#9728; Light</span>
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
+                            <span>&#127769; Dark</span>
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
+                            <span>&#9881; System</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="userPill" class="desktop-only" style="display: flex; align-items: center; gap: 8px; background: var(--bg-card-subtle); padding: 6px 14px; border-radius: var(--radius-full); font-size: 13px; font-weight: 700; border: 1px solid var(--border); color: var(--text-primary);">
                 <span id="userNameDisplay">Passenger</span>
             </div>
             <button onclick="App.logout()" class="btn btn-outline btn-sm">Sign Out</button>
@@ -207,7 +235,7 @@
         
         <!-- Header Banner -->
         <div style="margin-bottom: 24px;">
-            <h1 style="font-size: 26px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px;">Your Past Trips</h1>
+            <h1 style="font-size: 26px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px;">Your Past Trips</h1>
             <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
                 Review ride details, active trip telemetry, and view official GST tax receipts.
             </p>
@@ -391,6 +419,10 @@
         let currentFilter = 'ALL';
 
         window.addEventListener('DOMContentLoaded', async () => {
+            App.initTheme();
+            const themeSlot = document.getElementById('themeSelectorSlot');
+            if (themeSlot) themeSlot.innerHTML = App.renderThemeSelectorHTML();
+
             // Render SVG icons
             document.getElementById('searchIconSlot').innerHTML = App.icon('search', 16);
             document.getElementById('invoiceHeaderIcon').innerHTML = App.icon('receipt', 18);
@@ -515,42 +547,42 @@
 
                 return `
                     <tr>
-                        <td>
-                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-main); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 13px;">
+                        <td data-label="Trip #">
+                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-card-subtle); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 13px; color: var(--text-primary);">
                                 #${id}
                             </span>
                         </td>
-                        <td style="white-space: nowrap; font-size: 13px; color: var(--text-dark);">
+                        <td data-label="Date & Time" style="white-space: nowrap; font-size: 13px; color: var(--text-secondary);">
                             ${App.formatDate(time)}
                         </td>
-                        <td>
+                        <td data-label="Route">
                             <div class="micro-route">
                                 <div class="micro-route-point">
                                     <span class="micro-dot-green"></span>
-                                    <span style="font-weight: 700;">${pickup}</span>
+                                    <span style="font-weight: 700; color: var(--text-primary);">${pickup}</span>
                                 </div>
                                 <div class="micro-route-line"></div>
                                 <div class="micro-route-point">
                                     <span class="micro-dot-cyan"></span>
-                                    <span style="font-weight: 700;">${dropoff}</span>
+                                    <span style="font-weight: 700; color: var(--text-primary);">${dropoff}</span>
                                 </div>
                             </div>
                         </td>
-                        <td>
+                        <td data-label="Cab Type">
                             <span class="badge badge-secondary" style="display: inline-flex; align-items: center; gap: 4px;">
                                 ${App.icon('car', 12)} ${t.cabType || 'Cab'}
                             </span>
                         </td>
-                        <td style="font-weight: 800; font-size: 15px; color: var(--surface-dark);">
+                        <td data-label="Fare" style="font-weight: 800; font-size: 15px; color: var(--text-primary);">
                             ${App.formatCurrency(fare)}
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <span class="badge badge-${getStatusBadge(status)}" style="display: inline-flex; align-items: center; gap: 6px;">
                                 <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
                                 ${status.replace('_', ' ')}
                             </span>
                         </td>
-                        <td style="text-align: right; white-space: nowrap;">
+                        <td data-label="Action" style="text-align: right; white-space: nowrap;">
                             ${isCompleted 
                                 ? `<button onclick="showReceiptById(${id})" class="btn btn-secondary btn-sm" style="font-weight: 700; gap: 6px;">
                                     ${App.icon('receipt', 14)} Invoice

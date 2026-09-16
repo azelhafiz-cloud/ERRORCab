@@ -4,16 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ERRORCab - Book Smart. Ride Safe. | Indian Cab Platform</title>
+    <!-- Early theme resolution prevents dark/light flash -->
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('errorcab_theme') || 'system';
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const resolved = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+                document.documentElement.setAttribute('data-theme', resolved);
+                document.documentElement.setAttribute('data-theme-preference', saved);
+            } catch (e) {}
+        })();
+    </script>
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .hero-section {
-            min-height: 85vh;
+            min-height: 80vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle at top right, #0F2547 0%, #070D1D 70%);
+            background: radial-gradient(circle at top right, #0F2547 0%, #070D1D 80%);
             color: white;
-            padding: 80px 20px;
+            padding: 80px 20px 60px 20px;
             position: relative;
             overflow: hidden;
             text-align: center;
@@ -22,7 +34,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(14, 165, 233, 0.12);
+            background: rgba(14, 165, 233, 0.15);
             border: 1px solid rgba(14, 165, 233, 0.35);
             color: #38BDF8;
             padding: 8px 18px;
@@ -33,9 +45,9 @@
             letter-spacing: 0.3px;
         }
         .hero-title {
-            font-size: clamp(36px, 6vw, 68px);
+            font-size: clamp(34px, 5.5vw, 64px);
             font-weight: 900;
-            line-height: 1.1;
+            line-height: 1.15;
             letter-spacing: -1.5px;
             margin-bottom: 20px;
         }
@@ -45,9 +57,9 @@
             -webkit-text-fill-color: transparent;
         }
         .hero-tagline {
-            font-size: clamp(16px, 2.2vw, 20px);
+            font-size: clamp(15px, 2vw, 19px);
             color: #94A3B8;
-            max-width: 640px;
+            max-width: 660px;
             margin: 0 auto 36px auto;
             line-height: 1.6;
         }
@@ -57,19 +69,45 @@
             justify-content: center;
             flex-wrap: wrap;
         }
+        .role-access-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1180px;
+            margin: -40px auto 40px auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+        .role-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition-base);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .role-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary);
+        }
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 24px;
-            padding: 60px 20px;
+            padding: 40px 20px 80px 20px;
             max-width: 1180px;
             margin: 0 auto;
         }
         .feature-card {
-            background: white;
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 32px;
+            padding: 30px;
             box-shadow: var(--shadow-sm);
             transition: var(--transition-base);
         }
@@ -79,15 +117,15 @@
             border-color: var(--primary-border);
         }
         .feature-icon-box {
-            width: 52px;
-            height: 52px;
+            width: 50px;
+            height: 50px;
             border-radius: var(--radius-md);
             background: var(--primary-subtle);
             color: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
     </style>
 </head>
@@ -105,11 +143,27 @@
             </div>
             <div>
                 <div class="topbar-title">ERRORCab</div>
-                <div class="topbar-subtitle">Mobility Platform</div>
+                <div class="topbar-subtitle">Mobility Platform • Kochi</div>
             </div>
         </a>
 
         <div class="topbar-actions">
+            <div id="themeSelectorSlot">
+                <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
+                    <span class="theme-control-label">Appearance:</span>
+                    <div class="theme-switcher">
+                        <button type="button" class="theme-btn" data-theme-choice="light" onclick="App.setTheme('light')" title="Light theme" aria-label="Select Light theme">
+                            <span>&#9728; Light</span>
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
+                            <span>&#127769; Dark</span>
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
+                            <span>&#9881; System</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
             <a href="/login.html" class="btn btn-outline btn-sm">Sign In</a>
             <a href="/register.html" class="btn btn-primary btn-sm">Register</a>
         </div>
@@ -120,7 +174,7 @@
         <div>
             <div class="hero-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>Live Demo • Kochi, Kerala</span>
+                <span>Live Demo • Kochi, Kerala Fleet</span>
             </div>
 
             <h1 class="hero-title">
@@ -136,46 +190,82 @@
                     Launch Application
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </a>
-                <a href="/booking.html" class="btn btn-secondary btn-lg" style="background: rgba(255,255,255,0.08); color: white; border-color: rgba(255,255,255,0.15);">
+                <a href="/booking.html" class="btn btn-secondary btn-lg" style="background: rgba(255,255,255,0.08); color: white; border-color: rgba(255,255,255,0.2);">
                     Instant Fare Estimator
                 </a>
             </div>
         </div>
     </section>
 
+    <!-- 3 Role Entry Cards -->
+    <section class="role-access-grid">
+        <div class="role-card">
+            <div>
+                <span class="badge badge-primary" style="margin-bottom: 12px;">PASSENGER ROLE</span>
+                <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Passenger Portal</h2>
+                <p style="color: var(--text-muted); font-size: 13px; line-height: 1.5; margin-bottom: 16px;">
+                    Book Economy, Premium Sedan, or SUV cabs across Kochi landmarks with live GPS telemetry, GST invoices, and emergency SOS alerts.
+                </p>
+            </div>
+            <a href="/login.html" class="btn btn-primary btn-block btn-sm">Enter as Passenger →</a>
+        </div>
+
+        <div class="role-card">
+            <div>
+                <span class="badge badge-success" style="margin-bottom: 12px;">DRIVER ROLE</span>
+                <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Driver Cockpit</h2>
+                <p style="color: var(--text-muted); font-size: 13px; line-height: 1.5; margin-bottom: 16px;">
+                    Real-time duty toggle, animated dispatch offers with audio countdown, active trip stepper navigation, and instant earnings ledger.
+                </p>
+            </div>
+            <a href="/login.html" class="btn btn-secondary btn-block btn-sm">Enter as Driver →</a>
+        </div>
+
+        <div class="role-card">
+            <div>
+                <span class="badge badge-warning" style="margin-bottom: 12px;">ADMIN ROLE</span>
+                <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Operations Hub</h2>
+                <p style="color: var(--text-muted); font-size: 13px; line-height: 1.5; margin-bottom: 16px;">
+                    High-contrast administrative dashboard with complete user management, ride audits, system telemetry metrics, and single topbar sign-out.
+                </p>
+            </div>
+            <a href="/login.html" class="btn btn-outline btn-block btn-sm">Enter as Admin →</a>
+        </div>
+    </section>
+
     <!-- Key Features Section -->
     <section class="features-grid">
         <div class="feature-card">
-            <div class="feature-icon-box">
+            <div class="feature-icon-box" id="featIconRole">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
             </div>
-            <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 8px;">Three Distinct Roles</h3>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Three Distinct Roles</h3>
             <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6;">
                 Built with clean OOP abstraction: Passenger portal, Driver dispatch hub, and Admin operations center with isolated role privileges.
             </p>
         </div>
 
         <div class="feature-card">
-            <div class="feature-icon-box">
+            <div class="feature-icon-box" id="featIconGps">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>
                 </svg>
             </div>
-            <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 8px;">Simulated GPS Telemetry</h3>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Simulated GPS Telemetry</h3>
             <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6;">
                 Local HTML5 Canvas road visualizer with genuine Kochi landmarks (Kakkanad, Edappally, Vyttila) and animated cab movement.
             </p>
         </div>
 
         <div class="feature-card">
-            <div class="feature-icon-box">
+            <div class="feature-icon-box" id="featIconPrice">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
                 </svg>
             </div>
-            <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 8px;">Polymorphic ₹ Pricing</h3>
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Polymorphic ₹ Pricing</h3>
             <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6;">
                 Economy, Premium Sedan, and SUV formulas implemented in pure Java with minimum fare protection and local promo codes.
             </p>
@@ -183,9 +273,18 @@
     </section>
 
     <!-- Footer -->
-    <footer style="background: white; border-top: 1px solid var(--border); padding: 32px 20px; text-align: center; font-size: 13px; color: var(--text-muted); margin-top: auto;">
-        <div style="font-weight: 700; color: var(--navy-900); margin-bottom: 4px;">Team ERROR • "Book Smart. Ride Safe."</div>
+    <footer style="background: var(--bg-card); border-top: 1px solid var(--border); padding: 32px 20px; text-align: center; font-size: 13px; color: var(--text-muted); margin-top: auto;">
+        <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Team ERROR • "Book Smart. Ride Safe."</div>
         <div>Built with Java 21, Spring Boot 3 & SQLite. Designed for College OOP Viva.</div>
     </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            App.initTheme();
+            const slot = document.getElementById('themeSelectorSlot');
+            if (slot) slot.innerHTML = App.renderThemeSelectorHTML();
+        });
+    </script>
 </body>
 </html>

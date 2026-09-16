@@ -3,7 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passenger Dashboard - ERRORCab</title>
+    <title>Passenger Portal - ERRORCab Kochi</title>
+    <!-- Early theme resolution prevents dark/light flash -->
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('errorcab_theme') || 'system';
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const resolved = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+                document.documentElement.setAttribute('data-theme', resolved);
+                document.documentElement.setAttribute('data-theme-preference', saved);
+            } catch (e) {}
+        })();
+    </script>
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .dashboard-grid {
@@ -21,8 +33,8 @@
             background: var(--bg-card-subtle);
             border: 1px solid var(--border);
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -32,15 +44,16 @@
             margin: -6px auto;
             position: relative;
             z-index: 5;
+            font-size: 14px;
         }
         .route-swap-btn:hover {
-            background: white;
+            background: var(--bg-card);
             color: var(--primary);
             border-color: var(--primary);
             transform: rotate(180deg);
         }
         .quick-action-card {
-            background: white;
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
             padding: 16px;
@@ -52,7 +65,7 @@
             transition: var(--transition-fast);
         }
         .quick-action-card:hover {
-            border-color: var(--primary);
+            border-color: var(--primary-border);
             background: var(--primary-subtle);
             transform: translateY(-2px);
         }
@@ -66,10 +79,10 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: white;
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-full);
-            padding: 6px 14px;
+            padding: 7px 14px;
             font-size: 12px;
             font-weight: 700;
             color: var(--text-secondary);
@@ -81,6 +94,21 @@
             border-color: var(--primary);
             color: var(--primary);
             background: var(--primary-subtle);
+        }
+        .ride-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            margin-bottom: 10px;
+            transition: var(--transition-fast);
+        }
+        .ride-item:hover {
+            border-color: var(--primary-border);
+            background: var(--bg-card-subtle);
         }
     </style>
 </head>
@@ -103,34 +131,57 @@
         </a>
 
         <div class="topbar-actions">
+            <!-- Theme Switcher (Visible on All Screen Sizes) -->
+            <div id="themeSelectorSlot">
+                <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
+                    <span class="theme-control-label">Appearance:</span>
+                    <div class="theme-switcher">
+                        <button type="button" class="theme-btn" data-theme-choice="light" onclick="App.setTheme('light')" title="Light theme" aria-label="Select Light theme">
+                            <span>&#9728; Light</span>
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
+                            <span>&#127769; Dark</span>
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
+                            <span>&#9881; System</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Notifications Bell -->
-            <button type="button" onclick="App.showToast('Notifications', 'No pending alerts at this time.', 'bell')" class="btn btn-outline btn-icon-only" title="Notifications">
+            <button type="button" onclick="App.showToast('Notifications', 'No pending alerts at this time.', 'bell')" class="btn btn-outline btn-icon-only" title="Notifications" aria-label="View notifications">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </button>
 
             <!-- User Profile Chip -->
             <a href="/profile.html" class="user-chip" title="View Profile">
-                <div class="user-avatar" id="avatarLetter">R</div>
+                <div class="user-avatar" id="avatarLetter">P</div>
                 <div class="desktop-only">
                     <div class="user-chip-text" id="headerUserName">Passenger</div>
                 </div>
             </a>
 
             <!-- Sign Out -->
-            <button onclick="App.logout()" class="btn btn-outline btn-sm">Sign Out</button>
+            <button type="button" onclick="App.logout()" class="btn btn-outline btn-sm">Sign Out</button>
         </div>
     </header>
 
     <main class="container container-wide">
         
-        <!-- Welcome Section -->
-        <div style="margin-bottom: 24px;">
-            <h1 style="font-size: 26px; font-weight: 900; color: var(--navy-900); letter-spacing: -0.5px;" id="dynamicGreeting">
-                Good morning, Rahul! 👋
-            </h1>
-            <p style="color: var(--text-muted); font-size: 14px; margin-top: 2px;">
-                Where would you like to ride across Kochi today?
-            </p>
+        <!-- Welcome Greeting Section -->
+        <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h1 style="font-size: 26px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px;" id="dynamicGreeting">
+                    Good morning, Passenger! 👋
+                </h1>
+                <p style="color: var(--text-muted); font-size: 14px; margin-top: 2px;">
+                    Where would you like to ride across the Kochi urban zone today?
+                </p>
+            </div>
+
+            <!-- Mobile Theme Switcher Bar -->
+            <div class="hide-on-desktop" id="mobileThemeSlot"></div>
         </div>
 
         <!-- Active Ride Floating Card (Dynamically shown if active ride exists) -->
@@ -150,7 +201,7 @@
                     <span id="activePickup">Pickup</span> ➔ <span id="activeDropoff">Dropoff</span>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.12);">
                     <div style="display: flex; gap: 20px;">
                         <div>
                             <div style="font-size: 11px; color: #94A3B8;">Cab & Fare</div>
@@ -159,13 +210,12 @@
                             </div>
                         </div>
                         <div>
-                            <div style="font-size: 11px; color: #94A3B8;">Estimated Arrival</div>
-                            <div style="font-size: 15px; font-weight: 800; color: #38BDF8;">Within 3 mins</div>
+                            <div style="font-size: 11px; color: #94A3B8;">Status</div>
+                            <div style="font-size: 15px; font-weight: 800; color: #38BDF8;">Driver en route</div>
                         </div>
                     </div>
                     <a id="activeTrackBtn" href="/tracking.html" class="btn btn-primary btn-sm" style="font-weight: 800;">
-                        Open Live GPS Tracker
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        Open Live GPS Tracker ➔
                     </a>
                 </div>
             </div>
@@ -173,14 +223,17 @@
 
         <div class="dashboard-grid">
             
-            <!-- Left Column: MAIN BOOKING CARD (Most Prominent Feature) -->
+            <!-- Left Column: MAIN BOOKING CARD (Primary Feature) -->
             <div>
-                <div class="card card-elevated" style="margin-bottom: 24px; border: 1.5px solid var(--border);">
+                <div class="card card-elevated" style="margin-bottom: 24px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-                        <h2 style="font-size: 18px; font-weight: 900; color: var(--navy-900); letter-spacing: -0.3px;">
-                            Request a Cab
-                        </h2>
-                        <span class="badge badge-primary">Instant Dispatch</span>
+                        <div>
+                            <h2 style="font-size: 19px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.3px;">
+                                Request a Cab
+                            </h2>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Transparent pricing • Direct driver dispatch</p>
+                        </div>
+                        <span class="badge badge-primary">Instant Ride</span>
                     </div>
 
                     <!-- Vertical Connected Route Indicator -->
@@ -199,7 +252,7 @@
                                 </select>
                             </div>
 
-                            <button type="button" class="route-swap-btn" onclick="swapLocations()" title="Swap Pickup & Destination">
+                            <button type="button" class="route-swap-btn" onclick="swapLocations()" title="Swap Pickup & Destination" aria-label="Swap pickup and destination">
                                 ⇅
                             </button>
 
@@ -213,16 +266,16 @@
                     </div>
 
                     <!-- Distance & Time Pill -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-subtle); padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 18px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-subtle); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 18px; border: 1px solid var(--border);">
                         <div style="color: var(--text-secondary);">
-                            Distance: <b style="color: var(--text-primary);" id="distanceDisplay">-- km</b>
+                            Route Distance: <b style="color: var(--text-primary);" id="distanceDisplay">-- km</b>
                         </div>
                         <div style="color: var(--text-secondary);">
                             Estimated Travel Time: <b style="color: var(--text-primary);" id="durationDisplay">-- mins</b>
                         </div>
                     </div>
 
-                    <!-- Cab Type Cards Selection -->
+                    <!-- Cab Class Selection Grid -->
                     <label class="form-label" style="margin-bottom: 8px;">Select Vehicle Class</label>
                     <div class="cab-grid">
                         
@@ -273,16 +326,16 @@
 
                     </div>
 
-                    <!-- Promo Code -->
-                    <div style="margin: 16px 0;">
+                    <!-- Promo Code Input -->
+                    <div style="margin: 18px 0;">
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="promoInput" class="form-control" placeholder="Promo code (e.g. WELCOME)" style="text-transform: uppercase;">
-                            <button type="button" onclick="applyPromo()" class="btn btn-secondary" style="white-space: nowrap;">Apply</button>
+                            <button type="button" onclick="applyPromo()" class="btn btn-secondary" style="white-space: nowrap;">Apply Code</button>
                         </div>
                         <div id="promoMessage" style="font-size: 12px; margin-top: 6px; display: none;"></div>
                     </div>
 
-                    <!-- Book Now Button -->
+                    <!-- Primary Book Button -->
                     <button type="button" id="confirmBookBtn" onclick="confirmBooking()" class="btn btn-primary btn-block btn-lg" style="margin-top: 10px;">
                         Book Economy Now (₹ --)
                     </button>
@@ -291,7 +344,7 @@
                 <!-- Recent Rides List Section -->
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <h3 style="font-size: 16px; font-weight: 800; color: var(--navy-900);">Recent Rides</h3>
+                        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">Recent Rides</h3>
                         <a href="/history.html" style="font-size: 13px; font-weight: 700; color: var(--primary); text-decoration: none;">View All History ➔</a>
                     </div>
 
@@ -303,7 +356,7 @@
                 </div>
             </div>
 
-            <!-- Right Column: Quick Actions, Saved Places & KPI Metrics -->
+            <!-- Right Column: KPI Metrics, Quick Actions, Saved Places -->
             <div>
                 
                 <!-- KPI Metrics Cards -->
@@ -319,7 +372,7 @@
                     </div>
 
                     <div class="kpi-card">
-                        <div class="kpi-icon" style="color: var(--success);">
+                        <div class="kpi-icon" style="color: var(--success); background: var(--success-subtle);">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
                         <div>
@@ -329,15 +382,16 @@
                     </div>
                 </div>
 
-                <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #0B132B 0%, #1E293B 100%); color: white;">
-                    <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Total Spent on ERRORCab</div>
+                <!-- Total Spent Card -->
+                <div class="card" style="margin-bottom: 20px; background: var(--active-job-bg); color: var(--active-job-text); border: 1px solid var(--active-job-border);">
+                    <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px;">Total Spent on ERRORCab</div>
                     <div style="font-size: 32px; font-weight: 900; color: #38BDF8; margin-top: 4px;" id="statTotalSpent">₹ 0</div>
-                    <div style="font-size: 12px; color: #94A3B8; margin-top: 4px;">Transparent rates • Zero surge multiplier</div>
+                    <div style="font-size: 12px; color: #94A3B8; margin-top: 4px;">Transparent pricing • Zero surge charges</div>
                 </div>
 
                 <!-- Quick Actions Grid -->
                 <div class="card" style="margin-bottom: 20px;">
-                    <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px;">Quick Actions</h3>
+                    <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text-primary);">Quick Actions</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <a href="/history.html" class="quick-action-card">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -364,7 +418,7 @@
                 <!-- Saved Favorite Places Chips -->
                 <div class="card">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="font-size: 15px; font-weight: 800;">Saved Places</h3>
+                        <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Saved Places</h3>
                         <a href="/profile.html" style="font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none;">+ Manage</a>
                     </div>
                     <div class="fav-chip-list" id="favoriteChipsList">
@@ -408,6 +462,13 @@
         let currentPromoCode = '';
 
         window.addEventListener('DOMContentLoaded', async () => {
+            // Initialize and render theme switcher
+            App.initTheme();
+            const themeSlot = document.getElementById('themeSelectorSlot');
+            if (themeSlot) themeSlot.innerHTML = App.renderThemeSelectorHTML();
+            const mobileTheme = document.getElementById('mobileThemeSlot');
+            if (mobileTheme) mobileTheme.innerHTML = App.renderThemeSelectorHTML();
+
             if (user) {
                 // Set Header details
                 document.getElementById('headerUserName').textContent = user.name;
@@ -495,7 +556,7 @@
                 let finalFare = Math.max(30, base - appliedDiscount);
                 const elem = document.getElementById(`fare-${type}`);
                 if (appliedDiscount > 0) {
-                    elem.innerHTML = `<s style="font-size: 13px; color: #94A3B8;">${App.formatCurrency(base)}</s> ${App.formatCurrency(finalFare)}`;
+                    elem.innerHTML = `<s style="font-size: 13px; color: var(--text-muted);">${App.formatCurrency(base)}</s> ${App.formatCurrency(finalFare)}`;
                 } else {
                     elem.textContent = App.formatCurrency(finalFare);
                 }
@@ -531,21 +592,21 @@
                     appliedDiscount = res.discount;
                     currentPromoCode = code;
                     msgEl.style.display = 'block';
-                    msgEl.style.color = 'var(--success-dark)';
-                    msgEl.innerHTML = `✓ Promo <b>${code}</b> applied! You save ${App.formatCurrency(res.discount)}.`;
+                    msgEl.style.color = 'var(--success)';
+                    msgEl.innerHTML = `✓ Promo <b>${code}</b> applied! Saved ${App.formatCurrency(res.discount)}.`;
                     App.showToast('Promo Code Applied', `Saved ${App.formatCurrency(res.discount)}!`, 'tag');
                 } else {
                     appliedDiscount = 0;
                     currentPromoCode = '';
                     msgEl.style.display = 'block';
-                    msgEl.style.color = 'var(--danger-dark)';
+                    msgEl.style.color = 'var(--danger)';
                     msgEl.textContent = res.message || 'Invalid promo code';
                 }
             } catch (err) {
                 appliedDiscount = 0;
                 currentPromoCode = '';
                 msgEl.style.display = 'block';
-                msgEl.style.color = 'var(--danger-dark)';
+                msgEl.style.color = 'var(--danger)';
                 msgEl.textContent = 'Could not validate promo code';
             }
             updateFareDisplays();
@@ -560,7 +621,6 @@
                 return;
             }
 
-            // Redirect to booking page with pre-selected parameters for full animated flow
             const url = `/booking.html?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}&cabType=${encodeURIComponent(selectedCabType)}${currentPromoCode ? '&promo=' + encodeURIComponent(currentPromoCode) : ''}`;
             window.location.href = url;
         }
@@ -644,12 +704,12 @@
 
             container.innerHTML = rides.map(r => `
                 <div class="ride-item">
-                    <div class="ride-item-route">
-                        <div class="ride-item-icon">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--primary-subtle); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             ${App.icon('car', 20)}
                         </div>
                         <div>
-                            <div style="font-weight: 800; font-size: 14px; color: var(--navy-900);">
+                            <div style="font-weight: 800; font-size: 14px; color: var(--text-primary);">
                                 ${r.pickupLocation} ➔ ${r.dropoffLocation}
                             </div>
                             <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
@@ -659,7 +719,7 @@
                     </div>
 
                     <div style="text-align: right;">
-                        <div style="font-weight: 900; font-size: 16px; color: var(--navy-900);">${App.formatCurrency(r.fare)}</div>
+                        <div style="font-weight: 900; font-size: 16px; color: var(--text-primary);">${App.formatCurrency(r.fare)}</div>
                         <div style="margin-top: 4px;">
                             ${r.status === 'RIDE_COMPLETED' 
                                 ? `<a href="/history.html?view=${r.bookingId}" class="btn btn-outline btn-sm">Receipt</a>`

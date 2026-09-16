@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book a Ride - ERRORCab Kochi</title>
+    <!-- Early theme resolution prevents dark/light flash -->
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('errorcab_theme') || 'system';
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const resolved = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+                document.documentElement.setAttribute('data-theme', resolved);
+                document.documentElement.setAttribute('data-theme-preference', saved);
+            } catch (e) {}
+        })();
+    </script>
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .booking-grid {
@@ -27,7 +39,7 @@
             padding: 12px;
             border: 1.5px solid var(--border);
             border-radius: var(--radius-md);
-            background: white;
+            background: var(--bg-card);
             text-align: center;
             cursor: pointer;
             font-size: 13px;
@@ -36,15 +48,16 @@
             flex-direction: column;
             align-items: center;
             gap: 6px;
+            color: var(--text-primary);
             transition: var(--transition-fast);
         }
         .payment-chip:hover {
-            border-color: #94A3B8;
+            border-color: var(--primary-light);
         }
         .payment-chip.selected {
             border-color: var(--primary);
             background: var(--primary-subtle);
-            color: var(--primary-dark);
+            color: var(--primary);
             box-shadow: 0 0 0 1px var(--primary);
         }
         .promo-tag-pill {
@@ -52,13 +65,13 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            background: #F1F5F9;
+            background: var(--bg-card-subtle);
             border: 1px dashed var(--border);
             padding: 4px 10px;
             border-radius: var(--radius-full);
             font-size: 11px;
             font-weight: 700;
-            color: var(--navy-900);
+            color: var(--text-primary);
             margin-right: 6px;
             margin-top: 6px;
             transition: var(--transition-fast);
@@ -77,7 +90,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(2, 132, 199, 0.1);
+            background: var(--primary-subtle);
             border-radius: 50%;
         }
         .radar-box::after {
@@ -94,7 +107,7 @@
             100% { transform: scale(1.8); opacity: 0; }
         }
         .driver-found-card {
-            background: #F0FDF4;
+            background: var(--success-subtle);
             border: 1.5px solid var(--success-border);
             border-radius: var(--radius-lg);
             padding: 20px;
@@ -121,8 +134,27 @@
                 <div class="topbar-subtitle">Kochi Mobility Fleet</div>
             </div>
         </div>
-        <div class="desktop-only" style="font-size: 13px; font-weight: 700; color: var(--primary);">
-            Zero Surge Pricing
+
+        <div class="topbar-actions">
+            <div id="themeSelectorSlot">
+                <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
+                    <span class="theme-control-label">Appearance:</span>
+                    <div class="theme-switcher">
+                        <button type="button" class="theme-btn" data-theme-choice="light" onclick="App.setTheme('light')" title="Light theme" aria-label="Select Light theme">
+                            <span>&#9728; Light</span>
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
+                            <span>&#127769; Dark</span>
+                        </button>
+                        <button type="button" class="theme-btn" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
+                            <span>&#9881; System</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="desktop-only" style="font-size: 12px; font-weight: 800; color: var(--success);">
+                ✓ Zero Surge Pricing
+            </div>
         </div>
     </header>
 
@@ -135,8 +167,8 @@
                 <!-- 1. Route Selector Card -->
                 <div class="card" style="margin-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <h2 style="font-size: 16px; font-weight: 800; color: var(--navy-900);">1. Select Itinerary</h2>
-                        <button type="button" onclick="swapLocations()" class="btn btn-outline btn-sm" style="padding: 4px 10px;">
+                        <h2 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">1. Select Itinerary</h2>
+                        <button type="button" onclick="swapLocations()" class="btn btn-outline btn-sm" style="padding: 4px 10px;" aria-label="Swap pickup and dropoff">
                             ⇅ Swap
                         </button>
                     </div>
@@ -167,15 +199,15 @@
                     </div>
 
                     <!-- Telemetry Stats -->
-                    <div style="display: flex; justify-content: space-between; background: var(--bg-card-subtle); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px;">
-                        <div>Calculated Distance: <b style="color: var(--navy-900);" id="distanceDisplay">9.2 km</b></div>
-                        <div>Est. Duration: <b style="color: var(--navy-900);" id="durationDisplay">24 mins</b></div>
+                    <div style="display: flex; justify-content: space-between; background: var(--bg-card-subtle); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; border: 1px solid var(--border);">
+                        <div>Calculated Distance: <b style="color: var(--text-primary);" id="distanceDisplay">9.2 km</b></div>
+                        <div>Est. Duration: <b style="color: var(--text-primary);" id="durationDisplay">24 mins</b></div>
                     </div>
                 </div>
 
                 <!-- 2. Cab Selection Card -->
                 <div class="card" style="margin-bottom: 20px;">
-                    <h2 style="font-size: 16px; font-weight: 800; color: var(--navy-900); margin-bottom: 14px;">2. Choose Cab Category</h2>
+                    <h2 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px;">2. Choose Cab Category</h2>
                     
                     <div class="cab-grid">
                         <!-- Economy -->
@@ -221,7 +253,7 @@
 
                 <!-- 3. Promo & Payment Card -->
                 <div class="card" style="margin-bottom: 24px;">
-                    <h2 style="font-size: 16px; font-weight: 800; color: var(--navy-900); margin-bottom: 14px;">3. Promo & Payment</h2>
+                    <h2 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px;">3. Promo & Payment</h2>
 
                     <div style="display: flex; gap: 8px; margin-bottom: 8px;">
                         <input type="text" id="promoInput" class="form-control" placeholder="Promo code (e.g. WELCOME)" style="text-transform: uppercase;">
@@ -265,7 +297,7 @@
             <div>
                 <div class="card" style="position: sticky; top: 80px; padding: 16px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <h3 style="font-size: 15px; font-weight: 800; color: var(--navy-900);">Route Telemetry</h3>
+                        <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary);">Route Telemetry</h3>
                         <span class="badge badge-success">GPS Live</span>
                     </div>
 
@@ -274,7 +306,7 @@
                     </div>
 
                     <div style="margin-top: 14px; font-size: 12px; color: var(--text-muted); line-height: 1.5;">
-                        <b>Kochi City Coordinates:</b> Renders vector road junctions across Kakkanad, Edappally, Vyttila, MG Road, and Fort Kochi without external map API keys.
+                        <b>Kochi Coordinates:</b> Simulates vector routes across Kakkanad, Edappally, Vyttila, MG Road, and Fort Kochi.
                     </div>
                 </div>
             </div>
@@ -294,9 +326,9 @@
                     </div>
                 </div>
 
-                <h3 style="font-size: 20px; font-weight: 900; color: var(--navy-900); margin-bottom: 6px;">Finding Your Driver...</h3>
+                <h3 style="font-size: 20px; font-weight: 900; color: var(--text-primary); margin-bottom: 6px;">Finding Your Driver...</h3>
                 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
-                    Connecting with active drivers around <b id="modalPickupText">Kakkanad</b>...
+                    Connecting with active fleet partners around <b id="modalPickupText" style="color: var(--text-primary);">Kakkanad</b>...
                 </p>
             </div>
 
@@ -305,15 +337,15 @@
                 <div class="driver-found-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <span class="badge badge-success">Driver Found!</span>
-                        <span style="font-size: 13px; font-weight: 800; color: #D97706;">★ 4.8</span>
+                        <span style="font-size: 13px; font-weight: 800; color: var(--warning);">★ 4.8</span>
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 14px;">
-                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: var(--navy-900);">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--bg-card-subtle); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: var(--text-primary); border: 1.5px solid var(--border);">
                             AR
                         </div>
                         <div>
-                            <div style="font-size: 16px; font-weight: 900; color: var(--navy-900);" id="foundDriverName">Akhil Raj</div>
+                            <div style="font-size: 16px; font-weight: 900; color: var(--text-primary);" id="foundDriverName">Akhil Raj</div>
                             <div style="font-size: 12px; color: var(--text-muted);" id="foundVehicleInfo">Hyundai Aura (Titan Grey)</div>
                             <div style="font-size: 13px; font-weight: 800; color: var(--primary); margin-top: 2px;" id="foundPlateNumber">KL 07 AB 1234</div>
                         </div>
@@ -364,6 +396,10 @@
         let currentPromoCode = '';
 
         window.addEventListener('DOMContentLoaded', async () => {
+            App.initTheme();
+            const themeSlot = document.getElementById('themeSelectorSlot');
+            if (themeSlot) themeSlot.innerHTML = App.renderThemeSelectorHTML();
+
             simMap = new SimulatedMap('bookingMapCanvas');
             await loadLocations();
 
@@ -456,7 +492,7 @@
                 let finalFare = Math.max(30, base - appliedDiscount);
                 const elem = document.getElementById(`fare-${type}`);
                 if (appliedDiscount > 0) {
-                    elem.innerHTML = `<s style="font-size: 13px; color: #94A3B8;">${App.formatCurrency(base)}</s> ${App.formatCurrency(finalFare)}`;
+                    elem.innerHTML = `<s style="font-size: 13px; color: var(--text-muted);">${App.formatCurrency(base)}</s> ${App.formatCurrency(finalFare)}`;
                 } else {
                     elem.textContent = App.formatCurrency(finalFare);
                 }
@@ -503,21 +539,21 @@
                     appliedDiscount = res.discount;
                     currentPromoCode = code;
                     msgEl.style.display = 'block';
-                    msgEl.style.color = 'var(--success-dark)';
+                    msgEl.style.color = 'var(--success)';
                     msgEl.innerHTML = `✓ Promo <b>${code}</b> applied! Saved ${App.formatCurrency(res.discount)}.`;
-                    App.showToast('Promo Code Applied', `You saved ${App.formatCurrency(res.discount)}!`, 'tag');
+                    App.showToast('Offer Applied', `Saved ${App.formatCurrency(res.discount)} with ${code}`, 'tag');
                 } else {
                     appliedDiscount = 0;
                     currentPromoCode = '';
                     msgEl.style.display = 'block';
-                    msgEl.style.color = 'var(--danger-dark)';
+                    msgEl.style.color = 'var(--danger)';
                     msgEl.textContent = res.message || 'Invalid promo code';
                 }
             } catch (err) {
                 appliedDiscount = 0;
                 currentPromoCode = '';
                 msgEl.style.display = 'block';
-                msgEl.style.color = 'var(--danger-dark)';
+                msgEl.style.color = 'var(--danger)';
                 msgEl.textContent = 'Could not validate promo code';
             }
             updateFareDisplays();
@@ -532,60 +568,51 @@
                 return;
             }
 
-            const btn = document.getElementById('confirmBookBtn');
-            btn.disabled = true;
-            btn.textContent = 'Connecting...';
+            const finalFare = Math.max(30, calculatedFares[selectedCabType] - appliedDiscount);
+
+            // Open Dispatch Radar Modal
+            document.getElementById('modalPickupText').textContent = pickup;
+            document.getElementById('modalStageSearching').style.display = 'block';
+            document.getElementById('modalStageDriverFound').style.display = 'none';
+            App.openModal('searchingModal');
 
             try {
-                // 1. Send Booking Request to Backend
-                const bookingReq = {
+                // Call booking API
+                const bookingData = {
                     passengerId: user.userId,
-                    pickup: pickup,
-                    destination: dropoff,
                     pickupLocation: pickup,
                     dropoffLocation: dropoff,
                     cabType: selectedCabType,
+                    distanceKm: currentDistance,
+                    estimatedMinutes: Math.round(currentDistance * 2.5),
+                    fare: finalFare,
+                    paymentMethod: selectedPaymentMethod,
                     promoCode: currentPromoCode
                 };
 
-                const booking = await App.post('/api/bookings', bookingReq);
+                const res = await App.post('/api/bookings/create', bookingData);
+                const bookingId = res.bookingId || res.id;
 
-                // 2. Stage 1: Open Searching Modal
-                document.getElementById('modalPickupText').textContent = pickup;
-                App.openModal('searchingModal');
+                // Simulated driver dispatch delay for authentic UX
+                setTimeout(() => {
+                    document.getElementById('modalStageSearching').style.display = 'none';
+                    document.getElementById('modalStageDriverFound').style.display = 'block';
 
-                // 3. Stage 2 & 3: Simulate Driver Finding & Display Driver Info
-                setTimeout(async () => {
-                    try {
-                        const updated = await App.get(`/api/bookings/${booking.bookingId || booking.id}`);
-                        
-                        document.getElementById('modalStageSearching').style.display = 'none';
-                        const driverFoundStage = document.getElementById('modalStageDriverFound');
-                        driverFoundStage.style.display = 'block';
-
-                        if (updated.driverName) {
-                            document.getElementById('foundDriverName').textContent = updated.driverName;
-                        }
-                        if (updated.vehicleModel) {
-                            document.getElementById('foundVehicleInfo').textContent = updated.vehicleModel;
-                        }
-                        if (updated.vehiclePlateNumber) {
-                            document.getElementById('foundPlateNumber').textContent = updated.vehiclePlateNumber;
-                        }
-
-                        // Stage 4: Seamless transition to Live Tracking screen
-                        setTimeout(() => {
-                            window.location.href = `/tracking.html?id=${booking.bookingId || booking.id}`;
-                        }, 2200);
-                    } catch (e) {
-                        window.location.href = `/tracking.html?id=${booking.bookingId || booking.id}`;
+                    if (res.driverName) {
+                        document.getElementById('foundDriverName').textContent = res.driverName;
                     }
+                    if (res.vehiclePlateNumber) {
+                        document.getElementById('foundPlateNumber').textContent = res.vehiclePlateNumber;
+                    }
+
+                    setTimeout(() => {
+                        window.location.href = `/tracking.html?id=${bookingId}`;
+                    }, 2200);
                 }, 2000);
 
             } catch (err) {
-                btn.disabled = false;
-                updateFareDisplays();
-                App.showToast('Booking Failed', err.message || 'Could not complete booking', 'danger');
+                App.closeModal('searchingModal');
+                App.showToast('Booking Failed', err.message || 'Unable to create booking', 'alertTriangle');
             }
         }
     </script>

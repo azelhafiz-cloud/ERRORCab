@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create an Account - ERRORCab</title>
+    <!-- Early theme resolution prevents dark/light flash -->
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('errorcab_theme') || 'system';
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const resolved = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+                document.documentElement.setAttribute('data-theme', resolved);
+                document.documentElement.setAttribute('data-theme-preference', saved);
+            } catch (e) {}
+        })();
+    </script>
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .auth-wrapper {
@@ -12,16 +24,17 @@
             align-items: center;
             justify-content: center;
             padding: 40px 20px;
-            background: radial-gradient(circle at 10% 20%, #0F2547 0%, #070D1D 90%);
+            background: var(--bg-main);
+            position: relative;
         }
         .auth-card {
-            background: white;
+            background: var(--bg-card);
             border-radius: var(--radius-xl);
             padding: 36px 32px;
             max-width: 520px;
             width: 100%;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
             animation: cardEntrance 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes cardEntrance {
@@ -52,7 +65,7 @@
             gap: 8px;
         }
         .role-tab.active {
-            background: white;
+            background: var(--bg-card);
             color: var(--primary);
             box-shadow: var(--shadow-xs);
         }
@@ -60,6 +73,23 @@
 </head>
 <body>
     <div class="auth-wrapper">
+        <div style="position: absolute; top: 18px; right: 18px; z-index: 10;" id="authThemeSlot">
+            <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
+                <span class="theme-control-label">Appearance:</span>
+                <div class="theme-switcher">
+                    <button type="button" class="theme-btn" data-theme-choice="light" onclick="App.setTheme('light')" title="Light theme" aria-label="Select Light theme">
+                        <span>&#9728; Light</span>
+                    </button>
+                    <button type="button" class="theme-btn" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
+                        <span>&#127769; Dark</span>
+                    </button>
+                    <button type="button" class="theme-btn" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
+                        <span>&#9881; System</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div class="auth-card">
             
             <!-- Brand Header -->
@@ -72,7 +102,7 @@
                         <circle cx="17" cy="17" r="2"/>
                     </svg>
                 </div>
-                <h1 style="font-size: 22px; font-weight: 900; color: var(--navy-900); letter-spacing: -0.4px;">Join ERRORCab</h1>
+                <h1 style="font-size: 22px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.4px;">Join ERRORCab</h1>
                 <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Kerala's Premier Cab Platform</p>
             </div>
 
@@ -159,6 +189,12 @@
     <script src="/js/app.js"></script>
     <script>
         let currentRole = 'PASSENGER';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            App.initTheme();
+            const slot = document.getElementById('authThemeSlot');
+            if (slot) slot.innerHTML = App.renderThemeSelectorHTML();
+        });
 
         function switchRole(role) {
             currentRole = role;

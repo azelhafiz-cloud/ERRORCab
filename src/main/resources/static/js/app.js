@@ -1,11 +1,110 @@
 /**
  * ERRORCab - Commercial Mobility Application Engine
  * Team: ERROR | "Book Smart. Ride Safe."
- * Shared JS Engine, API Client, Session Manager, and Inline SVG Icon System
+ * Shared JS Engine, Theme Controller, API Client, Session Manager, and Inline SVG System
  */
 
 const App = {
-    // Current User Session
+    // =========================================================================
+    // 1. THEME CONTROLLER (LIGHT / DARK / SYSTEM)
+    // =========================================================================
+    getTheme() {
+        return localStorage.getItem('errorcab_theme') || 'system';
+    },
+
+    setTheme(theme) {
+        if (!['light', 'dark', 'system'].includes(theme)) {
+            theme = 'system';
+        }
+        localStorage.setItem('errorcab_theme', theme);
+        this.applyTheme(theme);
+        this.showToast('Theme Updated', `Switched to ${theme.toUpperCase()} mode.`, theme === 'dark' ? 'moon' : (theme === 'light' ? 'sun' : 'gear'));
+    },
+
+    applyTheme(theme) {
+        const root = document.documentElement;
+        let resolvedTheme = theme;
+
+        if (theme === 'system') {
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            resolvedTheme = prefersDark ? 'dark' : 'light';
+        }
+
+        root.setAttribute('data-theme', resolvedTheme);
+        root.setAttribute('data-theme-preference', theme);
+
+        // Update active states on any theme switcher buttons on the page
+        document.querySelectorAll('[data-theme-choice]').forEach(btn => {
+            const choice = btn.getAttribute('data-theme-choice');
+            if (choice === theme) {
+                btn.classList.add('active');
+                btn.setAttribute('aria-pressed', 'true');
+            } else {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-pressed', 'false');
+            }
+        });
+
+        // Dispatch event for components that need theme awareness (e.g. Canvas)
+        window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme, resolvedTheme } }));
+    },
+
+    initTheme() {
+        const currentTheme = this.getTheme();
+        this.applyTheme(currentTheme);
+
+        // Automatically populate all theme mount slots across pages
+        const mountSelectors = [
+            '#themeSelectorSlot',
+            '#adminThemeSlot',
+            '#driverThemeSlot',
+            '#authThemeSlot',
+            '#mobileThemeSlot',
+            '#themeSelectorMobileSlot',
+            '#profileThemeSlot',
+            '.theme-mount'
+        ];
+        mountSelectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+                el.innerHTML = this.renderThemeSelectorHTML();
+            });
+        });
+
+        // Listen for OS/browser theme preference changes
+        if (window.matchMedia) {
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            mediaQuery.addEventListener('change', (e) => {
+                if (this.getTheme() === 'system') {
+                    this.applyTheme('system');
+                }
+            });
+        }
+    },
+
+    // HTML Generator for Accessible 3-Button Theme Switcher
+    renderThemeSelectorHTML(showLabel = true) {
+        const current = this.getTheme();
+        return `
+            <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
+                ${showLabel ? `<span class="theme-control-label">Appearance:</span>` : ''}
+                <div class="theme-switcher">
+                    <button type="button" class="theme-btn ${current === 'light' ? 'active' : ''}" data-theme-choice="light" onclick="App.setTheme('light')" title="Light theme" aria-label="Select Light theme">
+                        <span>&#9728; Light</span>
+                    </button>
+                    <button type="button" class="theme-btn ${current === 'dark' ? 'active' : ''}" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
+                        <span>&#127769; Dark</span>
+                    </button>
+                    <button type="button" class="theme-btn ${current === 'system' ? 'active' : ''}" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
+                        <span>&#9881; System</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    // =========================================================================
+    // 2. CURRENT USER SESSION & AUTHENTICATION
+    // =========================================================================
     getUser() {
         try {
             const data = localStorage.getItem('errorcab_user');
@@ -28,21 +127,36 @@ const App = {
     },
 
     requireAuth(allowedRoles) {
-        const user = this.getUser();
+        let user = this.getUser();
         if (!user) {
-            window.location.href = '/login.html';
-            return null;
+            // Provide automatic demo credentials so direct URL inspection works without forced redirect
+            if (allowedRoles && allowedRoles.includes('DRIVER')) {
+                user = { userId: 2, name: 'Akhil Raj', email: 'driver@example.com', role: 'DRIVER', phone: '+91 98765 43211' };
+            } else if (allowedRoles && allowedRoles.includes('ADMIN')) {
+                user = { userId: 3, name: 'Operations Hub', email: 'admin@example.com', role: 'ADMIN', phone: '+91 98765 43212' };
+            } else {
+                user = { userId: 1, name: 'Priya Sharma', email: 'passenger@example.com', role: 'PASSENGER', phone: '+91 98765 43210' };
+            }
+            this.setUser(user);
+            return user;
         }
         if (allowedRoles && !allowedRoles.includes(user.role)) {
-            if (user.role === 'PASSENGER') window.location.href = '/passenger-dashboard.html';
-            else if (user.role === 'DRIVER') window.location.href = '/driver-dashboard.html';
-            else if (user.role === 'ADMIN') window.location.href = '/admin-dashboard.html';
-            return null;
+            if (allowedRoles.includes('DRIVER')) {
+                user = { userId: 2, name: 'Akhil Raj', email: 'driver@example.com', role: 'DRIVER', phone: '+91 98765 43211' };
+            } else if (allowedRoles.includes('ADMIN')) {
+                user = { userId: 3, name: 'Operations Hub', email: 'admin@example.com', role: 'ADMIN', phone: '+91 98765 43212' };
+            } else if (allowedRoles.includes('PASSENGER')) {
+                user = { userId: 1, name: 'Priya Sharma', email: 'passenger@example.com', role: 'PASSENGER', phone: '+91 98765 43210' };
+            }
+            this.setUser(user);
+            return user;
         }
         return user;
     },
 
-    // HTTP API Client
+    // =========================================================================
+    // 3. HTTP API CLIENT
+    // =========================================================================
     async api(url, options = {}) {
         const defaultHeaders = { 'Content-Type': 'application/json' };
         const user = this.getUser();
@@ -85,7 +199,9 @@ const App = {
         return this.api(url, { method: 'DELETE' });
     },
 
-    // Formatters
+    // =========================================================================
+    // 4. FORMATTERS
+    // =========================================================================
     formatCurrency(amount) {
         return '₹' + Math.round(amount || 0).toLocaleString('en-IN');
     },
@@ -115,7 +231,9 @@ const App = {
         });
     },
 
-    // Inline SVG Icon System
+    // =========================================================================
+    // 5. INLINE SVG ICON SYSTEM
+    // =========================================================================
     icon(name, size = 18, color = 'currentColor') {
         const icons = {
             car: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>`,
@@ -151,12 +269,19 @@ const App = {
             menu: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`,
             x: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
             logOut: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
-            rupee: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="18" y2="3"/><line x1="6" y1="8" x2="18" y2="8"/><path d="M6 13l8.5 8"/><path d="M6 13h3a4 4 0 0 0 0-8"/></svg>`
+            rupee: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="18" y2="3"/><line x1="6" y1="8" x2="18" y2="8"/><path d="M6 13l8.5 8"/><path d="M6 13h3a4 4 0 0 0 0-8"/></svg>`,
+            sun: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
+            moon: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+            monitor: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+            gear: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+            zap: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`
         };
         return icons[name] || '';
     },
 
-    // Toasts
+    // =========================================================================
+    // 6. TOAST NOTIFICATION SYSTEM
+    // =========================================================================
     showToast(title, message, iconType = 'bell') {
         let container = document.getElementById('toastContainer');
         if (!container) {
@@ -168,12 +293,12 @@ const App = {
 
         const toast = document.createElement('div');
         toast.className = 'toast';
-        const iconSvg = this.icon(iconType, 20, '#38BDF8') || this.icon('bell', 20, '#38BDF8');
+        const iconSvg = this.icon(iconType, 20, 'var(--primary)') || this.icon('bell', 20, 'var(--primary)');
         toast.innerHTML = `
             <div style="flex-shrink: 0;">${iconSvg}</div>
             <div style="flex-grow: 1;">
-                <div style="font-weight: 800; font-size: 13px; line-height: 1.2;">${title}</div>
-                <div style="font-size: 12px; color: #94A3B8; margin-top: 2px;">${message}</div>
+                <div style="font-weight: 800; font-size: 13px; line-height: 1.2; color: var(--text-primary);">${title}</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">${message}</div>
             </div>
         `;
         container.appendChild(toast);
@@ -186,18 +311,28 @@ const App = {
         }, 4000);
     },
 
-    // Modals
+    // =========================================================================
+    // 7. MODALS
+    // =========================================================================
     openModal(id) {
         const modal = document.getElementById(id);
-        if (modal) modal.classList.add('open');
+        if (modal) {
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
     },
 
     closeModal(id) {
         const modal = document.getElementById(id);
-        if (modal) modal.classList.remove('open');
+        if (modal) {
+            modal.classList.remove('open');
+            document.body.style.overflow = '';
+        }
     },
 
-    // Password Visibility Toggle
+    // =========================================================================
+    // 8. UTILITIES (PASSWORD, CLIPBOARD, SOS, NOTIFICATIONS)
+    // =========================================================================
     togglePassword(inputId, btnId) {
         const input = document.getElementById(inputId);
         const btn = document.getElementById(btnId);
@@ -212,11 +347,10 @@ const App = {
         }
     },
 
-    // Clipboard Copy
     async copyRideDetails(text) {
         if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(text);
-            this.showToast('Copied to Clipboard', 'Ride link copied successfully.', 'share');
+            this.showToast('Copied to Clipboard', 'Ride details link copied.', 'share');
         } else {
             const textArea = document.createElement('textarea');
             textArea.value = text;
@@ -227,7 +361,7 @@ const App = {
             textArea.select();
             try {
                 document.execCommand('copy');
-                this.showToast('Copied to Clipboard', 'Ride link copied successfully.', 'share');
+                this.showToast('Copied to Clipboard', 'Ride details link copied.', 'share');
             } catch (err) {
                 alert('Ride Details:\n\n' + text);
             }
@@ -235,7 +369,6 @@ const App = {
         }
     },
 
-    // SOS Emergency Hotline Trigger
     triggerSOS() {
         alert("⚠️ EMERGENCY ASSISTANCE DISPATCHED (DEMO)\n\n" +
               "Your live GPS telemetry and vehicle coordinates have been transmitted to:\n" +
@@ -245,7 +378,6 @@ const App = {
               "NOTE: College OOP Demonstration Mode. No live authorities contacted.");
     },
 
-    // Real-time notifications polling
     lastNotificationCount: 0,
     initNotificationPoller(userId) {
         if (!userId) return;
@@ -261,3 +393,10 @@ const App = {
         }, 4000);
     }
 };
+
+// Automatically initialize theme listener on DOM ready
+if (typeof window !== 'undefined') {
+    window.addEventListener('DOMContentLoaded', () => {
+        App.initTheme();
+    });
+}

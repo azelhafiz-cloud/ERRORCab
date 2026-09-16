@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Operations Center - ERRORCab</title>
+    <!-- Early theme resolution prevents dark/light flash -->
+    <script>
+        (function() {
+            try {
+                const saved = localStorage.getItem('errorcab_theme') || 'system';
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const resolved = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+                document.documentElement.setAttribute('data-theme', resolved);
+                document.documentElement.setAttribute('data-theme-preference', saved);
+            } catch (e) {}
+        })();
+    </script>
     <link rel="stylesheet" href="/css/style.css">
     <style>
         :root {
@@ -11,7 +23,7 @@
         }
 
         body {
-            background: #F1F5F9;
+            background: var(--bg-page);
             margin: 0;
             padding: 0;
             display: flex;
@@ -21,8 +33,8 @@
         /* Sidebar Styling */
         .admin-sidebar {
             width: var(--sidebar-width);
-            background: var(--surface-dark);
-            color: white;
+            background: var(--bg-sidebar);
+            color: var(--text-sidebar);
             position: fixed;
             top: 0;
             left: 0;
@@ -31,13 +43,13 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid var(--border-sidebar);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .sidebar-brand {
             padding: 24px 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid var(--border-sidebar);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -57,8 +69,8 @@
             align-items: center;
             gap: 14px;
             padding: 12px 16px;
-            border-radius: 8px;
-            color: #CBD5E1;
+            border-radius: var(--radius-sm);
+            color: var(--text-sidebar);
             font-size: 14px;
             font-weight: 700;
             text-decoration: none;
@@ -70,15 +82,15 @@
 
         .nav-link-item:hover {
             color: #FFFFFF;
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
             transform: translateX(3px);
         }
 
         .nav-link-item.active {
             color: #FFFFFF !important;
-            background: #0284C7 !important;
+            background: var(--primary) !important;
             font-weight: 800;
-            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45);
+            box-shadow: 0 4px 14px var(--primary-glow);
             transform: translateX(0);
         }
 
@@ -98,7 +110,7 @@
 
         .sidebar-footer {
             padding: 18px 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid var(--border-sidebar);
             background: rgba(0, 0, 0, 0.25);
         }
 
@@ -111,42 +123,42 @@
 
         /* Dedicated Single Sign Out Button in Header */
         .btn-logout {
-            background: #EF4444;
+            background: var(--danger);
             color: #FFFFFF;
             font-weight: 800;
             font-size: 13px;
             padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid #DC2626;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--danger);
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+            box-shadow: 0 2px 8px var(--danger-glow);
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .btn-logout:hover {
-            background: #DC2626;
+            background: var(--danger-dark);
             color: #FFFFFF;
-            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+            box-shadow: 0 4px 14px var(--danger-glow);
             transform: translateY(-1px);
         }
 
         .btn-logout:active {
-            transform: translateY(0);
+            transform: scale(0.98);
         }
 
         .sidebar-avatar {
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            background: rgba(56, 189, 248, 0.2);
-            border: 1px solid var(--accent);
+            background: var(--primary-subtle);
+            border: 1.5px solid var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--accent);
+            color: var(--primary);
             font-weight: 800;
             font-size: 14px;
             flex-shrink: 0;
@@ -164,7 +176,9 @@
         }
 
         .admin-topbar {
-            background: white;
+            background: var(--bg-topbar);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border);
             padding: 14px 28px;
             display: flex;
@@ -173,7 +187,7 @@
             position: sticky;
             top: 0;
             z-index: 90;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            box-shadow: var(--shadow-xs);
         }
 
         .admin-content-body {
@@ -210,8 +224,8 @@
             margin-bottom: 24px;
         }
 
-        .kpi-card {
-            background: white;
+        .admin-kpi-card {
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
             padding: 20px;
@@ -224,10 +238,10 @@
             justify-content: space-between;
         }
 
-        .kpi-card:hover {
+        .admin-kpi-card:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
-            border-color: #CBD5E1;
+            border-color: var(--primary-border);
         }
 
         .kpi-top {
@@ -250,16 +264,9 @@
         .kpi-number {
             font-size: 26px;
             font-weight: 900;
-            color: var(--surface-dark);
+            color: var(--text-primary);
             letter-spacing: -0.5px;
             line-height: 1.1;
-        }
-
-        .kpi-label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-top: 4px;
         }
 
         .kpi-sub {
@@ -319,7 +326,7 @@
         .micro-route-line {
             width: 1px;
             height: 8px;
-            background: #CBD5E1;
+            background: var(--border);
             margin-left: 3px;
         }
 
@@ -332,25 +339,25 @@
         }
 
         .filter-pill {
-            background: white;
+            background: var(--bg-card);
             border: 1px solid var(--border);
             padding: 6px 14px;
             border-radius: var(--radius-full);
             font-size: 12px;
             font-weight: 700;
-            color: var(--text-dark);
+            color: var(--text-primary);
             cursor: pointer;
             transition: all var(--transition-fast);
             white-space: nowrap;
         }
 
         .filter-pill.active {
-            background: var(--surface-dark);
-            color: white;
-            border-color: var(--surface-dark);
+            background: var(--primary);
+            color: #FFFFFF;
+            border-color: var(--primary);
         }
 
-        /* Mobile Viewport Adaptations */
+        /* Responsive Mobile Table Transformations */
         @media (max-width: 1024px) {
             .admin-sidebar {
                 transform: translateX(-100%);
@@ -390,6 +397,31 @@
             .hide-on-mobile {
                 display: none !important;
             }
+
+            /* Stacked Cards for Mobile Tables */
+            .table-container thead {
+                display: none;
+            }
+            .table-container tbody tr {
+                display: block;
+                padding: 16px;
+                border-bottom: 1px solid var(--border);
+            }
+            .table-container tbody td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 6px 0;
+                border: none;
+            }
+            .table-container tbody td::before {
+                content: attr(data-label);
+                font-size: 11px;
+                font-weight: 800;
+                text-transform: uppercase;
+                color: var(--text-muted);
+                letter-spacing: 0.5px;
+            }
         }
 
         @media (max-width: 560px) {
@@ -411,21 +443,21 @@
     <!-- Mobile Drawer Backdrop -->
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
 
-    <!-- Modern Admin Sidebar Navigation -->
+    <!-- Admin Sidebar Navigation -->
     <aside class="admin-sidebar" id="adminSidebar">
         <div>
             <!-- Sidebar Header Brand -->
             <div class="sidebar-brand">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 34px; height: 34px; border-radius: var(--radius-md); background: linear-gradient(135deg, #0284C7, #0EA5E9); display: flex; align-items: center; justify-content: center; color: white;">
+                    <div style="width: 36px; height: 36px; border-radius: var(--radius-md); background: linear-gradient(135deg, #0284C7, #0EA5E9); display: flex; align-items: center; justify-content: center; color: white;">
                         <span id="brandCarIcon"></span>
                     </div>
                     <div>
                         <div style="font-size: 17px; font-weight: 900; letter-spacing: -0.3px; color: white;">ERRORCab</div>
-                        <div style="font-size: 10px; color: #94A3B8; font-weight: 700; letter-spacing: 0.5px;">ADMIN OPERATIONS</div>
+                        <div style="font-size: 10px; color: var(--text-sidebar-muted); font-weight: 700; letter-spacing: 0.5px;">ADMIN OPERATIONS</div>
                     </div>
                 </div>
-                <button type="button" class="mobile-menu-toggle" onclick="toggleSidebar(false)" style="background: none; border: none; color: #94A3B8; cursor: pointer; display: none; padding: 4px;">
+                <button type="button" class="mobile-menu-toggle" onclick="toggleSidebar(false)" style="background: none; border: none; color: #94A3B8; cursor: pointer; display: none; padding: 4px;" aria-label="Close menu">
                     <span id="closeSidebarIcon"></span>
                 </button>
             </div>
@@ -458,10 +490,10 @@
         <!-- Sidebar Footer / Admin Profile Badge (Single logout action is in header) -->
         <div class="sidebar-footer">
             <div class="sidebar-user-card">
-                <div class="sidebar-avatar" style="background: rgba(2, 132, 199, 0.3); border: 1.5px solid #38BDF8; color: #38BDF8; font-weight: 900;">A</div>
+                <div class="sidebar-avatar">A</div>
                 <div style="overflow: hidden; flex-grow: 1;">
                     <div style="font-size: 13px; font-weight: 800; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="sidebarAdminName">System Admin</div>
-                    <div style="font-size: 11px; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="sidebarAdminEmail">admin@example.com</div>
+                    <div style="font-size: 11px; color: var(--text-sidebar-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="sidebarAdminEmail">admin@example.com</div>
                 </div>
                 <span class="badge badge-success" style="font-size: 9px; padding: 3px 6px; font-weight: 800;">ADMIN</span>
             </div>
@@ -475,12 +507,12 @@
         <header class="admin-topbar">
             <div style="display: flex; align-items: center; gap: 14px;">
                 <!-- Mobile Hamburger Button -->
-                <button type="button" class="mobile-menu-toggle btn btn-secondary btn-sm" onclick="toggleSidebar(true)" style="display: none; padding: 6px 10px; border-radius: 8px;" title="Open Menu">
+                <button type="button" class="mobile-menu-toggle btn btn-secondary btn-sm" onclick="toggleSidebar(true)" style="display: none; padding: 6px 10px; border-radius: 8px;" title="Open Menu" aria-label="Open menu">
                     <span id="topbarMenuIcon"></span>
                 </button>
 
                 <div>
-                    <div style="font-size: 18px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.3px;" id="topbarViewTitle">
+                    <div style="font-size: 18px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.3px;" id="topbarViewTitle">
                         Dashboard Overview
                     </div>
                     <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;" id="topbarViewSubtitle">
@@ -490,18 +522,36 @@
             </div>
 
             <div style="display: flex; align-items: center; gap: 12px;">
+                <!-- Theme Switcher (Visible on All Screen Sizes) -->
+                <div id="adminThemeSlot">
+                    <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
+                        <span class="theme-control-label">Appearance:</span>
+                        <div class="theme-switcher">
+                            <button type="button" class="theme-btn" data-theme-choice="light" onclick="App.setTheme('light')" title="Light theme" aria-label="Select Light theme">
+                                <span>&#9728; Light</span>
+                            </button>
+                            <button type="button" class="theme-btn" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
+                                <span>&#127769; Dark</span>
+                            </button>
+                            <button type="button" class="theme-btn" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
+                                <span>&#9881; System</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Live Platform Status Badge -->
-                <span class="badge badge-success hide-on-mobile" style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-weight: 800;">
-                    <span class="live-pulse" style="width: 6px; height: 6px;"></span>
+                <span class="badge badge-success hide-on-mobile" style="padding: 6px 12px; font-weight: 800;">
+                    <span class="live-pulse-dot" style="width: 6px; height: 6px;"></span>
                     SYSTEM OPERATIONAL
                 </span>
 
                 <!-- Notifications Button (Demo) -->
-                <button type="button" onclick="App.showToast('Platform Notice', 'All Kochi fleet systems functioning normally.', 'shield')" class="btn btn-secondary btn-sm" style="padding: 7px 10px; border-radius: 8px;" title="Notifications">
+                <button type="button" onclick="App.showToast('Platform Notice', 'All Kochi fleet systems functioning normally.', 'shield')" class="btn btn-secondary btn-sm" style="padding: 7px 10px;" title="Notifications" aria-label="Notifications">
                     <span id="topbarBellIcon"></span>
                 </button>
 
-                <!-- Topbar Sign Out Button (Sole Accessible Sign Out Action) -->
+                <!-- Topbar Sign Out Button (Sole Accessible Sign Out Action in Admin) -->
                 <button type="button" onclick="App.logout()" class="btn btn-logout btn-sm" id="topbarSignOutBtn" title="Sign Out of Admin Operations">
                     <span id="topbarSignOutIcon"></span>
                     <span>Sign Out</span>
@@ -516,18 +566,18 @@
             <section id="view-dashboard" class="admin-view active">
                 
                 <!-- Welcome Banner -->
-                <div class="card" style="background: linear-gradient(135deg, #0B132B 0%, #1E293B 100%); color: white; border: none; padding: 26px 30px; margin-bottom: 24px; position: relative; overflow: hidden;">
-                    <div style="position: absolute; right: -20px; top: -20px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0) 70%); border-radius: 50%; pointer-events: none;"></div>
+                <div class="card" style="background: var(--active-job-bg); color: var(--active-job-text); border: 1px solid var(--active-job-border); padding: 26px 30px; margin-bottom: 24px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; right: -20px; top: -20px; width: 180px; height: 180px; background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; position: relative; z-index: 2;">
                         <div>
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                                <span class="badge badge-primary" style="font-size: 11px; padding: 3px 10px; background: rgba(56, 189, 248, 0.2); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">
+                                <span class="badge badge-primary" style="font-size: 11px;">
                                     LIVE OPERATIONS
                                 </span>
                                 <span style="font-size: 12px; color: #94A3B8;" id="currentDateStr">--</span>
                             </div>
-                            <h1 style="font-size: 24px; font-weight: 900; margin: 0; letter-spacing: -0.5px;">Welcome back, Admin</h1>
+                            <h1 style="font-size: 24px; font-weight: 900; margin: 0; letter-spacing: -0.5px;">Welcome back, Operations Admin</h1>
                             <p style="color: #94A3B8; font-size: 13px; margin: 4px 0 0;">Here's what's happening with ERRORCab today across the Kochi urban zone.</p>
                         </div>
 
@@ -539,13 +589,13 @@
                     </div>
                 </div>
 
-                <!-- 6 Attractive Statistic Cards -->
+                <!-- 6 Statistic Cards -->
                 <div class="stat-grid-6">
                     <!-- 1. Total Passengers -->
-                    <div class="kpi-card">
+                    <div class="admin-kpi-card">
                         <div class="kpi-top">
                             <div class="kpi-label">Total Passengers</div>
-                            <div class="kpi-icon-pill" style="background: rgba(139, 92, 246, 0.1); color: #8B5CF6;">
+                            <div class="kpi-icon-pill" style="background: rgba(139, 92, 246, 0.15); color: #8B5CF6;">
                                 <span id="kpiIconPassengers"></span>
                             </div>
                         </div>
@@ -556,10 +606,10 @@
                     </div>
 
                     <!-- 2. Total Drivers -->
-                    <div class="kpi-card">
+                    <div class="admin-kpi-card">
                         <div class="kpi-top">
                             <div class="kpi-label">Total Drivers</div>
-                            <div class="kpi-icon-pill" style="background: rgba(245, 158, 11, 0.1); color: #D97706;">
+                            <div class="kpi-icon-pill" style="background: var(--warning-subtle); color: var(--warning);">
                                 <span id="kpiIconDrivers"></span>
                             </div>
                         </div>
@@ -570,10 +620,10 @@
                     </div>
 
                     <!-- 3. Total Rides -->
-                    <div class="kpi-card">
+                    <div class="admin-kpi-card">
                         <div class="kpi-top">
                             <div class="kpi-label">Total Rides</div>
-                            <div class="kpi-icon-pill" style="background: rgba(2, 132, 199, 0.1); color: #0284C7;">
+                            <div class="kpi-icon-pill" style="background: var(--primary-subtle); color: var(--primary);">
                                 <span id="kpiIconRides"></span>
                             </div>
                         </div>
@@ -584,56 +634,56 @@
                     </div>
 
                     <!-- 4. Completed Rides -->
-                    <div class="kpi-card">
+                    <div class="admin-kpi-card">
                         <div class="kpi-top">
                             <div class="kpi-label">Completed Rides</div>
-                            <div class="kpi-icon-pill" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
+                            <div class="kpi-icon-pill" style="background: var(--success-subtle); color: var(--success);">
                                 <span id="kpiIconCompleted"></span>
                             </div>
                         </div>
-                        <div class="kpi-number" id="statCompleted" style="color: #059669;">0</div>
+                        <div class="kpi-number" id="statCompleted" style="color: var(--success);">0</div>
                         <div class="kpi-sub">
                             <span>Successfully fulfilled trips</span>
                         </div>
                     </div>
 
                     <!-- 5. Cancelled Rides -->
-                    <div class="kpi-card">
+                    <div class="admin-kpi-card">
                         <div class="kpi-top">
                             <div class="kpi-label">Cancelled Rides</div>
-                            <div class="kpi-icon-pill" style="background: rgba(239, 68, 68, 0.1); color: #EF4444;">
+                            <div class="kpi-icon-pill" style="background: var(--danger-subtle); color: var(--danger);">
                                 <span id="kpiIconCancelled"></span>
                             </div>
                         </div>
-                        <div class="kpi-number" id="statCancelled" style="color: #DC2626;">0</div>
+                        <div class="kpi-number" id="statCancelled" style="color: var(--danger);">0</div>
                         <div class="kpi-sub">
                             <span>Cancelled before completion</span>
                         </div>
                     </div>
 
                     <!-- 6. Total Revenue -->
-                    <div class="kpi-card" style="background: linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%); border-color: #BBF7D0;">
+                    <div class="admin-kpi-card" style="border-color: var(--success-border);">
                         <div class="kpi-top">
-                            <div class="kpi-label" style="color: #166534;">Total Revenue</div>
-                            <div class="kpi-icon-pill" style="background: rgba(16, 185, 129, 0.2); color: #10B981;">
+                            <div class="kpi-label" style="color: var(--success);">Total Revenue</div>
+                            <div class="kpi-icon-pill" style="background: var(--success-subtle); color: var(--success);">
                                 <span id="kpiIconRevenue"></span>
                             </div>
                         </div>
-                        <div class="kpi-number" id="statRevenue" style="color: #15803D;">₹0</div>
-                        <div class="kpi-sub" style="color: #166534;">
+                        <div class="kpi-number" id="statRevenue" style="color: var(--success);">₹0</div>
+                        <div class="kpi-sub" style="color: var(--success);">
                             <span>Gross platform booking value</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Recent Ride Activity & Quick Insights Grid -->
-                <div class="grid grid-3 responsive-card-grid" style="align-items: flex-start; gap: 20px;">
+                <div class="grid grid-3 responsive-card-grid" style="align-items: flex-start; gap: 20px; display: grid; grid-template-columns: 2fr 1fr;">
                     
                     <!-- Left: Recent Ride Activity (2 Cols) -->
-                    <div class="card" style="grid-column: span 2; padding: 0; overflow: hidden;">
-                        <div style="padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div class="card" style="padding: 0; overflow: hidden;">
+                        <div style="padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <div>
-                                <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;">Recent Ride Activity</h3>
+                                <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0;">Recent Ride Activity</h3>
                                 <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Latest bookings across Kochi City</p>
                             </div>
                             <button type="button" onclick="switchView('rides')" class="btn btn-secondary btn-sm" style="font-size: 12px; font-weight: 700;">
@@ -641,7 +691,7 @@
                             </button>
                         </div>
 
-                        <div class="table-container">
+                        <div class="table-container" style="border: none; margin: 0;">
                             <table class="table" style="margin-bottom: 0;">
                                 <thead>
                                     <tr>
@@ -661,7 +711,7 @@
 
                     <!-- Right: Quick Fleet & Revenue Insights (1 Col) -->
                     <div class="card" style="padding: 24px;">
-                        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0 0 16px;">Platform Performance</h3>
+                        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0 0 16px;">Platform Performance</h3>
                         
                         <!-- Completion Rate Progress -->
                         <div style="margin-bottom: 18px;">
@@ -669,7 +719,7 @@
                                 <span style="color: var(--text-muted);">Fulfillment Rate</span>
                                 <span id="insightFulfillmentPct" style="color: var(--success); font-weight: 800;">0%</span>
                             </div>
-                            <div style="width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                            <div style="width: 100%; height: 8px; background: var(--bg-card-subtle); border-radius: 4px; overflow: hidden; border: 1px solid var(--border);">
                                 <div id="insightFulfillmentBar" style="height: 100%; width: 0%; background: var(--success); transition: width 0.5s ease;"></div>
                             </div>
                         </div>
@@ -678,7 +728,7 @@
                         <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px dashed var(--border); padding-top: 16px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
                                 <span style="color: var(--text-muted);">Avg. Fare / Completed Trip:</span>
-                                <b id="insightAvgFare" style="color: var(--surface-dark);">₹0</b>
+                                <b id="insightAvgFare" style="color: var(--text-primary);">₹0</b>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
                                 <span style="color: var(--text-muted);">Online Fleet Duty:</span>
@@ -690,7 +740,7 @@
                             </div>
                         </div>
 
-                        <div style="margin-top: 20px; background: #F8FAFC; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; font-size: 11px; color: var(--text-muted); text-align: center;">
+                        <div style="margin-top: 20px; background: var(--bg-card-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; font-size: 11px; color: var(--text-muted); text-align: center;">
                             Kochi City Fleet Monitored • All algorithms running locally.
                         </div>
                     </div>
@@ -705,7 +755,7 @@
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
                     <div>
-                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">Passenger Directory</h2>
+                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.3px;">Passenger Directory</h2>
                         <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Manage registered customer accounts, view booking counts, and toggle account access.</p>
                     </div>
 
@@ -715,7 +765,7 @@
                 </div>
 
                 <div class="card" style="padding: 0; overflow: hidden;">
-                    <div class="table-container">
+                    <div class="table-container" style="border: none; margin: 0;">
                         <table class="table" style="margin-bottom: 0;">
                             <thead>
                                 <tr>
@@ -743,7 +793,7 @@
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
                     <div>
-                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">Driver Fleet Management</h2>
+                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.3px;">Driver Fleet Management</h2>
                         <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Review driver partners, commercial vehicle registrations, ratings, and live duty states.</p>
                     </div>
 
@@ -753,7 +803,7 @@
                 </div>
 
                 <div class="card" style="padding: 0; overflow: hidden;">
-                    <div class="table-container">
+                    <div class="table-container" style="border: none; margin: 0;">
                         <table class="table" style="margin-bottom: 0;">
                             <thead>
                                 <tr>
@@ -783,7 +833,7 @@
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
                     <div>
-                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">Real-Time Rides Log</h2>
+                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.3px;">Real-Time Rides Log</h2>
                         <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Complete chronological dispatch audit across all Kochi urban routes.</p>
                     </div>
 
@@ -799,7 +849,7 @@
                 </div>
 
                 <div class="card" style="padding: 0; overflow: hidden;">
-                    <div class="table-container">
+                    <div class="table-container" style="border: none; margin: 0;">
                         <table class="table" style="margin-bottom: 0;">
                             <thead>
                                 <tr>
@@ -827,90 +877,90 @@
             <section id="view-statistics" class="admin-view">
                 
                 <div style="margin-bottom: 24px;">
-                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">Platform Revenue & Financial Breakdown</h2>
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.3px;">Platform Revenue & Financial Breakdown</h2>
                     <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Detailed analytics on booking revenue, average fares, and category distributions.</p>
                 </div>
 
                 <!-- 4 Financial Highlights -->
-                <div class="grid grid-4" style="margin-bottom: 24px;">
-                    <div class="card stat-card">
-                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10B981; font-size: 20px; font-weight: 900;">₹</div>
+                <div class="grid-kpi" style="margin-bottom: 24px;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background: var(--success-subtle); color: var(--success); font-size: 20px; font-weight: 900;">₹</div>
                         <div>
-                            <div class="stat-value" id="statsTotalGross">₹0</div>
-                            <div class="stat-label">Total Platform Turnover</div>
+                            <div class="kpi-value" id="statsTotalGross">₹0</div>
+                            <div class="kpi-label">Total Platform Turnover</div>
                         </div>
                     </div>
 
-                    <div class="card stat-card">
-                        <div class="stat-icon" style="background: rgba(2, 132, 199, 0.1); color: #0284C7;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background: var(--primary-subtle); color: var(--primary);">
                             <span id="statsAvgIcon"></span>
                         </div>
                         <div>
-                            <div class="stat-value" id="statsAvgTicket">₹0</div>
-                            <div class="stat-label">Average Trip Fare</div>
+                            <div class="kpi-value" id="statsAvgTicket">₹0</div>
+                            <div class="kpi-label">Average Trip Fare</div>
                         </div>
                     </div>
 
-                    <div class="card stat-card">
-                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #8B5CF6;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background: rgba(139, 92, 246, 0.15); color: #8B5CF6;">
                             <span id="statsFulfillIcon"></span>
                         </div>
                         <div>
-                            <div class="stat-value" id="statsFulfillRate">0%</div>
-                            <div class="stat-label">Ride Fulfillment Rate</div>
+                            <div class="kpi-value" id="statsFulfillRate">0%</div>
+                            <div class="kpi-label">Ride Fulfillment Rate</div>
                         </div>
                     </div>
 
-                    <div class="card stat-card">
-                        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #EF4444;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background: var(--danger-subtle); color: var(--danger);">
                             <span id="statsCancelIcon"></span>
                         </div>
                         <div>
-                            <div class="stat-value" id="statsCancelRate">0%</div>
-                            <div class="stat-label">Cancellation Rate</div>
+                            <div class="kpi-value" id="statsCancelRate">0%</div>
+                            <div class="kpi-label">Cancellation Rate</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Category Breakdown Card -->
                 <div class="card" style="padding: 24px; margin-bottom: 24px;">
-                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0 0 16px;">
+                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0 0 16px;">
                         Cab Category Booking Share
                     </h3>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
                         <!-- Economy -->
-                        <div style="background: var(--bg-main); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+                        <div style="background: var(--bg-card-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span class="badge badge-secondary">ECONOMY</span>
+                                    <span class="badge badge-neutral">ECONOMY</span>
                                     <span style="font-size: 12px; color: var(--text-muted);">Hatchback Fleet</span>
                                 </div>
-                                <b id="catCountEconomy" style="font-size: 16px; color: var(--surface-dark);">0 trips</b>
+                                <b id="catCountEconomy" style="font-size: 16px; color: var(--text-primary);">0 trips</b>
                             </div>
                             <div style="font-size: 14px; font-weight: 800; color: var(--primary);" id="catRevEconomy">₹0 Revenue</div>
                         </div>
 
                         <!-- Premium -->
-                        <div style="background: var(--bg-main); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+                        <div style="background: var(--bg-card-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span class="badge badge-primary">PREMIUM</span>
                                     <span style="font-size: 12px; color: var(--text-muted);">Sedan Fleet</span>
                                 </div>
-                                <b id="catCountPremium" style="font-size: 16px; color: var(--surface-dark);">0 trips</b>
+                                <b id="catCountPremium" style="font-size: 16px; color: var(--text-primary);">0 trips</b>
                             </div>
                             <div style="font-size: 14px; font-weight: 800; color: var(--primary);" id="catRevPremium">₹0 Revenue</div>
                         </div>
 
                         <!-- SUV -->
-                        <div style="background: var(--bg-main); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+                        <div style="background: var(--bg-card-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span class="badge badge-warning">SUV</span>
                                     <span style="font-size: 12px; color: var(--text-muted);">6-Seater Fleet</span>
                                 </div>
-                                <b id="catCountSuv" style="font-size: 16px; color: var(--surface-dark);">0 trips</b>
+                                <b id="catCountSuv" style="font-size: 16px; color: var(--text-primary);">0 trips</b>
                             </div>
                             <div style="font-size: 14px; font-weight: 800; color: var(--primary);" id="catRevSuv">₹0 Revenue</div>
                         </div>
@@ -933,6 +983,11 @@
         let currentRideFilter = 'ALL';
 
         window.addEventListener('DOMContentLoaded', async () => {
+            // Initialize theme and render theme switcher in admin topbar
+            App.initTheme();
+            const adminThemeSlot = document.getElementById('adminThemeSlot');
+            if (adminThemeSlot) adminThemeSlot.innerHTML = App.renderThemeSelectorHTML();
+
             // Render SVG icons for UI
             renderIcons();
 
@@ -952,9 +1007,9 @@
 
         function renderIcons() {
             document.getElementById('brandCarIcon').innerHTML = App.icon('shield', 18, '#FFFFFF');
-            document.getElementById('closeSidebarIcon').innerHTML = App.icon('x', 18, '#E2E8F0');
-            document.getElementById('topbarMenuIcon').innerHTML = App.icon('menu', 18, '#0F172A');
-            document.getElementById('topbarBellIcon').innerHTML = App.icon('bell', 16, '#0F172A');
+            document.getElementById('closeSidebarIcon').innerHTML = App.icon('x', 18, 'currentColor');
+            document.getElementById('topbarMenuIcon').innerHTML = App.icon('menu', 18, 'currentColor');
+            document.getElementById('topbarBellIcon').innerHTML = App.icon('bell', 16, 'currentColor');
             
             const topbarLogoutEl = document.getElementById('topbarSignOutIcon');
             if (topbarLogoutEl) topbarLogoutEl.innerHTML = App.icon('logOut', 14, '#FFFFFF');
@@ -966,15 +1021,15 @@
             document.getElementById('navIconStats').innerHTML = App.icon('chart', 18);
 
             document.getElementById('kpiIconPassengers').innerHTML = App.icon('users', 20, '#8B5CF6');
-            document.getElementById('kpiIconDrivers').innerHTML = App.icon('shield', 20, '#D97706');
-            document.getElementById('kpiIconRides').innerHTML = App.icon('car', 20, '#0284C7');
-            document.getElementById('kpiIconCompleted').innerHTML = App.icon('checkCircle', 20, '#10B981');
-            document.getElementById('kpiIconCancelled').innerHTML = App.icon('xCircle', 20, '#EF4444');
-            document.getElementById('kpiIconRevenue').innerHTML = App.icon('rupee', 20, '#10B981');
+            document.getElementById('kpiIconDrivers').innerHTML = App.icon('shield', 20, 'var(--warning)');
+            document.getElementById('kpiIconRides').innerHTML = App.icon('car', 20, 'var(--primary)');
+            document.getElementById('kpiIconCompleted').innerHTML = App.icon('checkCircle', 20, 'var(--success)');
+            document.getElementById('kpiIconCancelled').innerHTML = App.icon('xCircle', 20, 'var(--danger)');
+            document.getElementById('kpiIconRevenue').innerHTML = App.icon('rupee', 20, 'var(--success)');
 
-            document.getElementById('statsAvgIcon').innerHTML = App.icon('car', 18, '#0284C7');
+            document.getElementById('statsAvgIcon').innerHTML = App.icon('car', 18, 'var(--primary)');
             document.getElementById('statsFulfillIcon').innerHTML = App.icon('checkCircle', 18, '#8B5CF6');
-            document.getElementById('statsCancelIcon').innerHTML = App.icon('xCircle', 18, '#EF4444');
+            document.getElementById('statsCancelIcon').innerHTML = App.icon('xCircle', 18, 'var(--danger)');
         }
 
         function toggleSidebar(open) {
@@ -1117,7 +1172,7 @@
                     <tr>
                         <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 36px;">
                             <div style="font-size: 28px; margin-bottom: 4px;">📭</div>
-                            <div style="font-weight: 700; color: var(--text-dark);">No ride activity yet</div>
+                            <div style="font-weight: 700; color: var(--text-primary);">No ride activity yet</div>
                             <div style="font-size: 12px;">Bookings made by passengers will appear here.</div>
                         </td>
                     </tr>
@@ -1135,12 +1190,12 @@
 
                 return `
                     <tr>
-                        <td>
-                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-main); border: 1px solid var(--border); padding: 3px 8px; border-radius: 6px; font-size: 12px;">
+                        <td data-label="Ride ID">
+                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-card-subtle); border: 1px solid var(--border); padding: 3px 8px; border-radius: 6px; font-size: 12px;">
                                 #${id}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Route">
                             <div class="micro-route">
                                 <div class="micro-route-point">
                                     <span class="micro-dot-green"></span>
@@ -1153,15 +1208,15 @@
                                 </div>
                             </div>
                         </td>
-                        <td style="font-weight: 800; color: var(--surface-dark);">
+                        <td data-label="Fare" style="font-weight: 800; color: var(--text-primary);">
                             ${App.formatCurrency(r.fare)}
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <span class="badge badge-${getStatusBadge(status)}" style="font-size: 11px;">
                                 ${status.replace('_', ' ')}
                             </span>
                         </td>
-                        <td style="text-align: right; font-size: 12px; color: var(--text-muted); white-space: nowrap;">
+                        <td data-label="Time" style="text-align: right; font-size: 12px; color: var(--text-muted); white-space: nowrap;">
                             ${App.formatDate(time)}
                         </td>
                     </tr>
@@ -1177,7 +1232,7 @@
                     <tr>
                         <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 48px;">
                             <div style="font-size: 32px; margin-bottom: 6px;">👥</div>
-                            <div style="font-weight: 700; color: var(--text-dark);">No passengers registered yet</div>
+                            <div style="font-weight: 700; color: var(--text-primary);">No passengers registered yet</div>
                             <div style="font-size: 12px;">Registered users will appear in this directory.</div>
                         </td>
                     </tr>
@@ -1192,33 +1247,33 @@
 
                 return `
                     <tr>
-                        <td>
-                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-main); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 12px;">
+                        <td data-label="User ID">
+                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-card-subtle); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 12px;">
                                 #${uid}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Name">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(2, 132, 199, 0.1); color: var(--primary); font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-subtle); color: var(--primary); font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 12px;">
                                     ${(p.name || 'U').charAt(0).toUpperCase()}
                                 </div>
-                                <div style="font-weight: 800; font-size: 14px; color: var(--surface-dark);">${p.name}</div>
+                                <div style="font-weight: 800; font-size: 14px; color: var(--text-primary);">${p.name}</div>
                             </div>
                         </td>
-                        <td style="font-size: 13px; color: var(--text-dark);">${p.email}</td>
-                        <td style="font-size: 13px; color: var(--text-muted);">${p.phoneNumber || '+91 98765 43210'}</td>
-                        <td>
-                            <span class="badge badge-secondary" style="font-weight: 700;">
+                        <td data-label="Email" style="font-size: 13px;">${p.email}</td>
+                        <td data-label="Phone" style="font-size: 13px; color: var(--text-muted);">${p.phoneNumber || '+91 98765 43210'}</td>
+                        <td data-label="Total Rides">
+                            <span class="badge badge-neutral" style="font-weight: 700;">
                                 ${rideCount} ${rideCount === 1 ? 'ride' : 'rides'}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <span class="badge badge-${isActive ? 'success' : 'danger'}" style="font-weight: 800;">
                                 ${isActive ? 'ACTIVE' : 'SUSPENDED'}
                             </span>
                         </td>
-                        <td style="text-align: right;">
-                            <button type="button" onclick="toggleUserStatus(${uid}, ${!isActive})" class="btn btn-sm ${isActive ? 'btn-outline' : 'btn-primary'}" style="font-weight: 700; ${isActive ? 'color: var(--danger); border-color: var(--border);' : ''}">
+                        <td data-label="Action" style="text-align: right;">
+                            <button type="button" onclick="toggleUserStatus(${uid}, ${!isActive})" class="btn btn-sm ${isActive ? 'btn-outline' : 'btn-primary'}" style="font-weight: 700;">
                                 ${isActive ? 'Suspend' : 'Activate'}
                             </button>
                         </td>
@@ -1253,7 +1308,7 @@
                     <tr>
                         <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 48px;">
                             <div style="font-size: 32px; margin-bottom: 6px;">🚕</div>
-                            <div style="font-weight: 700; color: var(--text-dark);">No driver partners registered</div>
+                            <div style="font-weight: 700; color: var(--text-primary);">No driver partners registered</div>
                             <div style="font-size: 12px;">Fleet drivers will appear here once registered.</div>
                         </td>
                     </tr>
@@ -1269,49 +1324,49 @@
 
                 return `
                     <tr>
-                        <td>
-                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-main); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 12px;">
+                        <td data-label="Driver ID">
+                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-card-subtle); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 12px;">
                                 #${uid}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Name">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); color: #D97706; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--warning-subtle); color: var(--warning); font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 12px;">
                                     ${(d.name || 'D').charAt(0).toUpperCase()}
                                 </div>
-                                <div style="font-weight: 800; font-size: 14px; color: var(--surface-dark);">${d.name}</div>
+                                <div style="font-weight: 800; font-size: 14px; color: var(--text-primary);">${d.name}</div>
                             </div>
                         </td>
-                        <td style="font-size: 13px;">
+                        <td data-label="Contact" style="font-size: 13px;">
                             <div>${d.email}</div>
                             <div style="font-size: 11px; color: var(--text-muted);">${d.phoneNumber || '+91 98765 43210'}</div>
                         </td>
-                        <td style="font-size: 13px;">
+                        <td data-label="Vehicle" style="font-size: 13px;">
                             ${d.vehicle ? `<b>${d.vehicle.model}</b>` : 'Hyundai Aura'}
-                            <div><span class="badge badge-secondary" style="font-size: 10px;">${d.vehicle ? d.vehicle.cabType : 'ECONOMY'}</span></div>
+                            <div><span class="badge badge-neutral" style="font-size: 10px;">${d.vehicle ? d.vehicle.cabType : 'ECONOMY'}</span></div>
                         </td>
-                        <td>
-                            <span class="badge badge-secondary" style="font-family: monospace; font-weight: 800; letter-spacing: 0.5px;">
+                        <td data-label="Plate & Lic">
+                            <span class="badge badge-neutral" style="font-family: monospace; font-weight: 800; letter-spacing: 0.5px;">
                                 ${d.vehicle ? d.vehicle.licensePlate : 'KL 07 AB 1234'}
                             </span>
                             <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">${d.licenseNumber || 'KL-LIC-9988'}</div>
                         </td>
-                        <td style="color: #D97706; font-weight: 800; font-size: 13px;">
+                        <td data-label="Rating" style="color: var(--warning); font-weight: 800; font-size: 13px;">
                             ★ ${rating}
                         </td>
-                        <td>
-                            <span class="badge badge-${isOnline ? 'success' : 'secondary'}" style="display: inline-flex; align-items: center; gap: 5px;">
+                        <td data-label="Duty">
+                            <span class="badge badge-${isOnline ? 'success' : 'neutral'}" style="display: inline-flex; align-items: center; gap: 5px;">
                                 <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
                                 ${isOnline ? 'ONLINE' : 'OFFLINE'}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Account">
                             <span class="badge badge-${isActive ? 'success' : 'danger'}" style="font-weight: 800;">
                                 ${isActive ? 'ACTIVE' : 'SUSPENDED'}
                             </span>
                         </td>
-                        <td style="text-align: right;">
-                            <button type="button" onclick="toggleUserStatus(${uid}, ${!isActive})" class="btn btn-sm ${isActive ? 'btn-outline' : 'btn-primary'}" style="font-weight: 700; ${isActive ? 'color: var(--danger); border-color: var(--border);' : ''}">
+                        <td data-label="Action" style="text-align: right;">
+                            <button type="button" onclick="toggleUserStatus(${uid}, ${!isActive})" class="btn btn-sm ${isActive ? 'btn-outline' : 'btn-primary'}" style="font-weight: 700;">
                                 ${isActive ? 'Suspend' : 'Activate'}
                             </button>
                         </td>
@@ -1377,7 +1432,7 @@
                     <tr>
                         <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 48px;">
                             <div style="font-size: 32px; margin-bottom: 6px;">🚗</div>
-                            <div style="font-weight: 700; color: var(--text-dark);">No matching rides found</div>
+                            <div style="font-weight: 700; color: var(--text-primary);">No matching rides found</div>
                             <div style="font-size: 12px;">Trip records will appear here as bookings occur.</div>
                         </td>
                     </tr>
@@ -1394,17 +1449,17 @@
 
                 return `
                     <tr>
-                        <td>
-                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-main); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 12px;">
+                        <td data-label="Trip #">
+                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-card-subtle); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 12px;">
                                 #${id}
                             </span>
                         </td>
-                        <td style="white-space: nowrap; font-size: 13px; color: var(--text-dark);">
+                        <td data-label="Date & Time" style="white-space: nowrap; font-size: 13px;">
                             ${App.formatDate(time)}
                         </td>
-                        <td style="font-size: 13px; font-weight: 700;">#${r.passengerId}</td>
-                        <td style="font-size: 13px;">${r.driverId ? '#' + r.driverId : '<span style="color:var(--text-muted);">Unassigned</span>'}</td>
-                        <td>
+                        <td data-label="Passenger" style="font-size: 13px; font-weight: 700;">#${r.passengerId}</td>
+                        <td data-label="Driver" style="font-size: 13px;">${r.driverId ? '#' + r.driverId : '<span style="color:var(--text-muted);">Unassigned</span>'}</td>
+                        <td data-label="Route">
                             <div class="micro-route">
                                 <div class="micro-route-point">
                                     <span class="micro-dot-green"></span>
@@ -1417,13 +1472,13 @@
                                 </div>
                             </div>
                         </td>
-                        <td>
-                            <span class="badge badge-secondary">${r.cabType || 'ECONOMY'}</span>
+                        <td data-label="Cab Type">
+                            <span class="badge badge-neutral">${r.cabType || 'ECONOMY'}</span>
                         </td>
-                        <td style="font-weight: 800; font-size: 14px; color: var(--surface-dark);">
+                        <td data-label="Fare" style="font-weight: 800; font-size: 14px; color: var(--text-primary);">
                             ${App.formatCurrency(r.fare)}
                         </td>
-                        <td>
+                        <td data-label="Status">
                             <span class="badge badge-${getStatusBadge(status)}" style="font-size: 11px;">
                                 ${status.replace('_', ' ')}
                             </span>
