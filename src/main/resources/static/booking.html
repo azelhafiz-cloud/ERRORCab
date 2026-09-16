@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Ride - ERRORCab Kochi</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .booking-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .booking-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .payment-option-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .payment-chip {
+            padding: 12px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            background: white;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-fast);
+        }
+        .payment-chip:hover {
+            border-color: #94A3B8;
+        }
+        .payment-chip.selected {
+            border-color: var(--primary);
+            background: var(--primary-subtle);
+            color: var(--primary-dark);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+        .promo-tag-pill {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #F1F5F9;
+            border: 1px dashed var(--border);
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--navy-900);
+            margin-right: 6px;
+            margin-top: 6px;
+            transition: var(--transition-fast);
+        }
+        .promo-tag-pill:hover {
+            background: var(--primary-subtle);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        /* Searching & Radar Animation */
+        .radar-box {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(2, 132, 199, 0.1);
+            border-radius: 50%;
+        }
+        .radar-box::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            animation: radarWave 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+        }
+        @keyframes radarWave {
+            0% { transform: scale(0.6); opacity: 1; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+        .driver-found-card {
+            background: #F0FDF4;
+            border: 1.5px solid var(--success-border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            text-align: left;
+            margin: 16px 0;
+            animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Topbar -->
+    <header class="topbar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <a href="/passenger-dashboard.html" class="btn btn-outline btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                Back
+            </a>
+            <div>
+                <div class="topbar-title">Book a Cab</div>
+                <div class="topbar-subtitle">Kochi Mobility Fleet</div>
+            </div>
+        </div>
+        <div class="desktop-only" style="font-size: 13px; font-weight: 700; color: var(--primary);">
+            Zero Surge Pricing
+        </div>
+    </header>
+
+    <main class="container container-wide">
+        <div class="booking-grid">
+            
+            <!-- Left Column: Route, Cab Selection & Payment Form -->
+            <div>
+                
+                <!-- 1. Route Selector Card -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h2 style="font-size: 16px; font-weight: 800; color: var(--navy-900);">1. Select Itinerary</h2>
+                        <button type="button" onclick="swapLocations()" class="btn btn-outline btn-sm" style="padding: 4px 10px;">
+                            ⇅ Swap
+                        </button>
+                    </div>
+
+                    <!-- Vertical Connected Route Indicator -->
+                    <div class="route-indicator-container">
+                        <div class="route-stem">
+                            <div class="route-dot-pickup"></div>
+                            <div class="route-line-dashed"></div>
+                            <div class="route-dot-dropoff"></div>
+                        </div>
+
+                        <div class="route-inputs">
+                            <div class="route-input-group">
+                                <span class="route-input-label">Pickup Hub</span>
+                                <select id="pickupSelect" class="route-input-select" onchange="onRouteChanged()">
+                                    <!-- Injected dynamically -->
+                                </select>
+                            </div>
+
+                            <div class="route-input-group">
+                                <span class="route-input-label">Destination</span>
+                                <select id="dropoffSelect" class="route-input-select" onchange="onRouteChanged()">
+                                    <!-- Injected dynamically -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Telemetry Stats -->
+                    <div style="display: flex; justify-content: space-between; background: var(--bg-card-subtle); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px;">
+                        <div>Calculated Distance: <b style="color: var(--navy-900);" id="distanceDisplay">9.2 km</b></div>
+                        <div>Est. Duration: <b style="color: var(--navy-900);" id="durationDisplay">24 mins</b></div>
+                    </div>
+                </div>
+
+                <!-- 2. Cab Selection Card -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <h2 style="font-size: 16px; font-weight: 800; color: var(--navy-900); margin-bottom: 14px;">2. Choose Cab Category</h2>
+                    
+                    <div class="cab-grid">
+                        <!-- Economy -->
+                        <div class="cab-card selected" id="opt-ECONOMY" onclick="selectCab('ECONOMY')">
+                            <div class="cab-card-header">
+                                <div class="cab-card-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+                                </div>
+                                <span class="cab-capacity-pill">4 Seats</span>
+                            </div>
+                            <div class="cab-card-name">Economy</div>
+                            <div class="cab-card-desc">Alto, WagonR</div>
+                            <div class="cab-card-price" id="fare-ECONOMY">₹ --</div>
+                        </div>
+
+                        <!-- Premium -->
+                        <div class="cab-card" id="opt-PREMIUM" onclick="selectCab('PREMIUM')">
+                            <div class="cab-card-header">
+                                <div class="cab-card-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                </div>
+                                <span class="cab-capacity-pill">4 Seats</span>
+                            </div>
+                            <div class="cab-card-name">Premium</div>
+                            <div class="cab-card-desc">Dzire, Aura (AC)</div>
+                            <div class="cab-card-price" id="fare-PREMIUM">₹ --</div>
+                        </div>
+
+                        <!-- SUV -->
+                        <div class="cab-card" id="opt-SUV" onclick="selectCab('SUV')">
+                            <div class="cab-card-header">
+                                <div class="cab-card-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="10" width="18" height="8" rx="2"/><path d="m5 10 2-4h10l2 4"/><circle cx="7.5" cy="18.5" r="2.5"/><circle cx="16.5" cy="18.5" r="2.5"/></svg>
+                                </div>
+                                <span class="cab-capacity-pill">6-7 Seats</span>
+                            </div>
+                            <div class="cab-card-name">SUV</div>
+                            <div class="cab-card-desc">Ertiga, Innova</div>
+                            <div class="cab-card-price" id="fare-SUV">₹ --</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Promo & Payment Card -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <h2 style="font-size: 16px; font-weight: 800; color: var(--navy-900); margin-bottom: 14px;">3. Promo & Payment</h2>
+
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <input type="text" id="promoInput" class="form-control" placeholder="Promo code (e.g. WELCOME)" style="text-transform: uppercase;">
+                        <button type="button" onclick="applyPromo()" class="btn btn-secondary" style="white-space: nowrap;">Apply</button>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">Offers:</span>
+                        <span class="promo-tag-pill" onclick="usePromo('WELCOME')">WELCOME (-₹50)</span>
+                        <span class="promo-tag-pill" onclick="usePromo('ERROR50')">ERROR50 (-₹50)</span>
+                        <span class="promo-tag-pill" onclick="usePromo('FIRST50')">FIRST50 (-₹50)</span>
+                    </div>
+
+                    <div id="promoMessage" style="font-size: 12px; margin-bottom: 16px; display: none;"></div>
+
+                    <label class="form-label">Payment Method</label>
+                    <div class="payment-option-grid">
+                        <div class="payment-chip selected" id="pay-CASH" onclick="selectPayment('CASH')">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
+                            <span>Cash</span>
+                        </div>
+                        <div class="payment-chip" id="pay-UPI" onclick="selectPayment('UPI')">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                            <span>UPI App</span>
+                        </div>
+                        <div class="payment-chip" id="pay-CARD" onclick="selectPayment('CARD')">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                            <span>Card</span>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Booking CTA -->
+                    <button type="button" id="confirmBookBtn" onclick="confirmBooking()" class="btn btn-primary btn-block btn-lg" style="font-weight: 900;">
+                        Confirm & Book Economy (₹ --)
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Simulated Map Preview -->
+            <div>
+                <div class="card" style="position: sticky; top: 80px; padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h3 style="font-size: 15px; font-weight: 800; color: var(--navy-900);">Route Telemetry</h3>
+                        <span class="badge badge-success">GPS Live</span>
+                    </div>
+
+                    <div class="map-viewport" style="height: 380px;">
+                        <canvas id="bookingMapCanvas"></canvas>
+                    </div>
+
+                    <div style="margin-top: 14px; font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                        <b>Kochi City Coordinates:</b> Renders vector road junctions across Kakkanad, Edappally, Vyttila, MG Road, and Fort Kochi without external map API keys.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Animated 4-Stage Searching & Driver Assignment Modal -->
+    <div class="modal-backdrop" id="searchingModal">
+        <div class="modal-card" style="text-align: center; max-width: 440px;">
+            
+            <!-- Stage 1 & 2: Radar Pulse -->
+            <div id="modalStageSearching">
+                <div class="radar-box">
+                    <div style="width: 44px; height: 44px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 20px; font-weight: 900; color: var(--navy-900); margin-bottom: 6px;">Finding Your Driver...</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                    Connecting with active drivers around <b id="modalPickupText">Kakkanad</b>...
+                </p>
+            </div>
+
+            <!-- Stage 3: Driver Found Card -->
+            <div id="modalStageDriverFound" style="display: none;">
+                <div class="driver-found-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span class="badge badge-success">Driver Found!</span>
+                        <span style="font-size: 13px; font-weight: 800; color: #D97706;">★ 4.8</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: var(--navy-900);">
+                            AR
+                        </div>
+                        <div>
+                            <div style="font-size: 16px; font-weight: 900; color: var(--navy-900);" id="foundDriverName">Akhil Raj</div>
+                            <div style="font-size: 12px; color: var(--text-muted);" id="foundVehicleInfo">Hyundai Aura (Titan Grey)</div>
+                            <div style="font-size: 13px; font-weight: 800; color: var(--primary); margin-top: 2px;" id="foundPlateNumber">KL 07 AB 1234</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size: 13px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px;">
+                    Driver arriving in approx. <b>3 minutes</b>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted);">
+                    Launching Live GPS Telemetry in 2 seconds...
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <a href="/passenger-dashboard.html" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="/booking.html" class="bottom-nav-item active">
+            <svg viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+            <span>Book</span>
+        </a>
+        <a href="/history.html" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>History</span>
+        </a>
+        <a href="/profile.html" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script src="/js/app.js"></script>
+    <script src="/js/map-canvas.js"></script>
+    <script>
+        const user = App.requireAuth(['PASSENGER']);
+        let simMap = null;
+        let selectedCabType = 'ECONOMY';
+        let selectedPaymentMethod = 'CASH';
+        let calculatedFares = { ECONOMY: 0, PREMIUM: 0, SUV: 0 };
+        let currentDistance = 9.2;
+        let appliedDiscount = 0;
+        let currentPromoCode = '';
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            simMap = new SimulatedMap('bookingMapCanvas');
+            await loadLocations();
+
+            // Read URL query parameters if navigated from passenger dashboard
+            const params = new URLSearchParams(window.location.search);
+            const p = params.get('pickup');
+            const d = params.get('dropoff');
+            const c = params.get('cabType');
+            const pr = params.get('promo');
+
+            if (p) document.getElementById('pickupSelect').value = p;
+            if (d) document.getElementById('dropoffSelect').value = d;
+            if (c) selectCab(c);
+            if (pr) {
+                document.getElementById('promoInput').value = pr;
+                applyPromo();
+            }
+
+            onRouteChanged();
+        });
+
+        async function loadLocations() {
+            try {
+                const locations = await App.get('/api/map/locations');
+                const pickup = document.getElementById('pickupSelect');
+                const dropoff = document.getElementById('dropoffSelect');
+
+                pickup.innerHTML = '';
+                dropoff.innerHTML = '';
+
+                locations.forEach(loc => {
+                    pickup.add(new Option(`${loc.name} (${loc.landmark || 'Kochi'})`, loc.name));
+                    dropoff.add(new Option(`${loc.name} (${loc.landmark || 'Kochi'})`, loc.name));
+                });
+
+                pickup.value = 'Kakkanad';
+                dropoff.value = 'Vyttila';
+            } catch (err) {
+                console.error('Failed to load locations:', err);
+            }
+        }
+
+        function swapLocations() {
+            const pickup = document.getElementById('pickupSelect');
+            const dropoff = document.getElementById('dropoffSelect');
+            const temp = pickup.value;
+            pickup.value = dropoff.value;
+            dropoff.value = temp;
+            onRouteChanged();
+        }
+
+        async function onRouteChanged() {
+            const pickup = document.getElementById('pickupSelect').value;
+            const dropoff = document.getElementById('dropoffSelect').value;
+
+            if (pickup === dropoff) {
+                App.showToast('Notice', 'Pickup and Dropoff cannot be the same place.', 'pin');
+                return;
+            }
+
+            if (simMap) {
+                simMap.setRoute(pickup, dropoff);
+            }
+
+            try {
+                const routeInfo = await App.get(`/api/map/distance?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}`);
+                currentDistance = routeInfo.distance;
+                document.getElementById('distanceDisplay').textContent = App.formatDistance(currentDistance);
+                document.getElementById('durationDisplay').textContent = App.formatDuration(routeInfo.durationMinutes);
+
+                const [ecoRes, premRes, suvRes] = await Promise.all([
+                    App.get(`/api/map/estimate-fare?distance=${currentDistance}&cabType=ECONOMY`),
+                    App.get(`/api/map/estimate-fare?distance=${currentDistance}&cabType=PREMIUM`),
+                    App.get(`/api/map/estimate-fare?distance=${currentDistance}&cabType=SUV`)
+                ]);
+
+                calculatedFares.ECONOMY = ecoRes.fare;
+                calculatedFares.PREMIUM = premRes.fare;
+                calculatedFares.SUV = suvRes.fare;
+
+                updateFareDisplays();
+            } catch (err) {
+                console.error('Route calculation error:', err);
+            }
+        }
+
+        function updateFareDisplays() {
+            ['ECONOMY', 'PREMIUM', 'SUV'].forEach(type => {
+                let base = calculatedFares[type];
+                let finalFare = Math.max(30, base - appliedDiscount);
+                const elem = document.getElementById(`fare-${type}`);
+                if (appliedDiscount > 0) {
+                    elem.innerHTML = `<s style="font-size: 13px; color: #94A3B8;">${App.formatCurrency(base)}</s> ${App.formatCurrency(finalFare)}`;
+                } else {
+                    elem.textContent = App.formatCurrency(finalFare);
+                }
+            });
+
+            const finalSelected = Math.max(30, calculatedFares[selectedCabType] - appliedDiscount);
+            document.getElementById('confirmBookBtn').textContent = `Confirm & Book ${selectedCabType} (${App.formatCurrency(finalSelected)})`;
+        }
+
+        function selectCab(type) {
+            selectedCabType = type;
+            document.querySelectorAll('.cab-card').forEach(el => el.classList.remove('selected'));
+            document.getElementById(`opt-${type}`).classList.add('selected');
+            updateFareDisplays();
+        }
+
+        function selectPayment(method) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.payment-chip').forEach(el => el.classList.remove('selected'));
+            document.getElementById(`pay-${method}`).classList.add('selected');
+        }
+
+        function usePromo(code) {
+            document.getElementById('promoInput').value = code;
+            applyPromo();
+        }
+
+        async function applyPromo() {
+            const code = document.getElementById('promoInput').value.trim().toUpperCase();
+            const msgEl = document.getElementById('promoMessage');
+
+            if (!code) {
+                appliedDiscount = 0;
+                currentPromoCode = '';
+                msgEl.style.display = 'none';
+                updateFareDisplays();
+                return;
+            }
+
+            const fare = calculatedFares[selectedCabType];
+            try {
+                const res = await App.get(`/api/promos/validate?code=${encodeURIComponent(code)}&amount=${fare}`);
+                if (res.valid) {
+                    appliedDiscount = res.discount;
+                    currentPromoCode = code;
+                    msgEl.style.display = 'block';
+                    msgEl.style.color = 'var(--success-dark)';
+                    msgEl.innerHTML = `✓ Promo <b>${code}</b> applied! Saved ${App.formatCurrency(res.discount)}.`;
+                    App.showToast('Promo Code Applied', `You saved ${App.formatCurrency(res.discount)}!`, 'tag');
+                } else {
+                    appliedDiscount = 0;
+                    currentPromoCode = '';
+                    msgEl.style.display = 'block';
+                    msgEl.style.color = 'var(--danger-dark)';
+                    msgEl.textContent = res.message || 'Invalid promo code';
+                }
+            } catch (err) {
+                appliedDiscount = 0;
+                currentPromoCode = '';
+                msgEl.style.display = 'block';
+                msgEl.style.color = 'var(--danger-dark)';
+                msgEl.textContent = 'Could not validate promo code';
+            }
+            updateFareDisplays();
+        }
+
+        async function confirmBooking() {
+            const pickup = document.getElementById('pickupSelect').value;
+            const dropoff = document.getElementById('dropoffSelect').value;
+
+            if (pickup === dropoff) {
+                App.showToast('Invalid Route', 'Pickup and Dropoff cannot be identical.', 'pin');
+                return;
+            }
+
+            const btn = document.getElementById('confirmBookBtn');
+            btn.disabled = true;
+            btn.textContent = 'Connecting...';
+
+            try {
+                // 1. Send Booking Request to Backend
+                const bookingReq = {
+                    passengerId: user.userId,
+                    pickup: pickup,
+                    destination: dropoff,
+                    pickupLocation: pickup,
+                    dropoffLocation: dropoff,
+                    cabType: selectedCabType,
+                    promoCode: currentPromoCode
+                };
+
+                const booking = await App.post('/api/bookings', bookingReq);
+
+                // 2. Stage 1: Open Searching Modal
+                document.getElementById('modalPickupText').textContent = pickup;
+                App.openModal('searchingModal');
+
+                // 3. Stage 2 & 3: Simulate Driver Finding & Display Driver Info
+                setTimeout(async () => {
+                    try {
+                        const updated = await App.get(`/api/bookings/${booking.bookingId || booking.id}`);
+                        
+                        document.getElementById('modalStageSearching').style.display = 'none';
+                        const driverFoundStage = document.getElementById('modalStageDriverFound');
+                        driverFoundStage.style.display = 'block';
+
+                        if (updated.driverName) {
+                            document.getElementById('foundDriverName').textContent = updated.driverName;
+                        }
+                        if (updated.vehicleModel) {
+                            document.getElementById('foundVehicleInfo').textContent = updated.vehicleModel;
+                        }
+                        if (updated.vehiclePlateNumber) {
+                            document.getElementById('foundPlateNumber').textContent = updated.vehiclePlateNumber;
+                        }
+
+                        // Stage 4: Seamless transition to Live Tracking screen
+                        setTimeout(() => {
+                            window.location.href = `/tracking.html?id=${booking.bookingId || booking.id}`;
+                        }, 2200);
+                    } catch (e) {
+                        window.location.href = `/tracking.html?id=${booking.bookingId || booking.id}`;
+                    }
+                }, 2000);
+
+            } catch (err) {
+                btn.disabled = false;
+                updateFareDisplays();
+                App.showToast('Booking Failed', err.message || 'Could not complete booking', 'danger');
+            }
+        }
+    </script>
+</body>
+</html>

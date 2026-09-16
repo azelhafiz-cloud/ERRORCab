@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - ERRORCab</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            background: radial-gradient(circle at 10% 20%, #0F2547 0%, #070D1D 90%);
+        }
+        .auth-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 40px 36px;
+            max-width: 460px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: cardEntrance 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: scale(0.95) translateY(12px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .demo-chip-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 20px 0;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px;
+        }
+        .demo-pill {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        .demo-pill:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateX(2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            
+            <!-- Brand Header -->
+            <div style="text-align: center; margin-bottom: 28px;">
+                <div style="display: inline-flex; width: 50px; height: 50px; background: linear-gradient(135deg, var(--navy-900) 0%, var(--primary) 100%); border-radius: var(--radius-md); align-items: center; justify-content: center; color: white; margin-bottom: 12px; box-shadow: var(--shadow-sm);">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                        <circle cx="7" cy="17" r="2"/>
+                        <path d="M9 17h6"/>
+                        <circle cx="17" cy="17" r="2"/>
+                    </svg>
+                </div>
+                <h1 style="font-size: 24px; font-weight: 900; color: var(--navy-900); letter-spacing: -0.5px;">Sign in to ERRORCab</h1>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Book Smart. Ride Safe. • Kerala Network</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" class="form-control" placeholder="name@example.com" required autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                        <button type="button" class="password-toggle-btn" id="togglePassBtn" onclick="App.togglePassword('password', 'togglePassBtn')" title="Toggle password visibility">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="errorMessage" style="display: none; padding: 10px 14px; background: var(--danger-subtle); border: 1px solid var(--danger-border); color: var(--danger-dark); border-radius: var(--radius-md); font-size: 12px; font-weight: 600; margin-bottom: 16px;"></div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-block btn-lg" style="margin-top: 6px;">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- 1-Click Viva Demo Fill Chips -->
+            <div class="demo-chip-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">⚡ College Viva 1-Click Demo:</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">password123</span>
+                </div>
+
+                <button type="button" class="demo-pill" onclick="quickFill('passenger@example.com', 'password123')">
+                    <span>Passenger: <b>Rahul Nair</b></span>
+                    <span class="badge badge-primary">PASSENGER</span>
+                </button>
+
+                <button type="button" class="demo-pill" onclick="quickFill('driver@example.com', 'password123')">
+                    <span>Driver: <b>Akhil Raj</b> (KL 07 AB 1234)</span>
+                    <span class="badge badge-success">DRIVER</span>
+                </button>
+
+                <button type="button" class="demo-pill" onclick="quickFill('admin@example.com', 'password123')">
+                    <span>Platform Admin: <b>Operations Hub</b></span>
+                    <span class="badge badge-warning">ADMIN</span>
+                </button>
+            </div>
+
+            <!-- Footer Links -->
+            <div style="text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted);">
+                Don't have an account? <a href="/register.html" style="color: var(--primary); font-weight: 700; text-decoration: none;">Register now</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        function quickFill(email, pass) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = pass;
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const errEl = document.getElementById('errorMessage');
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            btn.disabled = true;
+            btn.textContent = 'Authenticating...';
+            errEl.style.display = 'none';
+
+            try {
+                const user = await App.post('/api/auth/login', { email, password });
+                
+                // Store user session in localStorage
+                App.setUser({
+                    userId: user.id || user.userId,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    phone: user.phone || user.phoneNumber,
+                    sessionToken: user.sessionToken
+                });
+
+                App.showToast('Login Successful', `Welcome back, ${user.name}!`, 'check');
+
+                setTimeout(() => {
+                    if (user.role === 'PASSENGER') window.location.href = '/passenger-dashboard.html';
+                    else if (user.role === 'DRIVER') window.location.href = '/driver-dashboard.html';
+                    else if (user.role === 'ADMIN') window.location.href = '/admin-dashboard.html';
+                    else window.location.href = '/passenger-dashboard.html';
+                }, 400);
+
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = 'Sign In';
+                errEl.textContent = err.message || 'Invalid email or password.';
+                errEl.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

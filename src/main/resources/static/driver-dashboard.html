@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Partner Operations - ERRORCab Kochi</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Duty Switch */
+        .duty-switch-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #CBD5E1;
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Incoming Dispatch Card */
+        .dispatch-offer-card {
+            background: #FFFBEB;
+            border: 2px solid #F59E0B;
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.2);
+            position: relative;
+            overflow: hidden;
+            animation: pulseOffer 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseOffer {
+            0%, 100% { box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.45); }
+        }
+
+        .countdown-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: #F59E0B;
+            width: 100%;
+            animation: countdown 30s linear forwards;
+        }
+
+        @keyframes countdown {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        /* Active Trip Panel */
+        .active-job-panel {
+            background: linear-gradient(135deg, #0B132B 0%, #1E293B 100%);
+            color: white;
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .active-job-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0284C7, #38BDF8, #10B981);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }
+
+        .micro-route-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .micro-route-vertical .point {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .micro-route-vertical .line {
+            width: 2px;
+            height: 14px;
+            background: rgba(255, 255, 255, 0.25);
+            margin-left: 4px;
+        }
+
+        .dot-green {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10B981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+            flex-shrink: 0;
+        }
+
+        .dot-cyan {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            background: #38BDF8;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Topbar -->
+    <header class="topbar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 38px; height: 38px; border-radius: var(--radius-md); background: linear-gradient(135deg, #0284C7, #0EA5E9); display: flex; align-items: center; justify-content: center; color: white;">
+                <span id="topbarCarIcon"></span>
+            </div>
+            <div>
+                <div style="font-size: 18px; font-weight: 800; letter-spacing: -0.3px; color: var(--text-dark);">
+                    ERRORCab Driver Partner
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;" id="driverVehicleInfo">
+                    Fleet Driver • Kochi Urban Zone
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <!-- Duty Status Toggle Switch -->
+            <div class="duty-switch-container">
+                <span id="dutyLabel" style="font-size: 12px; font-weight: 800; letter-spacing: 0.5px; color: #10B981;">ONLINE</span>
+                <label class="switch">
+                    <input type="checkbox" id="dutyCheckbox" checked onchange="toggleDutyStatus()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button onclick="App.logout()" class="btn btn-outline btn-sm">Sign Out</button>
+        </div>
+    </header>
+
+    <main class="container" style="max-width: 1060px; padding-bottom: 80px; padding-top: 24px;">
+        
+        <!-- Welcome Driver Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
+            <div>
+                <h1 style="font-size: 26px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px;" id="driverGreeting">
+                    Welcome back, Driver!
+                </h1>
+                <p style="color: var(--text-muted); font-size: 14px; margin-top: 2px;">
+                    Kochi City Dispatch • Ready to serve passenger bookings
+                </p>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="background: white; border: 1px solid var(--border); padding: 8px 18px; border-radius: var(--radius-full); font-weight: 800; font-size: 13px; color: #D97706; display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow-sm);">
+                    <span id="ratingStarIcon"></span> <span id="driverRatingScore">4.8</span> Driver Score
+                </div>
+            </div>
+        </div>
+
+        <!-- Incoming Ride Request Alert (Visible when ride is searching & driver is idle) -->
+        <div id="incomingRideContainer" style="display: none;">
+            <div class="dispatch-offer-card">
+                <div class="countdown-bar"></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="live-pulse" style="background: #F59E0B; box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);"></span>
+                        <span style="font-size: 12px; font-weight: 900; color: #B45309; text-transform: uppercase; letter-spacing: 0.5px;">
+                            ⚡ Incoming Dispatch Offer
+                        </span>
+                    </div>
+                    <span class="badge badge-warning" id="incomingCabType" style="font-weight: 800;">ECONOMY</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <div style="font-size: 17px; font-weight: 800; color: var(--surface-dark); margin-bottom: 6px;">
+                            📍 <span id="incomingPickup">Kakkanad</span> ➔ 🏁 <span id="incomingDropoff">Vyttila</span>
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-muted);">
+                            Estimated Earnings: <b style="color: var(--success); font-size: 17px; font-weight: 900;" id="incomingFare">₹210</b>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" onclick="acceptIncomingRide()" class="btn btn-primary" style="padding: 10px 24px; font-weight: 800; background: var(--success); border-color: var(--success); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);" id="acceptBtnSlot">
+                            Accept Trip
+                        </button>
+                        <button type="button" onclick="rejectIncomingRide()" class="btn btn-secondary" style="padding: 10px 18px; font-weight: 700;">
+                            Decline
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Trip Management Panel (Visible when driver has an assigned active ride) -->
+        <div id="activeTripContainer" style="display: none;">
+            <div class="active-job-panel">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="live-pulse"></span>
+                            <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.5px; color: #38BDF8; text-transform: uppercase;">
+                                Active Trip Dispatch In Progress
+                            </span>
+                        </div>
+                        <div style="font-size: 20px; font-weight: 800; margin-top: 6px; letter-spacing: -0.3px;">
+                            <span id="activeTripPickup">Pickup</span> ➔ <span id="activeTripDropoff">Dropoff</span>
+                        </div>
+                    </div>
+                    <span id="activeTripStatusBadge" class="badge badge-success" style="padding: 6px 14px; font-size: 12px; font-weight: 800;">
+                        DRIVER ASSIGNED
+                    </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; background: rgba(255,255,255,0.06); padding: 18px; border-radius: var(--radius-lg); margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.08);">
+                    <div>
+                        <div style="font-size: 11px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Booking Identifier</div>
+                        <div style="font-size: 16px; font-weight: 800; margin-top: 2px;" id="activeTripId">#--</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Fare Payout Due</div>
+                        <div style="font-size: 16px; font-weight: 900; color: #38BDF8; margin-top: 2px;" id="activeTripFare">₹0</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Customer Hotline</div>
+                        <a href="tel:+919876543210" style="color: white; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; margin-top: 2px;" id="callCustomerLink">
+                            <span id="phoneIconSlot"></span> +91 98765 43210
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Stage Transition Controls -->
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button type="button" id="btnArrive" onclick="updateActiveStage('DRIVER_ARRIVING')" class="btn btn-primary" style="flex: 1; font-weight: 800; height: 48px;">
+                        1. Arrived at Pickup Location 📍
+                    </button>
+                    <button type="button" id="btnStart" onclick="updateActiveStage('RIDE_STARTED')" class="btn btn-primary" style="flex: 1; font-weight: 800; height: 48px; display: none; background: #0284C7;">
+                        2. Verify Passenger OTP & Start 🚀
+                    </button>
+                    <button type="button" id="btnComplete" onclick="updateActiveStage('RIDE_COMPLETED')" class="btn btn-primary" style="flex: 1; font-weight: 800; height: 48px; display: none; background: var(--success);">
+                        3. End & Complete Ride 🏁
+                    </button>
+                    <a id="btnDriverTrack" href="/tracking.html" class="btn btn-secondary" style="background: rgba(255,255,255,0.12); color: white; border: none; font-weight: 700; height: 48px; display: flex; align-items: center; gap: 6px;">
+                        Live GPS Map 🗺️
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Driver KPI Cards -->
+        <div class="grid grid-4" style="margin-bottom: 28px;">
+            <div class="card stat-card">
+                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success); font-weight: 900; font-size: 20px;">
+                    ₹
+                </div>
+                <div>
+                    <div class="stat-value" id="kpiTodayEarnings" style="font-size: 22px;">₹0</div>
+                    <div class="stat-label">Today's Earnings</div>
+                </div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="stat-icon" style="background: rgba(2, 132, 199, 0.1); color: var(--primary);">
+                    <span id="kpiCheckIcon"></span>
+                </div>
+                <div>
+                    <div class="stat-value" id="kpiCompletedTrips" style="font-size: 22px;">0</div>
+                    <div class="stat-label">Trips Completed</div>
+                </div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                    <span id="kpiStarIcon"></span>
+                </div>
+                <div>
+                    <div class="stat-value" id="kpiRating" style="font-size: 22px;">4.8</div>
+                    <div class="stat-label">Driver Rating</div>
+                </div>
+            </div>
+
+            <div class="card stat-card">
+                <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #8B5CF6;">
+                    <span id="kpiShieldIcon"></span>
+                </div>
+                <div>
+                    <div class="stat-value" style="font-size: 22px;">98%</div>
+                    <div class="stat-label">Acceptance Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Trips Audit Table -->
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0;">Completed Trips & Payouts Log</h2>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Recent passenger rides fulfilled across Kochi</p>
+                </div>
+                <a href="/history.html" style="font-size: 13px; color: var(--primary); font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                    Full Audit History ➔
+                </a>
+            </div>
+
+            <div class="table-container">
+                <table class="table" style="margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th>Trip #</th>
+                            <th>Time</th>
+                            <th>Route</th>
+                            <th>Cab Type</th>
+                            <th>Payout (₹)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="driverTripsBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 36px;">
+                                <div class="loading-spinner" style="margin: 0 auto 10px;"></div>
+                                Loading trip records...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="/js/app.js"></script>
+    <script>
+        const user = App.requireAuth(['DRIVER']);
+        let activeTrip = null;
+        let incomingTrip = null;
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Render icons
+            document.getElementById('topbarCarIcon').innerHTML = App.icon('car', 20, '#FFFFFF');
+            document.getElementById('ratingStarIcon').innerHTML = App.icon('star', 16, '#D97706');
+            document.getElementById('phoneIconSlot').innerHTML = App.icon('phone', 14, '#38BDF8');
+            document.getElementById('kpiCheckIcon').innerHTML = App.icon('check', 18, '#0284C7');
+            document.getElementById('kpiStarIcon').innerHTML = App.icon('star', 18, '#F59E0B');
+            document.getElementById('kpiShieldIcon').innerHTML = App.icon('shield', 18, '#8B5CF6');
+            document.getElementById('acceptBtnSlot').innerHTML = `${App.icon('check', 16, '#FFFFFF')} Accept Trip`;
+
+            if (user) {
+                document.getElementById('driverGreeting').textContent = `Welcome back, ${user.name}!`;
+                await loadDriverDetails();
+                await refreshDriverState();
+
+                // Poll every 3 seconds for new requests and active trip status updates
+                setInterval(refreshDriverState, 3000);
+            }
+        });
+
+        async function loadDriverDetails() {
+            try {
+                const driver = await App.get(`/api/drivers/${user.userId}`);
+                if (driver && driver.vehicle) {
+                    document.getElementById('driverVehicleInfo').textContent = 
+                        `${driver.vehicle.model} (${driver.vehicle.licensePlate}) • ${driver.vehicle.cabType}`;
+                }
+                const rating = (driver.rating || 4.8).toFixed(1);
+                document.getElementById('driverRatingScore').textContent = rating;
+                document.getElementById('kpiRating').textContent = rating;
+                
+                const isAvail = driver.isAvailable !== false;
+                document.getElementById('dutyCheckbox').checked = isAvail;
+                updateDutyUI(isAvail);
+            } catch (e) {
+                console.error('Error fetching driver details:', e);
+            }
+        }
+
+        async function toggleDutyStatus() {
+            const checkbox = document.getElementById('dutyCheckbox');
+            const isOnline = checkbox.checked;
+            try {
+                await App.post(`/api/drivers/${user.userId}/toggle-availability`);
+                updateDutyUI(isOnline);
+                App.showToast('Duty Status', isOnline ? 'You are now ONLINE for rides' : 'You are OFFLINE', isOnline ? 'check' : 'shield');
+                refreshDriverState();
+            } catch (err) {
+                checkbox.checked = !isOnline;
+                App.showToast('Error', 'Failed to update duty status', 'alertTriangle');
+            }
+        }
+
+        function updateDutyUI(isOnline) {
+            const label = document.getElementById('dutyLabel');
+            if (isOnline) {
+                label.textContent = 'ONLINE';
+                label.style.color = '#10B981';
+            } else {
+                label.textContent = 'OFFLINE';
+                label.style.color = '#64748B';
+            }
+        }
+
+        async function refreshDriverState() {
+            const isOnline = document.getElementById('dutyCheckbox').checked;
+
+            try {
+                // 1. Check if Driver has an active trip
+                const activeRes = await App.get(`/api/bookings/active/driver/${user.userId}`);
+                const hasActive = activeRes && (activeRes.bookingId || activeRes.id);
+                if (hasActive) {
+                    activeTrip = activeRes;
+                    renderActiveTrip(activeRes);
+                    document.getElementById('incomingRideContainer').style.display = 'none';
+                } else {
+                    activeTrip = null;
+                    document.getElementById('activeTripContainer').style.display = 'none';
+
+                    // 2. If online and no active trip, check for incoming rides
+                    if (isOnline) {
+                        checkForIncomingRides();
+                    } else {
+                        document.getElementById('incomingRideContainer').style.display = 'none';
+                    }
+                }
+
+                // 3. Load Trip History & Earnings
+                const history = await App.get(`/api/bookings/driver/${user.userId}`);
+                if (Array.isArray(history)) {
+                    const completed = history.filter(b => b.status === 'RIDE_COMPLETED');
+                    document.getElementById('kpiCompletedTrips').textContent = completed.length;
+                    
+                    const totalEarnings = completed.reduce((sum, b) => sum + (b.fare || 0), 0);
+                    document.getElementById('kpiTodayEarnings').textContent = App.formatCurrency(totalEarnings);
+
+                    renderTripHistory(history.slice(0, 5));
+                }
+
+            } catch (err) {
+                console.error('Error refreshing driver state:', err);
+            }
+        }
+
+        async function checkForIncomingRides() {
+            try {
+                const available = await App.get('/api/drivers/available-rides');
+                if (Array.isArray(available) && available.length > 0) {
+                    incomingTrip = available[0];
+                    document.getElementById('incomingPickup').textContent = incomingTrip.pickupLocation || incomingTrip.pickup;
+                    document.getElementById('incomingDropoff').textContent = incomingTrip.dropoffLocation || incomingTrip.dropoff;
+                    document.getElementById('incomingFare').textContent = App.formatCurrency(incomingTrip.fare);
+                    document.getElementById('incomingCabType').textContent = incomingTrip.cabType;
+                    document.getElementById('incomingRideContainer').style.display = 'block';
+                } else {
+                    incomingTrip = null;
+                    document.getElementById('incomingRideContainer').style.display = 'none';
+                }
+            } catch (e) {}
+        }
+
+        async function acceptIncomingRide() {
+            if (!incomingTrip) return;
+            const tripId = incomingTrip.bookingId || incomingTrip.id;
+            try {
+                await App.post(`/api/drivers/accept/${tripId}?driverId=${user.userId}`);
+                App.showToast('Ride Accepted', 'Trip assigned to you. Drive safely!', 'check');
+                document.getElementById('incomingRideContainer').style.display = 'none';
+                refreshDriverState();
+            } catch (err) {
+                App.showToast('Acceptance Failed', err.message || 'Ride was taken or unavailable', 'alertTriangle');
+                refreshDriverState();
+            }
+        }
+
+        async function rejectIncomingRide() {
+            if (!incomingTrip) return;
+            const tripId = incomingTrip.bookingId || incomingTrip.id;
+            try {
+                await App.post(`/api/drivers/reject/${tripId}?driverId=${user.userId}`);
+                document.getElementById('incomingRideContainer').style.display = 'none';
+                App.showToast('Declined', 'Ride offer declined', 'bell');
+                incomingTrip = null;
+            } catch (e) {}
+        }
+
+        function renderActiveTrip(trip) {
+            const container = document.getElementById('activeTripContainer');
+            container.style.display = 'block';
+
+            const id = trip.bookingId || trip.id;
+            document.getElementById('activeTripId').textContent = `#${id}`;
+            document.getElementById('activeTripPickup').textContent = trip.pickupLocation || trip.pickup;
+            document.getElementById('activeTripDropoff').textContent = trip.dropoffLocation || trip.dropoff;
+            document.getElementById('activeTripFare').textContent = App.formatCurrency(trip.fare);
+            
+            const badge = document.getElementById('activeTripStatusBadge');
+            badge.textContent = (trip.status || '').replace('_', ' ');
+
+            document.getElementById('btnDriverTrack').href = `/tracking.html?id=${id}`;
+
+            const btnArrive = document.getElementById('btnArrive');
+            const btnStart = document.getElementById('btnStart');
+            const btnComplete = document.getElementById('btnComplete');
+
+            btnArrive.style.display = 'none';
+            btnStart.style.display = 'none';
+            btnComplete.style.display = 'none';
+
+            if (trip.status === 'DRIVER_ASSIGNED') {
+                btnArrive.style.display = 'inline-block';
+            } else if (trip.status === 'DRIVER_ARRIVING') {
+                btnStart.style.display = 'inline-block';
+            } else if (trip.status === 'RIDE_STARTED') {
+                btnComplete.style.display = 'inline-block';
+            }
+        }
+
+        async function updateActiveStage(newStatus) {
+            if (!activeTrip) return;
+            const id = activeTrip.bookingId || activeTrip.id;
+
+            if (newStatus === 'RIDE_STARTED') {
+                const entered = prompt('Please enter Passenger Start OTP (default 4921):', '4921');
+                if (!entered) return;
+            }
+
+            try {
+                await App.put(`/api/bookings/${id}/status`, { status: newStatus });
+                App.showToast('Updated', `Ride status updated to ${newStatus.replace('_', ' ')}`, 'check');
+                refreshDriverState();
+            } catch (err) {
+                App.showToast('Error', err.message || 'Failed to update stage', 'alertTriangle');
+            }
+        }
+
+        function renderTripHistory(trips) {
+            const tbody = document.getElementById('driverTripsBody');
+            if (!trips || trips.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">No trips recorded yet.</td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = trips.map(t => {
+                const id = t.bookingId || t.id;
+                const time = t.bookingTime || t.createdAt;
+                const pickup = t.pickupLocation || t.pickup;
+                const dropoff = t.dropoffLocation || t.dropoff;
+
+                return `
+                    <tr>
+                        <td>
+                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-main); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 13px;">
+                                #${id}
+                            </span>
+                        </td>
+                        <td style="white-space: nowrap; font-size: 13px;">${App.formatDate(time)}</td>
+                        <td style="font-size: 13px;"><b>${pickup}</b> ➔ ${dropoff}</td>
+                        <td><span class="badge badge-secondary">${t.cabType || 'Cab'}</span></td>
+                        <td style="font-weight: 800; font-size: 14px; color: var(--surface-dark);">${App.formatCurrency(t.fare)}</td>
+                        <td><span class="badge badge-${t.status === 'RIDE_COMPLETED' ? 'success' : 'secondary'}">${t.status.replace('_', ' ')}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

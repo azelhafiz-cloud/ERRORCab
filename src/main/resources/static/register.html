@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create an Account - ERRORCab</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background: radial-gradient(circle at 10% 20%, #0F2547 0%, #070D1D 90%);
+        }
+        .auth-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 36px 32px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: cardEntrance 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: scale(0.95) translateY(12px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .role-tabs {
+            display: flex;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            margin-bottom: 24px;
+        }
+        .role-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 800;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .role-tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-xs);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            
+            <!-- Brand Header -->
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="display: inline-flex; width: 44px; height: 44px; background: linear-gradient(135deg, var(--navy-900) 0%, var(--primary) 100%); border-radius: var(--radius-md); align-items: center; justify-content: center; color: white; margin-bottom: 10px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                        <circle cx="7" cy="17" r="2"/>
+                        <path d="M9 17h6"/>
+                        <circle cx="17" cy="17" r="2"/>
+                    </svg>
+                </div>
+                <h1 style="font-size: 22px; font-weight: 900; color: var(--navy-900); letter-spacing: -0.4px;">Join ERRORCab</h1>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">Kerala's Premier Cab Platform</p>
+            </div>
+
+            <!-- Role Selector Tabs -->
+            <div class="role-tabs">
+                <div class="role-tab active" id="tabPassenger" onclick="switchRole('PASSENGER')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Passenger
+                </div>
+                <div class="role-tab" id="tabDriver" onclick="switchRole('DRIVER')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.93" y1="19.07" x2="9.88" y2="14.12"/><line x1="19.07" y1="19.07" x2="14.12" y2="14.12"/></svg>
+                    Driver Partner
+                </div>
+            </div>
+
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label" for="regName">Full Name</label>
+                    <input type="text" id="regName" class="form-control" placeholder="e.g. Anand Krishna" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="regEmail">Email Address</label>
+                    <input type="email" id="regEmail" class="form-control" placeholder="name@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="regPhone">Mobile Phone (+91)</label>
+                    <input type="tel" id="regPhone" class="form-control" placeholder="+91 98765 43210" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="regPassword">Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="regPassword" class="form-control" placeholder="At least 6 characters" required>
+                        <button type="button" class="password-toggle-btn" id="toggleRegPass" onclick="App.togglePassword('regPassword', 'toggleRegPass')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Driver-Specific Fields -->
+                <div id="driverSpecificFields" style="display: none; padding-top: 10px; border-top: 1px dashed var(--border); margin-top: 10px;">
+                    <div class="form-group">
+                        <label class="form-label" for="licenseNumber">Driving License Number</label>
+                        <input type="text" id="licenseNumber" class="form-control" placeholder="e.g. KL-07-20210012345">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="vehicleModel">Vehicle Model</label>
+                            <input type="text" id="vehicleModel" class="form-control" placeholder="e.g. Hyundai Aura">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="licensePlate">Plate Number</label>
+                            <input type="text" id="licensePlate" class="form-control" placeholder="e.g. KL 07 AB 1234" style="text-transform: uppercase;">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="cabType">Cab Category</label>
+                        <select id="cabType" class="form-control">
+                            <option value="ECONOMY">Economy (Hatchback)</option>
+                            <option value="PREMIUM" selected>Premium (Sedan)</option>
+                            <option value="SUV">SUV (6-7 Seater)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="regError" style="display: none; padding: 10px 14px; background: var(--danger-subtle); border: 1px solid var(--danger-border); color: var(--danger-dark); border-radius: var(--radius-md); font-size: 12px; font-weight: 600; margin-bottom: 16px;"></div>
+
+                <button type="submit" id="regBtn" class="btn btn-primary btn-block btn-lg" style="margin-top: 8px;">
+                    Create Account
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted);">
+                Already registered? <a href="/login.html" style="color: var(--primary); font-weight: 700; text-decoration: none;">Sign in here</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        let currentRole = 'PASSENGER';
+
+        function switchRole(role) {
+            currentRole = role;
+            const driverFields = document.getElementById('driverSpecificFields');
+            const tabP = document.getElementById('tabPassenger');
+            const tabD = document.getElementById('tabDriver');
+
+            if (role === 'DRIVER') {
+                tabD.classList.add('active');
+                tabP.classList.remove('active');
+                driverFields.style.display = 'block';
+            } else {
+                tabP.classList.add('active');
+                tabD.classList.remove('active');
+                driverFields.style.display = 'none';
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const btn = document.getElementById('regBtn');
+            const errEl = document.getElementById('regError');
+            
+            btn.disabled = true;
+            btn.textContent = 'Creating Account...';
+            errEl.style.display = 'none';
+
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const password = document.getElementById('regPassword').value;
+
+            try {
+                let user = null;
+                if (currentRole === 'PASSENGER') {
+                    user = await App.post('/api/auth/register/passenger', {
+                        name, email, phone, password
+                    });
+                } else {
+                    const licenseNumber = document.getElementById('licenseNumber').value.trim() || 'KL-LIC-9988';
+                    const vehicleModel = document.getElementById('vehicleModel').value.trim() || 'Hyundai Aura';
+                    const licensePlate = document.getElementById('licensePlate').value.trim() || 'KL 07 AB 1234';
+                    const cabType = document.getElementById('cabType').value;
+
+                    user = await App.post('/api/auth/register/driver', {
+                        name, email, phone, password, licenseNumber, vehicleModel, licensePlate, cabType
+                    });
+                }
+
+                App.setUser({
+                    userId: user.id || user.userId,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    phone: user.phone || user.phoneNumber,
+                    sessionToken: user.sessionToken
+                });
+
+                App.showToast('Account Created', `Welcome to ERRORCab, ${user.name}!`, 'check');
+                setTimeout(() => {
+                    if (currentRole === 'DRIVER') window.location.href = '/driver-dashboard.html';
+                    else window.location.href = '/passenger-dashboard.html';
+                }, 500);
+
+            } catch (err) {
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+                errEl.textContent = err.message || 'Registration failed. Please check inputs.';
+                errEl.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

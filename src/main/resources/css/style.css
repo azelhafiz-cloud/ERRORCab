@@ -1,0 +1,237 @@
+/* ==========================================================================
+   ERRORCab - Modern Indian Mobility Platform Theme
+   ========================================================================== */
+
+.root {
+    -fx-font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #F8FAFC;
+}
+
+/* Typography */
+.heading-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F172A;
+}
+
+.heading-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #64748B;
+}
+
+.section-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+}
+
+/* Cards */
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 12, 0, 0, 4);
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+}
+
+.card-elevated {
+    -fx-background-color: white;
+    -fx-background-radius: 16px;
+    -fx-padding: 24px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.08), 20, 0, 0, 8);
+}
+
+.ride-timeline-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12px;
+    -fx-padding: 16px 20px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+}
+
+/* Modern Rounded Buttons */
+.button {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 18px;
+    -fx-cursor: hand;
+}
+
+.btn-primary {
+    -fx-background-color: #10B981;
+    -fx-text-fill: white;
+}
+.btn-primary:hover {
+    -fx-background-color: #059669;
+}
+.btn-primary:pressed {
+    -fx-background-color: #047857;
+}
+
+.btn-secondary {
+    -fx-background-color: #F1F5F9;
+    -fx-text-fill: #334155;
+    -fx-border-color: #CBD5E1;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+}
+.btn-secondary:hover {
+    -fx-background-color: #E2E8F0;
+}
+
+.btn-danger {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #DC2626;
+    -fx-border-color: #FCA5A5;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+}
+.btn-danger:hover {
+    -fx-background-color: #EF4444;
+    -fx-text-fill: white;
+}
+
+.btn-accent {
+    -fx-background-color: #F59E0B;
+    -fx-text-fill: white;
+}
+.btn-accent:hover {
+    -fx-background-color: #D97706;
+}
+
+.btn-dark {
+    -fx-background-color: #0F172A;
+    -fx-text-fill: white;
+}
+.btn-dark:hover {
+    -fx-background-color: #1E293B;
+}
+
+/* Quick Fill Demo Buttons */
+.btn-quick-fill {
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #1D4ED8;
+    -fx-border-color: #BFDBFE;
+    -fx-border-width: 1px;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+    -fx-padding: 4px 12px;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+}
+.btn-quick-fill:hover {
+    -fx-background-color: #DBEAFE;
+}
+
+/* Inputs */
+.text-field, .password-field, .combo-box {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #CBD5E1;
+    -fx-border-width: 1.2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 9px 12px;
+    -fx-font-size: 13px;
+    -fx-text-fill: #0F172A;
+}
+
+.text-field:focused, .password-field:focused, .combo-box:focused {
+    -fx-border-color: #10B981;
+    -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.25), 6, 0, 0, 0);
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    -fx-background-color: #0F172A;
+    -fx-padding: 24px 16px;
+    -fx-pref-width: 240px;
+}
+
+.nav-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10px 14px;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+}
+.nav-item:hover {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: white;
+}
+.nav-item-active {
+    -fx-background-color: #10B981;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+/* Badges */
+.badge {
+    -fx-background-radius: 12px;
+    -fx-padding: 3px 10px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.badge-success {
+    -fx-background-color: #DCFCE7;
+    -fx-text-fill: #15803D;
+}
+
+.badge-warning {
+    -fx-background-color: #FEF3C7;
+    -fx-text-fill: #B45309;
+}
+
+.badge-info {
+    -fx-background-color: #E0E7FF;
+    -fx-text-fill: #4338CA;
+}
+
+.badge-danger {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #B91C1C;
+}
+
+/* TableView Styling */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-padding: 4px;
+}
+
+.table-view .column-header {
+    -fx-background-color: #F8FAFC;
+    -fx-font-weight: bold;
+    -fx-text-fill: #475569;
+    -fx-padding: 10px;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+}
+
+.table-row-cell {
+    -fx-padding: 8px;
+    -fx-border-color: transparent transparent #F1F5F9 transparent;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #FAFAFA;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #F0FDF4;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #DCFCE7;
+    -fx-text-fill: #0F172A;
+}

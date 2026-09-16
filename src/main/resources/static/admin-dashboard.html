@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Operations Center - ERRORCab</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+        }
+
+        body {
+            background: #F1F5F9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .admin-sidebar {
+            width: var(--sidebar-width);
+            background: var(--surface-dark);
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 150;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-brand {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-nav {
+            padding: 20px 14px;
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .nav-link-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #CBD5E1;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            user-select: none;
+        }
+
+        .nav-link-item:hover {
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(3px);
+        }
+
+        .nav-link-item.active {
+            color: #FFFFFF !important;
+            background: #0284C7 !important;
+            font-weight: 800;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45);
+            transform: translateX(0);
+        }
+
+        .nav-link-item .nav-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            color: inherit;
+        }
+
+        .nav-link-item.active .nav-icon {
+            color: #FFFFFF;
+        }
+
+        .sidebar-footer {
+            padding: 18px 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        .sidebar-user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 0;
+        }
+
+        /* Dedicated Single Sign Out Button in Header */
+        .btn-logout {
+            background: #EF4444;
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 13px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #DC2626;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            background: #DC2626;
+            color: #FFFFFF;
+            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-logout:active {
+            transform: translateY(0);
+        }
+
+        .sidebar-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(56, 189, 248, 0.2);
+            border: 1px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* Main Workspace */
+        .admin-main-wrapper {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - var(--sidebar-width));
+            transition: all 0.3s ease;
+        }
+
+        .admin-topbar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .admin-content-body {
+            padding: 28px;
+            flex-grow: 1;
+            max-width: 1400px;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0 auto;
+        }
+
+        /* Backdrop for mobile drawer */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 140;
+        }
+
+        .sidebar-backdrop.active {
+            display: block;
+        }
+
+        /* Stat Cards */
+        .stat-grid-6 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: #CBD5E1;
+        }
+
+        .kpi-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .kpi-icon-pill {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .kpi-number {
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--surface-dark);
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .kpi-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* View Switching */
+        .admin-view {
+            display: none;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .admin-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Micro Route Connector */
+        .micro-route {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .micro-route-point {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .micro-dot-green {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            flex-shrink: 0;
+        }
+
+        .micro-dot-cyan {
+            width: 7px;
+            height: 7px;
+            border-radius: 2px;
+            background: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .micro-route-line {
+            width: 1px;
+            height: 8px;
+            background: #CBD5E1;
+            margin-left: 3px;
+        }
+
+        /* Filter Pills */
+        .filter-pills-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .filter-pill {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .filter-pill.active {
+            background: var(--surface-dark);
+            color: white;
+            border-color: var(--surface-dark);
+        }
+
+        /* Mobile Viewport Adaptations */
+        @media (max-width: 1024px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+
+            .admin-main-wrapper {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .mobile-menu-toggle {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-topbar {
+                padding: 12px 16px;
+            }
+
+            .admin-content-body {
+                padding: 16px;
+            }
+
+            .stat-grid-6 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .responsive-card-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .hide-on-mobile {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 560px) {
+            #topbarViewSubtitle {
+                display: none !important;
+            }
+            #topbarViewTitle {
+                font-size: 15px !important;
+            }
+            .btn-logout {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Drawer Backdrop -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
+
+    <!-- Modern Admin Sidebar Navigation -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div>
+            <!-- Sidebar Header Brand -->
+            <div class="sidebar-brand">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 34px; height: 34px; border-radius: var(--radius-md); background: linear-gradient(135deg, #0284C7, #0EA5E9); display: flex; align-items: center; justify-content: center; color: white;">
+                        <span id="brandCarIcon"></span>
+                    </div>
+                    <div>
+                        <div style="font-size: 17px; font-weight: 900; letter-spacing: -0.3px; color: white;">ERRORCab</div>
+                        <div style="font-size: 10px; color: #94A3B8; font-weight: 700; letter-spacing: 0.5px;">ADMIN OPERATIONS</div>
+                    </div>
+                </div>
+                <button type="button" class="mobile-menu-toggle" onclick="toggleSidebar(false)" style="background: none; border: none; color: #94A3B8; cursor: pointer; display: none; padding: 4px;">
+                    <span id="closeSidebarIcon"></span>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="sidebar-nav">
+                <div class="nav-link-item active" id="nav-dashboard" onclick="switchView('dashboard')">
+                    <span class="nav-icon" id="navIconDashboard"></span>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-link-item" id="nav-passengers" onclick="switchView('passengers')">
+                    <span class="nav-icon" id="navIconPassengers"></span>
+                    <span>Passengers</span>
+                </div>
+                <div class="nav-link-item" id="nav-drivers" onclick="switchView('drivers')">
+                    <span class="nav-icon" id="navIconDrivers"></span>
+                    <span>Drivers</span>
+                </div>
+                <div class="nav-link-item" id="nav-rides" onclick="switchView('rides')">
+                    <span class="nav-icon" id="navIconRides"></span>
+                    <span>Rides</span>
+                </div>
+                <div class="nav-link-item" id="nav-statistics" onclick="switchView('statistics')">
+                    <span class="nav-icon" id="navIconStats"></span>
+                    <span>Revenue / Statistics</span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer / Admin Profile Badge (Single logout action is in header) -->
+        <div class="sidebar-footer">
+            <div class="sidebar-user-card">
+                <div class="sidebar-avatar" style="background: rgba(2, 132, 199, 0.3); border: 1.5px solid #38BDF8; color: #38BDF8; font-weight: 900;">A</div>
+                <div style="overflow: hidden; flex-grow: 1;">
+                    <div style="font-size: 13px; font-weight: 800; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="sidebarAdminName">System Admin</div>
+                    <div style="font-size: 11px; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="sidebarAdminEmail">admin@example.com</div>
+                </div>
+                <span class="badge badge-success" style="font-size: 9px; padding: 3px 6px; font-weight: 800;">ADMIN</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Workspace Container -->
+    <div class="admin-main-wrapper">
+
+        <!-- Top Header Bar -->
+        <header class="admin-topbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <!-- Mobile Hamburger Button -->
+                <button type="button" class="mobile-menu-toggle btn btn-secondary btn-sm" onclick="toggleSidebar(true)" style="display: none; padding: 6px 10px; border-radius: 8px;" title="Open Menu">
+                    <span id="topbarMenuIcon"></span>
+                </button>
+
+                <div>
+                    <div style="font-size: 18px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.3px;" id="topbarViewTitle">
+                        Dashboard Overview
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;" id="topbarViewSubtitle">
+                        ERRORCab Kerala Fleet • Central Operations Grid
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <!-- Live Platform Status Badge -->
+                <span class="badge badge-success hide-on-mobile" style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font-weight: 800;">
+                    <span class="live-pulse" style="width: 6px; height: 6px;"></span>
+                    SYSTEM OPERATIONAL
+                </span>
+
+                <!-- Notifications Button (Demo) -->
+                <button type="button" onclick="App.showToast('Platform Notice', 'All Kochi fleet systems functioning normally.', 'shield')" class="btn btn-secondary btn-sm" style="padding: 7px 10px; border-radius: 8px;" title="Notifications">
+                    <span id="topbarBellIcon"></span>
+                </button>
+
+                <!-- Topbar Sign Out Button (Sole Accessible Sign Out Action) -->
+                <button type="button" onclick="App.logout()" class="btn btn-logout btn-sm" id="topbarSignOutBtn" title="Sign Out of Admin Operations">
+                    <span id="topbarSignOutIcon"></span>
+                    <span>Sign Out</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Main Content Area -->
+        <main class="admin-content-body">
+
+            <!-- ================= VIEW 1: DASHBOARD OVERVIEW ================= -->
+            <section id="view-dashboard" class="admin-view active">
+                
+                <!-- Welcome Banner -->
+                <div class="card" style="background: linear-gradient(135deg, #0B132B 0%, #1E293B 100%); color: white; border: none; padding: 26px 30px; margin-bottom: 24px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; right: -20px; top: -20px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0) 70%); border-radius: 50%; pointer-events: none;"></div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; position: relative; z-index: 2;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                <span class="badge badge-primary" style="font-size: 11px; padding: 3px 10px; background: rgba(56, 189, 248, 0.2); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">
+                                    LIVE OPERATIONS
+                                </span>
+                                <span style="font-size: 12px; color: #94A3B8;" id="currentDateStr">--</span>
+                            </div>
+                            <h1 style="font-size: 24px; font-weight: 900; margin: 0; letter-spacing: -0.5px;">Welcome back, Admin</h1>
+                            <p style="color: #94A3B8; font-size: 13px; margin: 4px 0 0;">Here's what's happening with ERRORCab today across the Kochi urban zone.</p>
+                        </div>
+
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" onclick="loadAllAdminData()" class="btn btn-secondary btn-sm" style="background: rgba(255,255,255,0.12); color: white; border: none; font-weight: 700;">
+                                Refresh Data ↻
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6 Attractive Statistic Cards -->
+                <div class="stat-grid-6">
+                    <!-- 1. Total Passengers -->
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div class="kpi-label">Total Passengers</div>
+                            <div class="kpi-icon-pill" style="background: rgba(139, 92, 246, 0.1); color: #8B5CF6;">
+                                <span id="kpiIconPassengers"></span>
+                            </div>
+                        </div>
+                        <div class="kpi-number" id="statPassengers">0</div>
+                        <div class="kpi-sub">
+                            <span>Registered customer accounts</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Total Drivers -->
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div class="kpi-label">Total Drivers</div>
+                            <div class="kpi-icon-pill" style="background: rgba(245, 158, 11, 0.1); color: #D97706;">
+                                <span id="kpiIconDrivers"></span>
+                            </div>
+                        </div>
+                        <div class="kpi-number" id="statDrivers">0</div>
+                        <div class="kpi-sub">
+                            <span>Licensed fleet partners</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Total Rides -->
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div class="kpi-label">Total Rides</div>
+                            <div class="kpi-icon-pill" style="background: rgba(2, 132, 199, 0.1); color: #0284C7;">
+                                <span id="kpiIconRides"></span>
+                            </div>
+                        </div>
+                        <div class="kpi-number" id="statRides">0</div>
+                        <div class="kpi-sub">
+                            <span>All-time bookings made</span>
+                        </div>
+                    </div>
+
+                    <!-- 4. Completed Rides -->
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div class="kpi-label">Completed Rides</div>
+                            <div class="kpi-icon-pill" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
+                                <span id="kpiIconCompleted"></span>
+                            </div>
+                        </div>
+                        <div class="kpi-number" id="statCompleted" style="color: #059669;">0</div>
+                        <div class="kpi-sub">
+                            <span>Successfully fulfilled trips</span>
+                        </div>
+                    </div>
+
+                    <!-- 5. Cancelled Rides -->
+                    <div class="kpi-card">
+                        <div class="kpi-top">
+                            <div class="kpi-label">Cancelled Rides</div>
+                            <div class="kpi-icon-pill" style="background: rgba(239, 68, 68, 0.1); color: #EF4444;">
+                                <span id="kpiIconCancelled"></span>
+                            </div>
+                        </div>
+                        <div class="kpi-number" id="statCancelled" style="color: #DC2626;">0</div>
+                        <div class="kpi-sub">
+                            <span>Cancelled before completion</span>
+                        </div>
+                    </div>
+
+                    <!-- 6. Total Revenue -->
+                    <div class="kpi-card" style="background: linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%); border-color: #BBF7D0;">
+                        <div class="kpi-top">
+                            <div class="kpi-label" style="color: #166534;">Total Revenue</div>
+                            <div class="kpi-icon-pill" style="background: rgba(16, 185, 129, 0.2); color: #10B981;">
+                                <span id="kpiIconRevenue"></span>
+                            </div>
+                        </div>
+                        <div class="kpi-number" id="statRevenue" style="color: #15803D;">₹0</div>
+                        <div class="kpi-sub" style="color: #166534;">
+                            <span>Gross platform booking value</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Ride Activity & Quick Insights Grid -->
+                <div class="grid grid-3 responsive-card-grid" style="align-items: flex-start; gap: 20px;">
+                    
+                    <!-- Left: Recent Ride Activity (2 Cols) -->
+                    <div class="card" style="grid-column: span 2; padding: 0; overflow: hidden;">
+                        <div style="padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;">Recent Ride Activity</h3>
+                                <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Latest bookings across Kochi City</p>
+                            </div>
+                            <button type="button" onclick="switchView('rides')" class="btn btn-secondary btn-sm" style="font-size: 12px; font-weight: 700;">
+                                View All Rides ➔
+                            </button>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="table" style="margin-bottom: 0;">
+                                <thead>
+                                    <tr>
+                                        <th>Ride ID</th>
+                                        <th>Route</th>
+                                        <th>Fare</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentRidesBody">
+                                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px;">Loading activity...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: Quick Fleet & Revenue Insights (1 Col) -->
+                    <div class="card" style="padding: 24px;">
+                        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0 0 16px;">Platform Performance</h3>
+                        
+                        <!-- Completion Rate Progress -->
+                        <div style="margin-bottom: 18px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 6px;">
+                                <span style="color: var(--text-muted);">Fulfillment Rate</span>
+                                <span id="insightFulfillmentPct" style="color: var(--success); font-weight: 800;">0%</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                                <div id="insightFulfillmentBar" style="height: 100%; width: 0%; background: var(--success); transition: width 0.5s ease;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Metric Summary List -->
+                        <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px dashed var(--border); padding-top: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                                <span style="color: var(--text-muted);">Avg. Fare / Completed Trip:</span>
+                                <b id="insightAvgFare" style="color: var(--surface-dark);">₹0</b>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                                <span style="color: var(--text-muted);">Online Fleet Duty:</span>
+                                <b id="insightOnlineDrivers" style="color: var(--primary);">0 Online</b>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                                <span style="color: var(--text-muted);">Trip Cancellation Rate:</span>
+                                <b id="insightCancelRate" style="color: var(--danger);">0%</b>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px; background: #F8FAFC; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; font-size: 11px; color: var(--text-muted); text-align: center;">
+                            Kochi City Fleet Monitored • All algorithms running locally.
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- ================= VIEW 2: PASSENGERS MANAGEMENT ================= -->
+            <section id="view-passengers" class="admin-view">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">Passenger Directory</h2>
+                        <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Manage registered customer accounts, view booking counts, and toggle account access.</p>
+                    </div>
+
+                    <div style="position: relative; min-width: 260px;">
+                        <input type="text" id="passengerSearchInput" oninput="filterPassengers()" class="form-control" placeholder="Search passenger name, email, #ID..." style="height: 42px; font-size: 13px;">
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 0; overflow: hidden;">
+                    <div class="table-container">
+                        <table class="table" style="margin-bottom: 0;">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Passenger Name</th>
+                                    <th>Email Address</th>
+                                    <th>Phone Number</th>
+                                    <th>Total Rides</th>
+                                    <th>Account Status</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="passengersTableBody">
+                                <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 36px;">Loading passengers...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+
+
+            <!-- ================= VIEW 3: DRIVERS MANAGEMENT ================= -->
+            <section id="view-drivers" class="admin-view">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">Driver Fleet Management</h2>
+                        <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Review driver partners, commercial vehicle registrations, ratings, and live duty states.</p>
+                    </div>
+
+                    <div style="position: relative; min-width: 260px;">
+                        <input type="text" id="driverSearchInput" oninput="filterDrivers()" class="form-control" placeholder="Search driver, plate, vehicle..." style="height: 42px; font-size: 13px;">
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 0; overflow: hidden;">
+                    <div class="table-container">
+                        <table class="table" style="margin-bottom: 0;">
+                            <thead>
+                                <tr>
+                                    <th>Driver ID</th>
+                                    <th>Partner Name</th>
+                                    <th>Contact Info</th>
+                                    <th>Assigned Vehicle</th>
+                                    <th>Plate & License</th>
+                                    <th>Rating</th>
+                                    <th>Duty</th>
+                                    <th>Account</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="driversTableBody">
+                                <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 36px;">Loading drivers...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+
+
+            <!-- ================= VIEW 4: RIDE MANAGEMENT ================= -->
+            <section id="view-rides" class="admin-view">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="font-size: 22px; font-weight: 800; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">Real-Time Rides Log</h2>
+                        <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Complete chronological dispatch audit across all Kochi urban routes.</p>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <div class="filter-pills-row">
+                            <button class="filter-pill active" onclick="setRideFilter('ALL', this)">All</button>
+                            <button class="filter-pill" onclick="setRideFilter('RIDE_COMPLETED', this)">Completed</button>
+                            <button class="filter-pill" onclick="setRideFilter('ACTIVE', this)">In Progress</button>
+                            <button class="filter-pill" onclick="setRideFilter('CANCELLED', this)">Cancelled</button>
+                        </div>
+                        <input type="text" id="ridesSearchInput" oninput="applyRidesFilter()" class="form-control" placeholder="Search route, cab, #ID..." style="width: 220px; height: 38px; font-size: 13px;">
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 0; overflow: hidden;">
+                    <div class="table-container">
+                        <table class="table" style="margin-bottom: 0;">
+                            <thead>
+                                <tr>
+                                    <th>Trip #</th>
+                                    <th>Date & Time</th>
+                                    <th>Passenger</th>
+                                    <th>Driver</th>
+                                    <th>Route (Pickup ➔ Dropoff)</th>
+                                    <th>Cab Type</th>
+                                    <th>Fare</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ridesFullTableBody">
+                                <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 36px;">Loading rides...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+
+
+            <!-- ================= VIEW 5: REVENUE & STATISTICS ================= -->
+            <section id="view-statistics" class="admin-view">
+                
+                <div style="margin-bottom: 24px;">
+                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">Platform Revenue & Financial Breakdown</h2>
+                    <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Detailed analytics on booking revenue, average fares, and category distributions.</p>
+                </div>
+
+                <!-- 4 Financial Highlights -->
+                <div class="grid grid-4" style="margin-bottom: 24px;">
+                    <div class="card stat-card">
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10B981; font-size: 20px; font-weight: 900;">₹</div>
+                        <div>
+                            <div class="stat-value" id="statsTotalGross">₹0</div>
+                            <div class="stat-label">Total Platform Turnover</div>
+                        </div>
+                    </div>
+
+                    <div class="card stat-card">
+                        <div class="stat-icon" style="background: rgba(2, 132, 199, 0.1); color: #0284C7;">
+                            <span id="statsAvgIcon"></span>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="statsAvgTicket">₹0</div>
+                            <div class="stat-label">Average Trip Fare</div>
+                        </div>
+                    </div>
+
+                    <div class="card stat-card">
+                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #8B5CF6;">
+                            <span id="statsFulfillIcon"></span>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="statsFulfillRate">0%</div>
+                            <div class="stat-label">Ride Fulfillment Rate</div>
+                        </div>
+                    </div>
+
+                    <div class="card stat-card">
+                        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #EF4444;">
+                            <span id="statsCancelIcon"></span>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="statsCancelRate">0%</div>
+                            <div class="stat-label">Cancellation Rate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Breakdown Card -->
+                <div class="card" style="padding: 24px; margin-bottom: 24px;">
+                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0 0 16px;">
+                        Cab Category Booking Share
+                    </h3>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+                        <!-- Economy -->
+                        <div style="background: var(--bg-main); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="badge badge-secondary">ECONOMY</span>
+                                    <span style="font-size: 12px; color: var(--text-muted);">Hatchback Fleet</span>
+                                </div>
+                                <b id="catCountEconomy" style="font-size: 16px; color: var(--surface-dark);">0 trips</b>
+                            </div>
+                            <div style="font-size: 14px; font-weight: 800; color: var(--primary);" id="catRevEconomy">₹0 Revenue</div>
+                        </div>
+
+                        <!-- Premium -->
+                        <div style="background: var(--bg-main); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="badge badge-primary">PREMIUM</span>
+                                    <span style="font-size: 12px; color: var(--text-muted);">Sedan Fleet</span>
+                                </div>
+                                <b id="catCountPremium" style="font-size: 16px; color: var(--surface-dark);">0 trips</b>
+                            </div>
+                            <div style="font-size: 14px; font-weight: 800; color: var(--primary);" id="catRevPremium">₹0 Revenue</div>
+                        </div>
+
+                        <!-- SUV -->
+                        <div style="background: var(--bg-main); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="badge badge-warning">SUV</span>
+                                    <span style="font-size: 12px; color: var(--text-muted);">6-Seater Fleet</span>
+                                </div>
+                                <b id="catCountSuv" style="font-size: 16px; color: var(--surface-dark);">0 trips</b>
+                            </div>
+                            <div style="font-size: 14px; font-weight: 800; color: var(--primary);" id="catRevSuv">₹0 Revenue</div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        const user = App.requireAuth(['ADMIN']);
+        
+        let allStats = {};
+        let allRides = [];
+        let allDrivers = [];
+        let allPassengers = [];
+        let currentRideFilter = 'ALL';
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Render SVG icons for UI
+            renderIcons();
+
+            // Set current date
+            const now = new Date();
+            document.getElementById('currentDateStr').textContent = now.toLocaleDateString('en-IN', {
+                weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+            });
+
+            if (user) {
+                document.getElementById('sidebarAdminName').textContent = user.name || 'System Admin';
+                document.getElementById('sidebarAdminEmail').textContent = user.email || 'admin@example.com';
+            }
+
+            await loadAllAdminData();
+        });
+
+        function renderIcons() {
+            document.getElementById('brandCarIcon').innerHTML = App.icon('shield', 18, '#FFFFFF');
+            document.getElementById('closeSidebarIcon').innerHTML = App.icon('x', 18, '#E2E8F0');
+            document.getElementById('topbarMenuIcon').innerHTML = App.icon('menu', 18, '#0F172A');
+            document.getElementById('topbarBellIcon').innerHTML = App.icon('bell', 16, '#0F172A');
+            
+            const topbarLogoutEl = document.getElementById('topbarSignOutIcon');
+            if (topbarLogoutEl) topbarLogoutEl.innerHTML = App.icon('logOut', 14, '#FFFFFF');
+
+            document.getElementById('navIconDashboard').innerHTML = App.icon('dashboard', 18);
+            document.getElementById('navIconPassengers').innerHTML = App.icon('users', 18);
+            document.getElementById('navIconDrivers').innerHTML = App.icon('shield', 18);
+            document.getElementById('navIconRides').innerHTML = App.icon('clock', 18);
+            document.getElementById('navIconStats').innerHTML = App.icon('chart', 18);
+
+            document.getElementById('kpiIconPassengers').innerHTML = App.icon('users', 20, '#8B5CF6');
+            document.getElementById('kpiIconDrivers').innerHTML = App.icon('shield', 20, '#D97706');
+            document.getElementById('kpiIconRides').innerHTML = App.icon('car', 20, '#0284C7');
+            document.getElementById('kpiIconCompleted').innerHTML = App.icon('checkCircle', 20, '#10B981');
+            document.getElementById('kpiIconCancelled').innerHTML = App.icon('xCircle', 20, '#EF4444');
+            document.getElementById('kpiIconRevenue').innerHTML = App.icon('rupee', 20, '#10B981');
+
+            document.getElementById('statsAvgIcon').innerHTML = App.icon('car', 18, '#0284C7');
+            document.getElementById('statsFulfillIcon').innerHTML = App.icon('checkCircle', 18, '#8B5CF6');
+            document.getElementById('statsCancelIcon').innerHTML = App.icon('xCircle', 18, '#EF4444');
+        }
+
+        function toggleSidebar(open) {
+            const sidebar = document.getElementById('adminSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            if (open) {
+                sidebar.classList.add('open');
+                backdrop.classList.add('active');
+            } else {
+                sidebar.classList.remove('open');
+                backdrop.classList.remove('active');
+            }
+        }
+
+        function switchView(viewKey) {
+            // Update sidebar active links
+            document.querySelectorAll('.nav-link-item').forEach(el => el.classList.remove('active'));
+            const targetNav = document.getElementById(`nav-${viewKey}`);
+            if (targetNav) targetNav.classList.add('active');
+
+            // Update visible view
+            document.querySelectorAll('.admin-view').forEach(el => el.classList.remove('active'));
+            const targetView = document.getElementById(`view-${viewKey}`);
+            if (targetView) targetView.classList.add('active');
+
+            // Update topbar title
+            const titles = {
+                'dashboard': { title: 'Dashboard Overview', sub: 'ERRORCab Kerala Fleet • Central Operations Grid' },
+                'passengers': { title: 'Passenger Management', sub: 'Customer profiles and account access' },
+                'drivers': { title: 'Driver Fleet Management', sub: 'Driver partner credentials and vehicle verification' },
+                'rides': { title: 'Real-Time Rides Log', sub: 'Chronological trip audit across Kochi' },
+                'statistics': { title: 'Platform Revenue & Statistics', sub: 'Turnover KPIs and cab category performance' }
+            };
+
+            const info = titles[viewKey] || titles['dashboard'];
+            document.getElementById('topbarViewTitle').textContent = info.title;
+            document.getElementById('topbarViewSubtitle').textContent = info.sub;
+
+            // Close mobile sidebar if open
+            toggleSidebar(false);
+        }
+
+        async function loadAllAdminData() {
+            try {
+                // 1. Fetch Stats
+                allStats = await App.get('/api/admin/stats');
+                renderStats(allStats);
+
+                // 2. Fetch Rides
+                allRides = await App.get('/api/admin/rides');
+                renderRecentRides(allRides);
+                renderRidesTable(allRides);
+                calculateInsights(allStats, allRides);
+
+                // 3. Fetch Drivers
+                allDrivers = await App.get('/api/admin/drivers');
+                renderDriversTable(allDrivers);
+
+                // 4. Fetch Passengers
+                allPassengers = await App.get('/api/admin/passengers');
+                renderPassengersTable(allPassengers);
+
+            } catch (err) {
+                console.error('Failed to load admin data:', err);
+                App.showToast('Network Error', 'Could not refresh admin analytics', 'alertTriangle');
+            }
+        }
+
+        function renderStats(stats) {
+            document.getElementById('statPassengers').textContent = stats.totalPassengers || 0;
+            document.getElementById('statDrivers').textContent = stats.totalDrivers || 0;
+            document.getElementById('statRides').textContent = stats.totalRides || 0;
+            document.getElementById('statCompleted').textContent = stats.completedRides || 0;
+            document.getElementById('statCancelled').textContent = stats.cancelledRides || 0;
+            document.getElementById('statRevenue').textContent = App.formatCurrency(stats.totalRevenue || 0);
+
+            // Statistics View KPIs
+            document.getElementById('statsTotalGross').textContent = App.formatCurrency(stats.totalRevenue || 0);
+            
+            const completed = stats.completedRides || 0;
+            const total = stats.totalRides || 0;
+            const avg = completed > 0 ? Math.round((stats.totalRevenue || 0) / completed) : 0;
+            document.getElementById('statsAvgTicket').textContent = App.formatCurrency(avg);
+
+            const fulfillRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+            document.getElementById('statsFulfillRate').textContent = `${fulfillRate}%`;
+
+            const cancelRate = total > 0 ? Math.round(((stats.cancelledRides || 0) / total) * 100) : 0;
+            document.getElementById('statsCancelRate').textContent = `${cancelRate}%`;
+        }
+
+        function calculateInsights(stats, rides) {
+            const completed = stats.completedRides || 0;
+            const total = stats.totalRides || 0;
+            const fulfillPct = total > 0 ? Math.round((completed / total) * 100) : 0;
+            const cancelPct = total > 0 ? Math.round(((stats.cancelledRides || 0) / total) * 100) : 0;
+            const avgFare = completed > 0 ? Math.round((stats.totalRevenue || 0) / completed) : 0;
+
+            document.getElementById('insightFulfillmentPct').textContent = `${fulfillPct}%`;
+            document.getElementById('insightFulfillmentBar').style.width = `${fulfillPct}%`;
+            document.getElementById('insightAvgFare').textContent = App.formatCurrency(avgFare);
+            document.getElementById('insightCancelRate').textContent = `${cancelPct}%`;
+
+            const onlineCount = allDrivers.filter(d => d.isAvailable !== false).length;
+            document.getElementById('insightOnlineDrivers').textContent = `${onlineCount} Online`;
+
+            // Cab category breakdowns
+            let ecoCount = 0, ecoRev = 0;
+            let premCount = 0, premRev = 0;
+            let suvCount = 0, suvRev = 0;
+
+            rides.forEach(r => {
+                const cab = (r.cabType || '').toUpperCase();
+                const fare = r.fare || 0;
+                if (cab === 'PREMIUM') {
+                    premCount++;
+                    premRev += fare;
+                } else if (cab === 'SUV') {
+                    suvCount++;
+                    suvRev += fare;
+                } else {
+                    ecoCount++;
+                    ecoRev += fare;
+                }
+            });
+
+            document.getElementById('catCountEconomy').textContent = `${ecoCount} trips`;
+            document.getElementById('catRevEconomy').textContent = App.formatCurrency(ecoRev);
+            document.getElementById('catCountPremium').textContent = `${premCount} trips`;
+            document.getElementById('catRevPremium').textContent = App.formatCurrency(premRev);
+            document.getElementById('catCountSuv').textContent = `${suvCount} trips`;
+            document.getElementById('catRevSuv').textContent = App.formatCurrency(suvRev);
+        }
+
+        // ------------------ RECENT RIDES ON DASHBOARD ------------------
+        function renderRecentRides(rides) {
+            const tbody = document.getElementById('recentRidesBody');
+            if (!rides || rides.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 36px;">
+                            <div style="font-size: 28px; margin-bottom: 4px;">📭</div>
+                            <div style="font-weight: 700; color: var(--text-dark);">No ride activity yet</div>
+                            <div style="font-size: 12px;">Bookings made by passengers will appear here.</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const recent = rides.slice(0, 5);
+            tbody.innerHTML = recent.map(r => {
+                const id = r.bookingId || r.id;
+                const pickup = r.pickupLocation || r.pickup || 'Pickup';
+                const dropoff = r.dropoffLocation || r.dropoff || 'Dropoff';
+                const time = r.bookingTime || r.createdAt;
+                const status = r.status || 'SEARCHING';
+
+                return `
+                    <tr>
+                        <td>
+                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-main); border: 1px solid var(--border); padding: 3px 8px; border-radius: 6px; font-size: 12px;">
+                                #${id}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="micro-route">
+                                <div class="micro-route-point">
+                                    <span class="micro-dot-green"></span>
+                                    <span style="font-weight: 700;">${pickup}</span>
+                                </div>
+                                <div class="micro-route-line"></div>
+                                <div class="micro-route-point">
+                                    <span class="micro-dot-cyan"></span>
+                                    <span style="font-weight: 700;">${dropoff}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="font-weight: 800; color: var(--surface-dark);">
+                            ${App.formatCurrency(r.fare)}
+                        </td>
+                        <td>
+                            <span class="badge badge-${getStatusBadge(status)}" style="font-size: 11px;">
+                                ${status.replace('_', ' ')}
+                            </span>
+                        </td>
+                        <td style="text-align: right; font-size: 12px; color: var(--text-muted); white-space: nowrap;">
+                            ${App.formatDate(time)}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ------------------ PASSENGERS MANAGEMENT ------------------
+        function renderPassengersTable(passengers) {
+            const tbody = document.getElementById('passengersTableBody');
+            if (!passengers || passengers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 48px;">
+                            <div style="font-size: 32px; margin-bottom: 6px;">👥</div>
+                            <div style="font-weight: 700; color: var(--text-dark);">No passengers registered yet</div>
+                            <div style="font-size: 12px;">Registered users will appear in this directory.</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = passengers.map(p => {
+                const uid = p.userId || p.id;
+                const rideCount = allRides.filter(r => (r.passengerId == uid)).length;
+                const isActive = p.isActive !== false;
+
+                return `
+                    <tr>
+                        <td>
+                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-main); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 12px;">
+                                #${uid}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(2, 132, 199, 0.1); color: var(--primary); font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    ${(p.name || 'U').charAt(0).toUpperCase()}
+                                </div>
+                                <div style="font-weight: 800; font-size: 14px; color: var(--surface-dark);">${p.name}</div>
+                            </div>
+                        </td>
+                        <td style="font-size: 13px; color: var(--text-dark);">${p.email}</td>
+                        <td style="font-size: 13px; color: var(--text-muted);">${p.phoneNumber || '+91 98765 43210'}</td>
+                        <td>
+                            <span class="badge badge-secondary" style="font-weight: 700;">
+                                ${rideCount} ${rideCount === 1 ? 'ride' : 'rides'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-${isActive ? 'success' : 'danger'}" style="font-weight: 800;">
+                                ${isActive ? 'ACTIVE' : 'SUSPENDED'}
+                            </span>
+                        </td>
+                        <td style="text-align: right;">
+                            <button type="button" onclick="toggleUserStatus(${uid}, ${!isActive})" class="btn btn-sm ${isActive ? 'btn-outline' : 'btn-primary'}" style="font-weight: 700; ${isActive ? 'color: var(--danger); border-color: var(--border);' : ''}">
+                                ${isActive ? 'Suspend' : 'Activate'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterPassengers() {
+            const q = document.getElementById('passengerSearchInput').value.toLowerCase().trim();
+            if (!q) {
+                renderPassengersTable(allPassengers);
+                return;
+            }
+
+            const filtered = allPassengers.filter(p => {
+                const uid = String(p.userId || p.id);
+                const name = (p.name || '').toLowerCase();
+                const email = (p.email || '').toLowerCase();
+                const phone = (p.phoneNumber || '').toLowerCase();
+                return uid.includes(q) || name.includes(q) || email.includes(q) || phone.includes(q);
+            });
+
+            renderPassengersTable(filtered);
+        }
+
+        // ------------------ DRIVERS MANAGEMENT ------------------
+        function renderDriversTable(drivers) {
+            const tbody = document.getElementById('driversTableBody');
+            if (!drivers || drivers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 48px;">
+                            <div style="font-size: 32px; margin-bottom: 6px;">🚕</div>
+                            <div style="font-weight: 700; color: var(--text-dark);">No driver partners registered</div>
+                            <div style="font-size: 12px;">Fleet drivers will appear here once registered.</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = drivers.map(d => {
+                const uid = d.userId || d.id;
+                const isActive = d.isActive !== false;
+                const isOnline = d.isAvailable !== false;
+                const rating = (d.rating || 4.8).toFixed(1);
+
+                return `
+                    <tr>
+                        <td>
+                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-main); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 12px;">
+                                #${uid}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); color: #D97706; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    ${(d.name || 'D').charAt(0).toUpperCase()}
+                                </div>
+                                <div style="font-weight: 800; font-size: 14px; color: var(--surface-dark);">${d.name}</div>
+                            </div>
+                        </td>
+                        <td style="font-size: 13px;">
+                            <div>${d.email}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${d.phoneNumber || '+91 98765 43210'}</div>
+                        </td>
+                        <td style="font-size: 13px;">
+                            ${d.vehicle ? `<b>${d.vehicle.model}</b>` : 'Hyundai Aura'}
+                            <div><span class="badge badge-secondary" style="font-size: 10px;">${d.vehicle ? d.vehicle.cabType : 'ECONOMY'}</span></div>
+                        </td>
+                        <td>
+                            <span class="badge badge-secondary" style="font-family: monospace; font-weight: 800; letter-spacing: 0.5px;">
+                                ${d.vehicle ? d.vehicle.licensePlate : 'KL 07 AB 1234'}
+                            </span>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">${d.licenseNumber || 'KL-LIC-9988'}</div>
+                        </td>
+                        <td style="color: #D97706; font-weight: 800; font-size: 13px;">
+                            ★ ${rating}
+                        </td>
+                        <td>
+                            <span class="badge badge-${isOnline ? 'success' : 'secondary'}" style="display: inline-flex; align-items: center; gap: 5px;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
+                                ${isOnline ? 'ONLINE' : 'OFFLINE'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-${isActive ? 'success' : 'danger'}" style="font-weight: 800;">
+                                ${isActive ? 'ACTIVE' : 'SUSPENDED'}
+                            </span>
+                        </td>
+                        <td style="text-align: right;">
+                            <button type="button" onclick="toggleUserStatus(${uid}, ${!isActive})" class="btn btn-sm ${isActive ? 'btn-outline' : 'btn-primary'}" style="font-weight: 700; ${isActive ? 'color: var(--danger); border-color: var(--border);' : ''}">
+                                ${isActive ? 'Suspend' : 'Activate'}
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterDrivers() {
+            const q = document.getElementById('driverSearchInput').value.toLowerCase().trim();
+            if (!q) {
+                renderDriversTable(allDrivers);
+                return;
+            }
+
+            const filtered = allDrivers.filter(d => {
+                const uid = String(d.userId || d.id);
+                const name = (d.name || '').toLowerCase();
+                const plate = (d.vehicle ? d.vehicle.licensePlate : '').toLowerCase();
+                const model = (d.vehicle ? d.vehicle.model : '').toLowerCase();
+                return uid.includes(q) || name.includes(q) || plate.includes(q) || model.includes(q);
+            });
+
+            renderDriversTable(filtered);
+        }
+
+        // ------------------ RIDES MANAGEMENT ------------------
+        function setRideFilter(filter, el) {
+            currentRideFilter = filter;
+            document.querySelectorAll('.filter-pills-row .filter-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            applyRidesFilter();
+        }
+
+        function applyRidesFilter() {
+            const q = document.getElementById('ridesSearchInput').value.toLowerCase().trim();
+
+            let filtered = allRides.filter(r => {
+                const status = r.status || '';
+
+                if (currentRideFilter === 'RIDE_COMPLETED' && status !== 'RIDE_COMPLETED') return false;
+                if (currentRideFilter === 'CANCELLED' && status !== 'CANCELLED') return false;
+                if (currentRideFilter === 'ACTIVE' && (status === 'RIDE_COMPLETED' || status === 'CANCELLED')) return false;
+
+                if (q) {
+                    const id = String(r.bookingId || r.id);
+                    const pickup = (r.pickupLocation || r.pickup || '').toLowerCase();
+                    const dropoff = (r.dropoffLocation || r.dropoff || '').toLowerCase();
+                    const cab = (r.cabType || '').toLowerCase();
+                    return id.includes(q) || pickup.includes(q) || dropoff.includes(q) || cab.includes(q);
+                }
+
+                return true;
+            });
+
+            renderRidesTable(filtered);
+        }
+
+        function renderRidesTable(rides) {
+            const tbody = document.getElementById('ridesFullTableBody');
+            if (!rides || rides.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 48px;">
+                            <div style="font-size: 32px; margin-bottom: 6px;">🚗</div>
+                            <div style="font-weight: 700; color: var(--text-dark);">No matching rides found</div>
+                            <div style="font-size: 12px;">Trip records will appear here as bookings occur.</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = rides.map(r => {
+                const id = r.bookingId || r.id;
+                const time = r.bookingTime || r.createdAt;
+                const pickup = r.pickupLocation || r.pickup || 'Pickup';
+                const dropoff = r.dropoffLocation || r.dropoff || 'Dropoff';
+                const status = r.status || 'SEARCHING';
+
+                return `
+                    <tr>
+                        <td>
+                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-main); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 12px;">
+                                #${id}
+                            </span>
+                        </td>
+                        <td style="white-space: nowrap; font-size: 13px; color: var(--text-dark);">
+                            ${App.formatDate(time)}
+                        </td>
+                        <td style="font-size: 13px; font-weight: 700;">#${r.passengerId}</td>
+                        <td style="font-size: 13px;">${r.driverId ? '#' + r.driverId : '<span style="color:var(--text-muted);">Unassigned</span>'}</td>
+                        <td>
+                            <div class="micro-route">
+                                <div class="micro-route-point">
+                                    <span class="micro-dot-green"></span>
+                                    <span style="font-weight: 700;">${pickup}</span>
+                                </div>
+                                <div class="micro-route-line"></div>
+                                <div class="micro-route-point">
+                                    <span class="micro-dot-cyan"></span>
+                                    <span style="font-weight: 700;">${dropoff}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-secondary">${r.cabType || 'ECONOMY'}</span>
+                        </td>
+                        <td style="font-weight: 800; font-size: 14px; color: var(--surface-dark);">
+                            ${App.formatCurrency(r.fare)}
+                        </td>
+                        <td>
+                            <span class="badge badge-${getStatusBadge(status)}" style="font-size: 11px;">
+                                ${status.replace('_', ' ')}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ------------------ TOGGLE USER STATUS ------------------
+        async function toggleUserStatus(userId, newActive) {
+            const actionText = newActive ? 'activate' : 'suspend';
+            if (!confirm(`Are you sure you want to ${actionText} user account #${userId}?`)) return;
+
+            try {
+                await App.put(`/api/admin/users/${userId}/toggle`, { active: newActive });
+                App.showToast('Status Updated', `User account status changed to ${newActive ? 'Active' : 'Suspended'}`, 'check');
+                await loadAllAdminData();
+            } catch (err) {
+                App.showToast('Error', 'Failed to toggle account status', 'alertTriangle');
+            }
+        }
+
+        function getStatusBadge(status) {
+            switch(status) {
+                case 'RIDE_COMPLETED': return 'success';
+                case 'CANCELLED': return 'danger';
+                case 'SEARCHING': return 'warning';
+                default: return 'primary';
+            }
+        }
+    </script>
+</body>
+</html>

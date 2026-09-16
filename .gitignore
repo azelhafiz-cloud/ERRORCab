@@ -1,0 +1,66 @@
+# ====================================================================
+# ERRORCab - Git Ignore Configuration
+# ====================================================================
+
+# SQLite Local Database (Contains runtime persistent state and credentials)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+errorcab.db
+
+# Maven Build Target Directory and JARs
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Compiled Class Files
+*.class
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Log Files & Server Logs
+*.log
+logs/
+
+# IDE Configuration
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment & Secret Files
+.env
+*.key
+*.pem
+*.secret

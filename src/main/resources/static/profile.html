@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Profile & Settings - ERRORCab</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .profile-hero {
+            background: linear-gradient(135deg, #0B132B 0%, #1E293B 100%);
+            color: white;
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .profile-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0284C7, #38BDF8, #10B981);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }
+
+        .avatar-circle {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: rgba(56, 189, 248, 0.15);
+            border: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .fav-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            margin-bottom: 12px;
+            background: white;
+            transition: all var(--transition-fast);
+        }
+
+        .fav-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sos-helpline-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .sos-helpline-card {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <!-- Topbar -->
+    <header class="topbar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <a href="/passenger-dashboard.html" id="backBtn" class="btn btn-secondary btn-sm" style="padding: 6px 12px;">
+                ❮ Dashboard
+            </a>
+            <div>
+                <div style="font-size: 18px; font-weight: 800; letter-spacing: -0.3px; color: var(--text-dark);">
+                    Account Profile
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">
+                    ERRORCab Mobility ID • Security & Preferences
+                </div>
+            </div>
+        </div>
+
+        <button onclick="App.logout()" class="btn btn-outline btn-sm">Sign Out</button>
+    </header>
+
+    <main class="container" style="max-width: 840px; padding-bottom: 100px; padding-top: 24px;">
+        
+        <!-- Profile Header Hero -->
+        <div class="profile-hero">
+            <div class="avatar-circle" id="avatarIconSlot"></div>
+            <div style="flex-grow: 1;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px; flex-wrap: wrap;">
+                    <h1 style="font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.5px;" id="profileName">User Name</h1>
+                    <span class="badge badge-success" id="profileRoleBadge" style="font-weight: 800; letter-spacing: 0.5px;">PASSENGER</span>
+                </div>
+                <div style="font-size: 14px; color: #94A3B8; display: flex; align-items: center; gap: 6px;" id="profileEmail">
+                    user@example.com
+                </div>
+                <div style="font-size: 13px; color: #94A3B8; margin-top: 4px; display: flex; align-items: center; gap: 6px;" id="profilePhone">
+                    +91 98765 43210
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Favorite Places (Passenger Only) -->
+        <div class="card" id="favoritesSection" style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                <div>
+                    <h2 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0;">Saved Favorite Places</h2>
+                    <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Quick 1-tap destinations for your daily cab bookings across Kochi.</p>
+                </div>
+                <button type="button" onclick="App.openModal('addFavModal')" class="btn btn-primary btn-sm" style="font-weight: 700;">
+                    + Add New Place
+                </button>
+            </div>
+
+            <div id="favoritesList">
+                <div style="text-align: center; color: var(--text-muted); padding: 24px;">
+                    <div class="loading-spinner" style="margin: 0 auto 10px;"></div>
+                    Loading saved places...
+                </div>
+            </div>
+        </div>
+
+        <!-- Safety & Emergency SOS Directory -->
+        <div class="card" style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(239, 68, 68, 0.1); display: flex; align-items: center; justify-content: center; color: var(--danger);">
+                    <span id="safetyShieldIcon"></span>
+                </div>
+                <h2 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0;">
+                    Kerala Emergency Helpline Directory
+                </h2>
+            </div>
+            
+            <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 16px;">
+                In any unexpected emergency during your ride, tap the <b>🚨 SOS</b> button to trigger an immediate distress alert with your live GPS coordinates.
+            </p>
+
+            <div class="sos-helpline-grid">
+                <div class="sos-helpline-card">
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--text-dark);">Kerala Police</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Emergency Response</div>
+                    </div>
+                    <a href="tel:112" class="badge badge-primary" style="font-size: 13px; font-weight: 800; text-decoration: none;">112</a>
+                </div>
+
+                <div class="sos-helpline-card">
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--text-dark);">Women Helpline</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">24x7 Transit Safety</div>
+                    </div>
+                    <a href="tel:1091" class="badge badge-primary" style="font-size: 13px; font-weight: 800; text-decoration: none;">1091</a>
+                </div>
+
+                <div class="sos-helpline-card">
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--text-dark);">Medical Ambulance</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Emergency Care</div>
+                    </div>
+                    <a href="tel:108" class="badge badge-primary" style="font-size: 13px; font-weight: 800; text-decoration: none;">108</a>
+                </div>
+
+                <div class="sos-helpline-card">
+                    <div>
+                        <div style="font-size: 13px; font-weight: 700; color: var(--text-dark);">Fire & Rescue</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Kochi Emergency Grid</div>
+                    </div>
+                    <a href="tel:101" class="badge badge-primary" style="font-size: 13px; font-weight: 800; text-decoration: none;">101</a>
+                </div>
+            </div>
+
+            <button type="button" onclick="App.triggerSOS()" class="btn btn-danger btn-block" style="font-weight: 800; height: 44px; margin-top: 6px;">
+                Test SOS Emergency Dispatch Alert (Demo)
+            </button>
+        </div>
+
+        <!-- Account Controls -->
+        <div class="card">
+            <h2 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin: 0 0 12px;">Account Controls</h2>
+            <button type="button" onclick="App.logout()" class="btn btn-outline btn-block" style="color: var(--danger); border-color: var(--danger); font-weight: 800; height: 44px;">
+                Sign Out from ERRORCab
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Add Favorite Modal -->
+    <div class="modal-backdrop" id="addFavModal">
+        <div class="modal-card" style="max-width: 440px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0;">Add Favorite Place</h3>
+                <button onclick="App.closeModal('addFavModal')" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Place Label (e.g. Home, Office, Gym, College)</label>
+                <input type="text" id="favLabelInput" class="form-control" placeholder="e.g. Home, Office">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Select Kochi Landmark Location</label>
+                <select id="favLocationSelect" class="form-control">
+                    <!-- Populated dynamically from /api/map/locations -->
+                </select>
+            </div>
+
+            <button type="button" onclick="saveFavorite()" class="btn btn-primary btn-block btn-lg" style="font-weight: 800; margin-top: 10px;">
+                Save Place to Account
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <a href="/passenger-dashboard.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon" id="navHomeIcon"></span>
+            <span>Home</span>
+        </a>
+        <a href="/booking.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon" id="navBookIcon"></span>
+            <span>Book</span>
+        </a>
+        <a href="/history.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon" id="navHistoryIcon"></span>
+            <span>History</span>
+        </a>
+        <a href="/profile.html" class="bottom-nav-item active">
+            <span class="bottom-nav-icon" id="navProfileIcon"></span>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script src="/js/app.js"></script>
+    <script>
+        const user = App.requireAuth();
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Render SVG icons
+            document.getElementById('avatarIconSlot').innerHTML = App.icon('user', 36, '#38BDF8');
+            document.getElementById('safetyShieldIcon').innerHTML = App.icon('shield', 18, '#EF4444');
+
+            document.getElementById('navHomeIcon').innerHTML = App.icon('home', 20);
+            document.getElementById('navBookIcon').innerHTML = App.icon('car', 20);
+            document.getElementById('navHistoryIcon').innerHTML = App.icon('clock', 20);
+            document.getElementById('navProfileIcon').innerHTML = App.icon('user', 20);
+
+            if (user) {
+                document.getElementById('profileName').textContent = user.name || 'User';
+                document.getElementById('profileEmail').textContent = user.email || 'user@example.com';
+                document.getElementById('profilePhone').textContent = user.phoneNumber || '+91 98765 43210';
+                
+                const roleBadge = document.getElementById('profileRoleBadge');
+                roleBadge.textContent = user.role;
+                roleBadge.className = `badge badge-${user.role === 'ADMIN' ? 'warning' : 'primary'}`;
+
+                if (user.role === 'DRIVER') {
+                    document.getElementById('backBtn').href = '/driver-dashboard.html';
+                    document.getElementById('avatarIconSlot').innerHTML = App.icon('car', 36, '#38BDF8');
+                    document.getElementById('favoritesSection').style.display = 'none';
+                } else if (user.role === 'ADMIN') {
+                    document.getElementById('backBtn').href = '/admin-dashboard.html';
+                    document.getElementById('avatarIconSlot').innerHTML = App.icon('shield', 36, '#38BDF8');
+                    document.getElementById('favoritesSection').style.display = 'none';
+                } else {
+                    await loadLocations();
+                    await loadFavorites();
+                }
+            }
+        });
+
+        async function loadLocations() {
+            try {
+                const locations = await App.get('/api/map/locations');
+                const sel = document.getElementById('favLocationSelect');
+                sel.innerHTML = '';
+                locations.forEach(loc => {
+                    sel.add(new Option(`${loc.name} (${loc.type})`, loc.name));
+                });
+            } catch (e) {}
+        }
+
+        async function loadFavorites() {
+            try {
+                const favs = await App.get(`/api/favorites/${user.userId}`);
+                const list = document.getElementById('favoritesList');
+                if (!favs || favs.length === 0) {
+                    list.innerHTML = `
+                        <div style="text-align: center; color: var(--text-muted); padding: 32px;">
+                            <div style="font-size: 32px; margin-bottom: 6px;">⭐</div>
+                            <div style="font-weight: 700; color: var(--text-dark);">No favorite places saved yet</div>
+                            <div style="font-size: 13px;">Click "+ Add New Place" above to add Home, Work, or College.</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = favs.map(f => `
+                    <div class="fav-card">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(2, 132, 199, 0.1); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                ${App.icon('pin', 18)}
+                            </div>
+                            <div>
+                                <div style="font-weight: 800; font-size: 15px; color: var(--surface-dark);">${f.label}</div>
+                                <div style="font-size: 13px; color: var(--text-muted);">${f.locationName}, Kochi</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="/booking.html?pickup=${encodeURIComponent(f.locationName)}" class="btn btn-secondary btn-sm" style="font-weight: 700;">
+                                Book From
+                            </a>
+                            <button onclick="deleteFavorite(${f.id})" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: var(--border); padding: 6px 10px;" title="Delete">
+                                ${App.icon('trash', 14)}
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Error loading favorites:', e);
+            }
+        }
+
+        async function saveFavorite() {
+            const label = document.getElementById('favLabelInput').value.trim();
+            const locationName = document.getElementById('favLocationSelect').value;
+
+            if (!label) {
+                App.showToast('Input Required', 'Please provide a label name (e.g. Home, Work)', 'alertTriangle');
+                return;
+            }
+
+            try {
+                await App.post('/api/favorites', {
+                    passengerId: user.userId,
+                    label: label,
+                    locationName: locationName,
+                    address: locationName + ', Kochi, Kerala'
+                });
+
+                App.closeModal('addFavModal');
+                document.getElementById('favLabelInput').value = '';
+                App.showToast('Saved', `Added ${label} (${locationName}) to favorites!`, 'check');
+                loadFavorites();
+            } catch (err) {
+                App.showToast('Error', err.message || 'Failed to save favorite place', 'alertTriangle');
+            }
+        }
+
+        async function deleteFavorite(favId) {
+            if (!confirm('Remove this saved favorite location?')) return;
+            try {
+                await App.delete(`/api/favorites/${favId}/${user.userId}`);
+                App.showToast('Removed', 'Favorite place deleted.', 'trash');
+                loadFavorites();
+            } catch (e) {
+                App.showToast('Error', 'Failed to delete favorite', 'alertTriangle');
+            }
+        }
+    </script>
+</body>
+</html>

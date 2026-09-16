@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passenger Dashboard - ERRORCab</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 950px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .route-swap-btn {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            color: var(--text-secondary);
+            margin: -6px auto;
+            position: relative;
+            z-index: 5;
+        }
+        .route-swap-btn:hover {
+            background: white;
+            color: var(--primary);
+            border-color: var(--primary);
+            transform: rotate(180deg);
+        }
+        .quick-action-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: var(--transition-fast);
+        }
+        .quick-action-card:hover {
+            border-color: var(--primary);
+            background: var(--primary-subtle);
+            transform: translateY(-2px);
+        }
+        .fav-chip-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .fav-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        .fav-pill:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-subtle);
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <header class="topbar">
+        <a href="/passenger-dashboard.html" class="topbar-brand">
+            <div class="topbar-logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                    <circle cx="7" cy="17" r="2"/>
+                    <path d="M9 17h6"/>
+                    <circle cx="17" cy="17" r="2"/>
+                </svg>
+            </div>
+            <div>
+                <div class="topbar-title">ERRORCab</div>
+                <div class="topbar-subtitle">Passenger Portal • Kochi</div>
+            </div>
+        </a>
+
+        <div class="topbar-actions">
+            <!-- Notifications Bell -->
+            <button type="button" onclick="App.showToast('Notifications', 'No pending alerts at this time.', 'bell')" class="btn btn-outline btn-icon-only" title="Notifications">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+
+            <!-- User Profile Chip -->
+            <a href="/profile.html" class="user-chip" title="View Profile">
+                <div class="user-avatar" id="avatarLetter">R</div>
+                <div class="desktop-only">
+                    <div class="user-chip-text" id="headerUserName">Passenger</div>
+                </div>
+            </a>
+
+            <!-- Sign Out -->
+            <button onclick="App.logout()" class="btn btn-outline btn-sm">Sign Out</button>
+        </div>
+    </header>
+
+    <main class="container container-wide">
+        
+        <!-- Welcome Section -->
+        <div style="margin-bottom: 24px;">
+            <h1 style="font-size: 26px; font-weight: 900; color: var(--navy-900); letter-spacing: -0.5px;" id="dynamicGreeting">
+                Good morning, Rahul! 👋
+            </h1>
+            <p style="color: var(--text-muted); font-size: 14px; margin-top: 2px;">
+                Where would you like to ride across Kochi today?
+            </p>
+        </div>
+
+        <!-- Active Ride Floating Card (Dynamically shown if active ride exists) -->
+        <div id="activeRideContainer" style="display: none;">
+            <div class="active-trip-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="live-pulse-dot"></span>
+                        <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px; color: #38BDF8; text-transform: uppercase;">
+                            Active Trip In Progress
+                        </span>
+                    </div>
+                    <span id="activeStatusBadge" class="badge badge-success">Assigned</span>
+                </div>
+
+                <div style="font-size: 20px; font-weight: 900; margin-bottom: 8px;">
+                    <span id="activePickup">Pickup</span> ➔ <span id="activeDropoff">Dropoff</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; gap: 20px;">
+                        <div>
+                            <div style="font-size: 11px; color: #94A3B8;">Cab & Fare</div>
+                            <div style="font-size: 15px; font-weight: 800; color: white;">
+                                <span id="activeCabType">Economy</span> • <span id="activeFare">₹ 0</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; color: #94A3B8;">Estimated Arrival</div>
+                            <div style="font-size: 15px; font-weight: 800; color: #38BDF8;">Within 3 mins</div>
+                        </div>
+                    </div>
+                    <a id="activeTrackBtn" href="/tracking.html" class="btn btn-primary btn-sm" style="font-weight: 800;">
+                        Open Live GPS Tracker
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            
+            <!-- Left Column: MAIN BOOKING CARD (Most Prominent Feature) -->
+            <div>
+                <div class="card card-elevated" style="margin-bottom: 24px; border: 1.5px solid var(--border);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                        <h2 style="font-size: 18px; font-weight: 900; color: var(--navy-900); letter-spacing: -0.3px;">
+                            Request a Cab
+                        </h2>
+                        <span class="badge badge-primary">Instant Dispatch</span>
+                    </div>
+
+                    <!-- Vertical Connected Route Indicator -->
+                    <div class="route-indicator-container">
+                        <div class="route-stem">
+                            <div class="route-dot-pickup"></div>
+                            <div class="route-line-dashed"></div>
+                            <div class="route-dot-dropoff"></div>
+                        </div>
+
+                        <div class="route-inputs">
+                            <div class="route-input-group">
+                                <span class="route-input-label">Pickup Location</span>
+                                <select id="pickupSelect" class="route-input-select" onchange="onRouteChanged()">
+                                    <!-- Populated via API -->
+                                </select>
+                            </div>
+
+                            <button type="button" class="route-swap-btn" onclick="swapLocations()" title="Swap Pickup & Destination">
+                                ⇅
+                            </button>
+
+                            <div class="route-input-group">
+                                <span class="route-input-label">Drop-off Destination</span>
+                                <select id="dropoffSelect" class="route-input-select" onchange="onRouteChanged()">
+                                    <!-- Populated via API -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Distance & Time Pill -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-subtle); padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 18px;">
+                        <div style="color: var(--text-secondary);">
+                            Distance: <b style="color: var(--text-primary);" id="distanceDisplay">-- km</b>
+                        </div>
+                        <div style="color: var(--text-secondary);">
+                            Estimated Travel Time: <b style="color: var(--text-primary);" id="durationDisplay">-- mins</b>
+                        </div>
+                    </div>
+
+                    <!-- Cab Type Cards Selection -->
+                    <label class="form-label" style="margin-bottom: 8px;">Select Vehicle Class</label>
+                    <div class="cab-grid">
+                        
+                        <!-- Economy Card -->
+                        <div class="cab-card selected" id="opt-ECONOMY" onclick="selectCab('ECONOMY')">
+                            <div class="cab-card-header">
+                                <div class="cab-card-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+                                </div>
+                                <span class="cab-capacity-pill">4 Seats</span>
+                            </div>
+                            <div>
+                                <div class="cab-card-name">Economy</div>
+                                <div class="cab-card-desc">Alto, WagonR</div>
+                                <div class="cab-card-price" id="fare-ECONOMY">₹ --</div>
+                            </div>
+                        </div>
+
+                        <!-- Premium Card -->
+                        <div class="cab-card" id="opt-PREMIUM" onclick="selectCab('PREMIUM')">
+                            <div class="cab-card-header">
+                                <div class="cab-card-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                </div>
+                                <span class="cab-capacity-pill">4 Seats</span>
+                            </div>
+                            <div>
+                                <div class="cab-card-name">Premium</div>
+                                <div class="cab-card-desc">Dzire, Aura (AC)</div>
+                                <div class="cab-card-price" id="fare-PREMIUM">₹ --</div>
+                            </div>
+                        </div>
+
+                        <!-- SUV Card -->
+                        <div class="cab-card" id="opt-SUV" onclick="selectCab('SUV')">
+                            <div class="cab-card-header">
+                                <div class="cab-card-icon">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="8" rx="2"/><path d="m5 10 2-4h10l2 4"/><circle cx="7.5" cy="18.5" r="2.5"/><circle cx="16.5" cy="18.5" r="2.5"/></svg>
+                                </div>
+                                <span class="cab-capacity-pill">6-7 Seats</span>
+                            </div>
+                            <div>
+                                <div class="cab-card-name">SUV</div>
+                                <div class="cab-card-desc">Ertiga, Innova</div>
+                                <div class="cab-card-price" id="fare-SUV">₹ --</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Promo Code -->
+                    <div style="margin: 16px 0;">
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="promoInput" class="form-control" placeholder="Promo code (e.g. WELCOME)" style="text-transform: uppercase;">
+                            <button type="button" onclick="applyPromo()" class="btn btn-secondary" style="white-space: nowrap;">Apply</button>
+                        </div>
+                        <div id="promoMessage" style="font-size: 12px; margin-top: 6px; display: none;"></div>
+                    </div>
+
+                    <!-- Book Now Button -->
+                    <button type="button" id="confirmBookBtn" onclick="confirmBooking()" class="btn btn-primary btn-block btn-lg" style="margin-top: 10px;">
+                        Book Economy Now (₹ --)
+                    </button>
+                </div>
+
+                <!-- Recent Rides List Section -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="font-size: 16px; font-weight: 800; color: var(--navy-900);">Recent Rides</h3>
+                        <a href="/history.html" style="font-size: 13px; font-weight: 700; color: var(--primary); text-decoration: none;">View All History ➔</a>
+                    </div>
+
+                    <div id="recentRidesContainer">
+                        <div style="text-align: center; color: var(--text-muted); padding: 24px; font-size: 13px;">
+                            Loading recent trips...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Quick Actions, Saved Places & KPI Metrics -->
+            <div>
+                
+                <!-- KPI Metrics Cards -->
+                <div class="grid-kpi" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+                        </div>
+                        <div>
+                            <div class="kpi-value" id="statTotalRides">0</div>
+                            <div class="kpi-label">Total Rides</div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="color: var(--success);">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div>
+                            <div class="kpi-value" id="statCompletedRides">0</div>
+                            <div class="kpi-label">Completed</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, #0B132B 0%, #1E293B 100%); color: white;">
+                    <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Total Spent on ERRORCab</div>
+                    <div style="font-size: 32px; font-weight: 900; color: #38BDF8; margin-top: 4px;" id="statTotalSpent">₹ 0</div>
+                    <div style="font-size: 12px; color: #94A3B8; margin-top: 4px;">Transparent rates • Zero surge multiplier</div>
+                </div>
+
+                <!-- Quick Actions Grid -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px;">Quick Actions</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <a href="/history.html" class="quick-action-card">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span style="font-size: 13px; font-weight: 700;">Ride Invoices</span>
+                        </a>
+
+                        <a href="/profile.html" class="quick-action-card">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span style="font-size: 13px; font-weight: 700;">Saved Places</span>
+                        </a>
+
+                        <a href="/profile.html" class="quick-action-card">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span style="font-size: 13px; font-weight: 700;">Safety & SOS</span>
+                        </a>
+
+                        <a href="/booking.html" class="quick-action-card">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>
+                            <span style="font-size: 13px; font-weight: 700;">Full Map View</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Saved Favorite Places Chips -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="font-size: 15px; font-weight: 800;">Saved Places</h3>
+                        <a href="/profile.html" style="font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none;">+ Manage</a>
+                    </div>
+                    <div class="fav-chip-list" id="favoriteChipsList">
+                        <span style="font-size: 12px; color: var(--text-muted);">Loading places...</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <a href="/passenger-dashboard.html" class="bottom-nav-item active">
+            <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="/booking.html" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+            <span>Book</span>
+        </a>
+        <a href="/history.html" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>History</span>
+        </a>
+        <a href="/profile.html" class="bottom-nav-item">
+            <svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script src="/js/app.js"></script>
+    <script>
+        const user = App.requireAuth(['PASSENGER']);
+        let selectedCabType = 'ECONOMY';
+        let calculatedFares = { ECONOMY: 0, PREMIUM: 0, SUV: 0 };
+        let currentDistance = 9.2;
+        let appliedDiscount = 0;
+        let currentPromoCode = '';
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (user) {
+                // Set Header details
+                document.getElementById('headerUserName').textContent = user.name;
+                document.getElementById('avatarLetter').textContent = (user.name || 'P').charAt(0).toUpperCase();
+                
+                // Dynamic time greeting
+                const hour = new Date().getHours();
+                let timeGreeting = "Good morning";
+                if (hour >= 12 && hour < 17) timeGreeting = "Good afternoon";
+                else if (hour >= 17) timeGreeting = "Good evening";
+                document.getElementById('dynamicGreeting').textContent = `${timeGreeting}, ${user.name}! 👋`;
+
+                App.initNotificationPoller(user.userId);
+                await loadLocations();
+                await loadDashboardData();
+            }
+        });
+
+        async function loadLocations() {
+            try {
+                const locations = await App.get('/api/map/locations');
+                const pickup = document.getElementById('pickupSelect');
+                const dropoff = document.getElementById('dropoffSelect');
+
+                pickup.innerHTML = '';
+                dropoff.innerHTML = '';
+
+                locations.forEach(loc => {
+                    pickup.add(new Option(`${loc.name} (${loc.landmark || 'Kochi'})`, loc.name));
+                    dropoff.add(new Option(`${loc.name} (${loc.landmark || 'Kochi'})`, loc.name));
+                });
+
+                pickup.value = 'Kakkanad';
+                dropoff.value = 'Vyttila';
+                onRouteChanged();
+            } catch (err) {
+                console.error('Error loading locations:', err);
+            }
+        }
+
+        function swapLocations() {
+            const pickup = document.getElementById('pickupSelect');
+            const dropoff = document.getElementById('dropoffSelect');
+            const temp = pickup.value;
+            pickup.value = dropoff.value;
+            dropoff.value = temp;
+            onRouteChanged();
+        }
+
+        async function onRouteChanged() {
+            const pickup = document.getElementById('pickupSelect').value;
+            const dropoff = document.getElementById('dropoffSelect').value;
+
+            if (pickup === dropoff) {
+                App.showToast('Route Notice', 'Pickup and Destination cannot be identical.', 'pin');
+                return;
+            }
+
+            try {
+                const routeInfo = await App.get(`/api/map/distance?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}`);
+                currentDistance = routeInfo.distance;
+                document.getElementById('distanceDisplay').textContent = App.formatDistance(currentDistance);
+                document.getElementById('durationDisplay').textContent = App.formatDuration(routeInfo.durationMinutes);
+
+                // Fetch fare calculations for all 3 categories
+                const [ecoRes, premRes, suvRes] = await Promise.all([
+                    App.get(`/api/map/estimate-fare?distance=${currentDistance}&cabType=ECONOMY`),
+                    App.get(`/api/map/estimate-fare?distance=${currentDistance}&cabType=PREMIUM`),
+                    App.get(`/api/map/estimate-fare?distance=${currentDistance}&cabType=SUV`)
+                ]);
+
+                calculatedFares.ECONOMY = ecoRes.fare;
+                calculatedFares.PREMIUM = premRes.fare;
+                calculatedFares.SUV = suvRes.fare;
+
+                updateFareDisplays();
+            } catch (err) {
+                console.error('Route calculation error:', err);
+            }
+        }
+
+        function updateFareDisplays() {
+            ['ECONOMY', 'PREMIUM', 'SUV'].forEach(type => {
+                let base = calculatedFares[type];
+                let finalFare = Math.max(30, base - appliedDiscount);
+                const elem = document.getElementById(`fare-${type}`);
+                if (appliedDiscount > 0) {
+                    elem.innerHTML = `<s style="font-size: 13px; color: #94A3B8;">${App.formatCurrency(base)}</s> ${App.formatCurrency(finalFare)}`;
+                } else {
+                    elem.textContent = App.formatCurrency(finalFare);
+                }
+            });
+
+            const finalSelected = Math.max(30, calculatedFares[selectedCabType] - appliedDiscount);
+            document.getElementById('confirmBookBtn').textContent = `Book ${selectedCabType} Now (${App.formatCurrency(finalSelected)})`;
+        }
+
+        function selectCab(type) {
+            selectedCabType = type;
+            document.querySelectorAll('.cab-card').forEach(el => el.classList.remove('selected'));
+            document.getElementById(`opt-${type}`).classList.add('selected');
+            updateFareDisplays();
+        }
+
+        async function applyPromo() {
+            const code = document.getElementById('promoInput').value.trim().toUpperCase();
+            const msgEl = document.getElementById('promoMessage');
+
+            if (!code) {
+                appliedDiscount = 0;
+                currentPromoCode = '';
+                msgEl.style.display = 'none';
+                updateFareDisplays();
+                return;
+            }
+
+            const fare = calculatedFares[selectedCabType];
+            try {
+                const res = await App.get(`/api/promos/validate?code=${encodeURIComponent(code)}&amount=${fare}`);
+                if (res.valid) {
+                    appliedDiscount = res.discount;
+                    currentPromoCode = code;
+                    msgEl.style.display = 'block';
+                    msgEl.style.color = 'var(--success-dark)';
+                    msgEl.innerHTML = `✓ Promo <b>${code}</b> applied! You save ${App.formatCurrency(res.discount)}.`;
+                    App.showToast('Promo Code Applied', `Saved ${App.formatCurrency(res.discount)}!`, 'tag');
+                } else {
+                    appliedDiscount = 0;
+                    currentPromoCode = '';
+                    msgEl.style.display = 'block';
+                    msgEl.style.color = 'var(--danger-dark)';
+                    msgEl.textContent = res.message || 'Invalid promo code';
+                }
+            } catch (err) {
+                appliedDiscount = 0;
+                currentPromoCode = '';
+                msgEl.style.display = 'block';
+                msgEl.style.color = 'var(--danger-dark)';
+                msgEl.textContent = 'Could not validate promo code';
+            }
+            updateFareDisplays();
+        }
+
+        async function confirmBooking() {
+            const pickup = document.getElementById('pickupSelect').value;
+            const dropoff = document.getElementById('dropoffSelect').value;
+
+            if (pickup === dropoff) {
+                App.showToast('Invalid Route', 'Pickup and Dropoff cannot be identical.', 'pin');
+                return;
+            }
+
+            // Redirect to booking page with pre-selected parameters for full animated flow
+            const url = `/booking.html?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}&cabType=${encodeURIComponent(selectedCabType)}${currentPromoCode ? '&promo=' + encodeURIComponent(currentPromoCode) : ''}`;
+            window.location.href = url;
+        }
+
+        async function loadDashboardData() {
+            try {
+                // 1. Check for Active Ride
+                const activeRes = await App.get(`/api/bookings/active/passenger/${user.userId}`);
+                if (activeRes && activeRes.bookingId) {
+                    const activeContainer = document.getElementById('activeRideContainer');
+                    activeContainer.style.display = 'block';
+                    document.getElementById('activePickup').textContent = activeRes.pickupLocation;
+                    document.getElementById('activeDropoff').textContent = activeRes.dropoffLocation;
+                    document.getElementById('activeFare').textContent = App.formatCurrency(activeRes.fare);
+                    document.getElementById('activeCabType').textContent = activeRes.cabType;
+                    
+                    const badge = document.getElementById('activeStatusBadge');
+                    badge.textContent = activeRes.status.replace('_', ' ');
+                    badge.className = `badge badge-${getStatusBadgeClass(activeRes.status)}`;
+                    
+                    document.getElementById('activeTrackBtn').href = `/tracking.html?id=${activeRes.bookingId}`;
+                }
+
+                // 2. Load Booking History & Compute Stats
+                const history = await App.get(`/api/bookings/passenger/${user.userId}`);
+                if (Array.isArray(history)) {
+                    document.getElementById('statTotalRides').textContent = history.length;
+                    const completed = history.filter(b => b.status === 'RIDE_COMPLETED');
+                    document.getElementById('statCompletedRides').textContent = completed.length;
+                    
+                    const totalSpent = completed.reduce((sum, b) => sum + (b.fare || 0), 0);
+                    document.getElementById('statTotalSpent').textContent = App.formatCurrency(totalSpent);
+
+                    renderRecentRides(history.slice(0, 4));
+                }
+
+                // 3. Load Saved Favorites
+                loadFavorites();
+
+            } catch (err) {
+                console.error('Error loading dashboard:', err);
+            }
+        }
+
+        async function loadFavorites() {
+            try {
+                const favs = await App.get(`/api/favorites/${user.userId}`);
+                const container = document.getElementById('favoriteChipsList');
+                container.innerHTML = '';
+
+                if (Array.isArray(favs) && favs.length > 0) {
+                    favs.forEach(fav => {
+                        const chip = document.createElement('a');
+                        chip.className = 'fav-pill';
+                        chip.href = `/booking.html?pickup=${encodeURIComponent(fav.locationName)}`;
+                        chip.innerHTML = `${App.icon('pin', 14, 'var(--primary)')} <span>${fav.label}: <b>${fav.locationName}</b></span>`;
+                        container.appendChild(chip);
+                    });
+                } else {
+                    container.innerHTML = `
+                        <a href="/booking.html?pickup=Kakkanad" class="fav-pill">${App.icon('pin', 14)} Kakkanad</a>
+                        <a href="/booking.html?pickup=Edappally" class="fav-pill">${App.icon('pin', 14)} Edappally</a>
+                        <a href="/booking.html?pickup=Vyttila" class="fav-pill">${App.icon('pin', 14)} Vyttila</a>
+                    `;
+                }
+            } catch (e) {
+                console.error('Failed to load favorites:', e);
+            }
+        }
+
+        function renderRecentRides(rides) {
+            const container = document.getElementById('recentRidesContainer');
+            if (!rides || rides.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 24px; font-size: 13px;">
+                        No rides taken yet. Use the booking card above to request your first cab!
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = rides.map(r => `
+                <div class="ride-item">
+                    <div class="ride-item-route">
+                        <div class="ride-item-icon">
+                            ${App.icon('car', 20)}
+                        </div>
+                        <div>
+                            <div style="font-weight: 800; font-size: 14px; color: var(--navy-900);">
+                                ${r.pickupLocation} ➔ ${r.dropoffLocation}
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                                ${App.formatDate(r.bookingTime)} • <span class="badge badge-neutral" style="padding: 2px 6px; font-size: 10px;">${r.cabType}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right;">
+                        <div style="font-weight: 900; font-size: 16px; color: var(--navy-900);">${App.formatCurrency(r.fare)}</div>
+                        <div style="margin-top: 4px;">
+                            ${r.status === 'RIDE_COMPLETED' 
+                                ? `<a href="/history.html?view=${r.bookingId}" class="btn btn-outline btn-sm">Receipt</a>`
+                                : `<a href="/tracking.html?id=${r.bookingId}" class="btn btn-primary btn-sm">Track ➔</a>`
+                            }
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusBadgeClass(status) {
+            switch(status) {
+                case 'SEARCHING': return 'warning';
+                case 'DRIVER_ASSIGNED': return 'primary';
+                case 'DRIVER_ARRIVING': return 'primary';
+                case 'RIDE_STARTED': return 'success';
+                case 'RIDE_COMPLETED': return 'success';
+                case 'CANCELLED': return 'danger';
+                default: return 'neutral';
+            }
+        }
+    </script>
+</body>
+</html>

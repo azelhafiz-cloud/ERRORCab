@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ride History & Receipts - ERRORCab</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .filter-pills {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .filter-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            border: 1px solid var(--border);
+            padding: 8px 18px;
+            border-radius: var(--radius-full);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .filter-pill:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .filter-pill.active {
+            background: var(--surface-dark);
+            color: white;
+            border-color: var(--surface-dark);
+        }
+
+        .search-input-wrap {
+            position: relative;
+            min-width: 260px;
+        }
+
+        .search-input-wrap .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .search-input-wrap input {
+            padding-left: 40px;
+            height: 42px;
+            font-size: 13px;
+        }
+
+        /* Micro Route Connector */
+        .micro-route {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .micro-route-point {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .micro-dot-green {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+            flex-shrink: 0;
+        }
+
+        .micro-dot-cyan {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            background: var(--primary);
+            box-shadow: 0 0 6px rgba(2, 132, 199, 0.4);
+            flex-shrink: 0;
+        }
+
+        .micro-route-line {
+            width: 1px;
+            height: 10px;
+            background: #CBD5E1;
+            margin-left: 3.5px;
+        }
+
+        /* Tax Invoice Receipt Card */
+        .invoice-paper {
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            padding: 28px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+        }
+
+        .invoice-paper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0284C7, #0EA5E9, #10B981);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed var(--border);
+            margin-bottom: 20px;
+        }
+
+        .invoice-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .invoice-divider {
+            border-top: 1px dashed var(--border);
+            margin: 16px 0;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #receiptModal, #receiptModal * {
+                visibility: visible;
+            }
+            #receiptModal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+            }
+            .modal-card {
+                box-shadow: none;
+                border: none;
+                max-width: 100%;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Topbar -->
+    <header class="topbar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <a href="/passenger-dashboard.html" class="btn btn-secondary btn-sm" id="backBtn" style="padding: 6px 12px;">
+                ❮ Back
+            </a>
+            <div>
+                <div style="font-size: 18px; font-weight: 800; letter-spacing: -0.3px; color: var(--text-dark);">
+                    Ride History & Invoices
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">
+                    ERRORCab Kerala • Trip Audit
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div id="userPill" class="hidden-mobile" style="display: flex; align-items: center; gap: 8px; background: var(--bg-main); padding: 6px 14px; border-radius: var(--radius-full); font-size: 13px; font-weight: 700; border: 1px solid var(--border);">
+                <span id="userNameDisplay">Passenger</span>
+            </div>
+            <button onclick="App.logout()" class="btn btn-outline btn-sm">Sign Out</button>
+        </div>
+    </header>
+
+    <main class="container" style="max-width: 1060px; padding-bottom: 100px; padding-top: 24px;">
+        
+        <!-- Header Banner -->
+        <div style="margin-bottom: 24px;">
+            <h1 style="font-size: 26px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px;">Your Past Trips</h1>
+            <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+                Review ride details, active trip telemetry, and view official GST tax receipts.
+            </p>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-pills">
+                <button class="filter-pill active" onclick="setFilter('ALL', this)">
+                    All Trips (<span id="countAll">0</span>)
+                </button>
+                <button class="filter-pill" onclick="setFilter('COMPLETED', this)">
+                    Completed (<span id="countCompleted">0</span>)
+                </button>
+                <button class="filter-pill" onclick="setFilter('ACTIVE', this)">
+                    In Progress (<span id="countActive">0</span>)
+                </button>
+                <button class="filter-pill" onclick="setFilter('CANCELLED', this)">
+                    Cancelled (<span id="countCancelled">0</span>)
+                </button>
+            </div>
+
+            <div class="search-input-wrap">
+                <div class="search-icon" id="searchIconSlot"></div>
+                <input type="text" id="searchInput" oninput="applyFilters()" class="form-control" placeholder="Search by location, cab, #ID...">
+            </div>
+        </div>
+
+        <!-- Rides Table / Card -->
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="table-container">
+                <table class="table" id="historyTable" style="margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th>Trip #</th>
+                            <th>Date & Time</th>
+                            <th>Route (Pickup ➔ Dropoff)</th>
+                            <th>Cab Type</th>
+                            <th>Fare</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 48px;">
+                                <div class="loading-spinner" style="margin: 0 auto 12px;"></div>
+                                Loading trip records...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Tax Invoice Modal -->
+    <div class="modal-backdrop" id="receiptModal">
+        <div class="modal-card" style="max-width: 500px; padding: 0; overflow: hidden;">
+            <div style="background: var(--surface-dark); color: white; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.2); display: flex; align-items: center; justify-content: center; color: var(--accent);">
+                        <span id="invoiceHeaderIcon"></span>
+                    </div>
+                    <div>
+                        <div style="font-size: 15px; font-weight: 800; letter-spacing: -0.2px;">Tax Invoice & Receipt</div>
+                        <div style="font-size: 11px; color: #94A3B8;">ERRORCab Mobility Services</div>
+                    </div>
+                </div>
+                <button onclick="App.closeModal('receiptModal')" class="btn btn-secondary btn-sm no-print" style="background: rgba(255,255,255,0.1); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; padding: 0;">
+                    ✕
+                </button>
+            </div>
+
+            <div style="padding: 24px;">
+                <div class="invoice-paper" id="receiptContent">
+                    <div class="invoice-header">
+                        <div>
+                            <div style="font-size: 18px; font-weight: 900; letter-spacing: -0.5px; color: var(--surface-dark);">ERRORCab Kerala</div>
+                            <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 2px;">GSTIN: 32AABCE9999Z1Z5</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">SAC: 996412 (Passenger Cab Transport)</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="badge badge-success" style="font-size: 11px; font-weight: 800;">PAID</span>
+                            <div style="font-size: 11px; font-weight: 800; margin-top: 6px; color: var(--surface-dark);" id="recBookingId">#--</div>
+                        </div>
+                    </div>
+
+                    <div class="invoice-row">
+                        <span style="color: var(--text-muted);">Trip Date & Time:</span>
+                        <b id="recDate">--</b>
+                    </div>
+                    <div class="invoice-row">
+                        <span style="color: var(--text-muted);">Cab Category:</span>
+                        <span class="badge badge-secondary" id="recCabType">--</span>
+                    </div>
+
+                    <div class="invoice-divider"></div>
+
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 8px;">
+                            Trip Route
+                        </div>
+                        <div class="micro-route">
+                            <div class="micro-route-point">
+                                <span class="micro-dot-green"></span>
+                                <span style="font-weight: 700;" id="recPickup">--</span>
+                            </div>
+                            <div class="micro-route-line"></div>
+                            <div class="micro-route-point">
+                                <span class="micro-dot-cyan"></span>
+                                <span style="font-weight: 700;" id="recDropoff">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="invoice-divider"></div>
+
+                    <div class="invoice-row">
+                        <span style="color: var(--text-muted);">Base & Distance Charges</span>
+                        <span id="recBaseFare">₹0</span>
+                    </div>
+                    <div class="invoice-row" id="recDiscountRow" style="color: var(--success); display: none;">
+                        <span>Promo Discount (<span id="recPromoCode"></span>)</span>
+                        <b id="recDiscount">-₹0</b>
+                    </div>
+                    <div class="invoice-row">
+                        <span style="color: var(--text-muted);">CGST (2.5%) + SGST (2.5%)</span>
+                        <span id="recGst">₹0</span>
+                    </div>
+
+                    <div class="invoice-divider"></div>
+
+                    <div class="invoice-row" style="font-size: 17px; font-weight: 900; margin-bottom: 0;">
+                        <span>Total Paid</span>
+                        <span id="recTotal" style="color: var(--primary);">₹0</span>
+                    </div>
+
+                    <div style="margin-top: 16px; background: #F8FAFC; padding: 10px; border-radius: var(--radius-sm); text-align: center; font-size: 11px; color: var(--text-muted);">
+                        Paid electronically via ERRORCab Cashless UPI • "Book Smart. Ride Safe."
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 20px;" class="no-print">
+                    <button type="button" onclick="window.print()" class="btn btn-secondary btn-block" id="printBtnSlot">
+                        Print Invoice
+                    </button>
+                    <button type="button" onclick="App.closeModal('receiptModal')" class="btn btn-primary btn-block">
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <a href="/passenger-dashboard.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon" id="navHomeIcon"></span>
+            <span>Home</span>
+        </a>
+        <a href="/booking.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon" id="navBookIcon"></span>
+            <span>Book</span>
+        </a>
+        <a href="/history.html" class="bottom-nav-item active">
+            <span class="bottom-nav-icon" id="navHistoryIcon"></span>
+            <span>History</span>
+        </a>
+        <a href="/profile.html" class="bottom-nav-item">
+            <span class="bottom-nav-icon" id="navProfileIcon"></span>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <script src="/js/app.js"></script>
+    <script>
+        const user = App.requireAuth();
+        let allTrips = [];
+        let currentFilter = 'ALL';
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Render SVG icons
+            document.getElementById('searchIconSlot').innerHTML = App.icon('search', 16);
+            document.getElementById('invoiceHeaderIcon').innerHTML = App.icon('receipt', 18);
+            document.getElementById('printBtnSlot').innerHTML = `${App.icon('printer', 16)} Print Invoice`;
+            
+            document.getElementById('navHomeIcon').innerHTML = App.icon('home', 20);
+            document.getElementById('navBookIcon').innerHTML = App.icon('car', 20);
+            document.getElementById('navHistoryIcon').innerHTML = App.icon('clock', 20);
+            document.getElementById('navProfileIcon').innerHTML = App.icon('user', 20);
+
+            if (user) {
+                document.getElementById('userNameDisplay').textContent = user.name || 'User';
+                if (user.role === 'DRIVER') {
+                    document.getElementById('backBtn').href = '/driver-dashboard.html';
+                } else if (user.role === 'ADMIN') {
+                    document.getElementById('backBtn').href = '/admin-dashboard.html';
+                }
+            }
+
+            await loadHistory();
+
+            // Check if URL specifies auto-opening a receipt
+            const params = new URLSearchParams(window.location.search);
+            const viewId = params.get('view');
+            if (viewId) {
+                const target = allTrips.find(t => (t.bookingId == viewId || t.id == viewId));
+                if (target) showReceipt(target);
+            }
+        });
+
+        async function loadHistory() {
+            try {
+                let url = '';
+                if (user.role === 'PASSENGER') {
+                    url = `/api/bookings/passenger/${user.userId}`;
+                } else if (user.role === 'DRIVER') {
+                    url = `/api/bookings/driver/${user.userId}`;
+                } else {
+                    url = `/api/admin/rides`;
+                }
+
+                allTrips = await App.get(url);
+                updateCounts();
+                applyFilters();
+            } catch (err) {
+                console.error('Failed to load history:', err);
+                document.getElementById('historyTableBody').innerHTML = `
+                    <tr><td colspan="7" style="text-align:center; color:var(--danger); padding:32px;">Failed to load ride history. Please refresh.</td></tr>
+                `;
+            }
+        }
+
+        function updateCounts() {
+            const completed = allTrips.filter(t => t.status === 'RIDE_COMPLETED').length;
+            const cancelled = allTrips.filter(t => t.status === 'CANCELLED').length;
+            const active = allTrips.filter(t => t.status !== 'RIDE_COMPLETED' && t.status !== 'CANCELLED').length;
+
+            document.getElementById('countAll').textContent = allTrips.length;
+            document.getElementById('countCompleted').textContent = completed;
+            document.getElementById('countActive').textContent = active;
+            document.getElementById('countCancelled').textContent = cancelled;
+        }
+
+        function setFilter(filter, el) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            let filtered = allTrips.filter(t => {
+                const bookingId = t.bookingId || t.id;
+                const pickup = t.pickupLocation || t.pickup || '';
+                const dropoff = t.dropoffLocation || t.dropoff || '';
+                const cabType = t.cabType || '';
+
+                if (currentFilter === 'COMPLETED' && t.status !== 'RIDE_COMPLETED') return false;
+                if (currentFilter === 'CANCELLED' && t.status !== 'CANCELLED') return false;
+                if (currentFilter === 'ACTIVE' && (t.status === 'RIDE_COMPLETED' || t.status === 'CANCELLED')) return false;
+
+                if (query) {
+                    const matchId = String(bookingId).includes(query);
+                    const matchPickup = pickup.toLowerCase().includes(query);
+                    const matchDropoff = dropoff.toLowerCase().includes(query);
+                    const matchCab = cabType.toLowerCase().includes(query);
+                    return matchId || matchPickup || matchDropoff || matchCab;
+                }
+
+                return true;
+            });
+
+            renderTable(filtered);
+        }
+
+        function renderTable(trips) {
+            const tbody = document.getElementById('historyTableBody');
+            if (!trips || trips.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 48px;">
+                            <div style="font-size: 36px; margin-bottom: 8px;">📭</div>
+                            <div style="font-weight: 700; color: var(--text-dark);">No matching trips found</div>
+                            <div style="font-size: 13px;">Your completed and past rides will be listed here.</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = trips.map(t => {
+                const id = t.bookingId || t.id;
+                const pickup = t.pickupLocation || t.pickup || 'Pickup';
+                const dropoff = t.dropoffLocation || t.dropoff || 'Dropoff';
+                const time = t.bookingTime || t.createdAt;
+                const fare = t.fare || 0;
+                const status = t.status || 'SEARCHING';
+                const isCompleted = status === 'RIDE_COMPLETED';
+                const isCancelled = status === 'CANCELLED';
+
+                return `
+                    <tr>
+                        <td>
+                            <span style="font-family: monospace; font-weight: 800; background: var(--bg-main); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; font-size: 13px;">
+                                #${id}
+                            </span>
+                        </td>
+                        <td style="white-space: nowrap; font-size: 13px; color: var(--text-dark);">
+                            ${App.formatDate(time)}
+                        </td>
+                        <td>
+                            <div class="micro-route">
+                                <div class="micro-route-point">
+                                    <span class="micro-dot-green"></span>
+                                    <span style="font-weight: 700;">${pickup}</span>
+                                </div>
+                                <div class="micro-route-line"></div>
+                                <div class="micro-route-point">
+                                    <span class="micro-dot-cyan"></span>
+                                    <span style="font-weight: 700;">${dropoff}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-secondary" style="display: inline-flex; align-items: center; gap: 4px;">
+                                ${App.icon('car', 12)} ${t.cabType || 'Cab'}
+                            </span>
+                        </td>
+                        <td style="font-weight: 800; font-size: 15px; color: var(--surface-dark);">
+                            ${App.formatCurrency(fare)}
+                        </td>
+                        <td>
+                            <span class="badge badge-${getStatusBadge(status)}" style="display: inline-flex; align-items: center; gap: 6px;">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
+                                ${status.replace('_', ' ')}
+                            </span>
+                        </td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            ${isCompleted 
+                                ? `<button onclick="showReceiptById(${id})" class="btn btn-secondary btn-sm" style="font-weight: 700; gap: 6px;">
+                                    ${App.icon('receipt', 14)} Invoice
+                                   </button>`
+                                : (!isCancelled 
+                                    ? `<a href="/tracking.html?id=${id}" class="btn btn-primary btn-sm" style="font-weight: 700; gap: 6px;">
+                                        <span class="live-pulse" style="width: 6px; height: 6px;"></span> Track
+                                       </a>` 
+                                    : `<span style="font-size: 12px; color: var(--text-muted);">Cancelled</span>`
+                                  )
+                            }
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function showReceiptById(id) {
+            const trip = allTrips.find(t => (t.bookingId == id || t.id == id));
+            if (trip) showReceipt(trip);
+        }
+
+        function showReceipt(trip) {
+            const id = trip.bookingId || trip.id;
+            document.getElementById('recBookingId').textContent = `#${id}`;
+            document.getElementById('recDate').textContent = App.formatDate(trip.bookingTime || trip.createdAt);
+            document.getElementById('recCabType').textContent = trip.cabType || 'ECONOMY';
+            document.getElementById('recPickup').textContent = trip.pickupLocation || trip.pickup;
+            document.getElementById('recDropoff').textContent = trip.dropoffLocation || trip.dropoff;
+
+            const total = trip.fare || 0;
+            const discount = trip.discount || 0;
+            const subtotal = total + discount;
+            const gst = Math.round(total * 0.05);
+
+            document.getElementById('recBaseFare').textContent = App.formatCurrency(subtotal);
+            
+            if (discount > 0) {
+                document.getElementById('recDiscountRow').style.display = 'flex';
+                document.getElementById('recDiscount').textContent = `-${App.formatCurrency(discount)}`;
+                document.getElementById('recPromoCode').textContent = trip.promoCode || 'PROMO';
+            } else {
+                document.getElementById('recDiscountRow').style.display = 'none';
+            }
+
+            document.getElementById('recGst').textContent = App.formatCurrency(gst);
+            document.getElementById('recTotal').textContent = App.formatCurrency(total);
+
+            App.openModal('receiptModal');
+        }
+
+        function getStatusBadge(status) {
+            switch(status) {
+                case 'RIDE_COMPLETED': return 'success';
+                case 'CANCELLED': return 'danger';
+                case 'SEARCHING': return 'warning';
+                default: return 'primary';
+            }
+        }
+    </script>
+</body>
+</html>
