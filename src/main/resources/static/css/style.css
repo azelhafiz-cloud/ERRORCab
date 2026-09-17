@@ -282,6 +282,9 @@ html {
     font-size: 16px;
     scroll-behavior: smooth;
     color-scheme: light dark;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 body {
@@ -294,7 +297,10 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    max-width: 100%;
     overflow-x: hidden;
+    position: relative;
     transition: background-color var(--transition-base), color var(--transition-base);
 }
 
@@ -1518,12 +1524,197 @@ body {
 }
 
 /* ==========================================================================
-   18. RESPONSIVE BREAKPOINTS (MOBILE FIRST ADAPTATIONS)
+   18. COMPONENT EXTENSIONS (MAP VIEWPORT, STEPPERS, TRIP CARDS, AUTH THEME)
    ========================================================================== */
-@media (max-width: 850px) {
+.map-viewport {
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-sizing: border-box;
+}
+
+.map-viewport canvas {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* Trip Route & Metric Display */
+.trip-info-card {
+    background: var(--bg-card-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.trip-info-route {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.trip-info-point {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.trip-info-point-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    min-width: 72px;
+    flex-shrink: 0;
+}
+
+.trip-info-arrow {
+    font-size: 12px;
+    color: var(--primary);
+    padding-left: 20px;
+    font-weight: 800;
+}
+
+.trip-metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+}
+
+.trip-metric-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.trip-metric-label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.trip-metric-value {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+}
+
+/* Stepper Bar */
+.ride-stepper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    position: relative;
+    margin: 16px 0;
+    gap: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ride-stepper::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: var(--border);
+    z-index: 1;
+}
+
+.ride-step {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+    gap: 6px;
+}
+
+.ride-step-node {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    color: var(--text-muted);
+    font-weight: 800;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.ride-step-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.ride-step.active .ride-step-node {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 0 12px var(--primary-glow);
+}
+
+.ride-step.active .ride-step-label {
+    color: var(--primary);
+    font-weight: 800;
+}
+
+.ride-step.completed .ride-step-node {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+}
+
+.ride-step.completed .ride-step-label {
+    color: var(--success);
+}
+
+/* Auth Page Theme Slot */
+.auth-theme-slot {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    z-index: 10;
+}
+
+/* ==========================================================================
+   19. RESPONSIVE BREAKPOINTS (MOBILE-FIRST ADAPTATIONS)
+   ========================================================================== */
+@media (max-width: 900px) {
     .cab-grid {
         grid-template-columns: 1fr;
     }
+}
+
+@media (max-width: 850px) {
     .bottom-nav {
         display: flex;
     }
@@ -1534,16 +1725,27 @@ body {
         padding: 10px 14px;
         flex-wrap: wrap;
         gap: 8px;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    .topbar-brand {
+        min-width: 0;
+        max-width: 100%;
     }
     .topbar-actions {
         flex-wrap: wrap;
         gap: 8px;
         justify-content: flex-end;
+        min-width: 0;
+        max-width: 100%;
     }
     #themeSelectorSlot {
         width: 100%;
         order: 10;
         margin-top: 2px;
+        min-width: 0;
+        max-width: 100%;
     }
     .desktop-only {
         display: none !important;
@@ -1578,6 +1780,7 @@ body {
         padding: 2px;
         gap: 3px;
         border-radius: var(--radius-full);
+        overflow: hidden;
     }
     .theme-btn {
         flex: 1 1 0;
@@ -1591,12 +1794,17 @@ body {
         min-height: 38px; /* Touch target >= 38px */
         border-radius: var(--radius-full);
         box-sizing: border-box;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     .driver-cockpit-header {
         flex-direction: column;
         align-items: stretch;
         padding: 18px 16px;
         gap: 16px;
+        box-sizing: border-box;
+        width: 100%;
     }
     .driver-cockpit-info {
         flex: 1 1 100%;
@@ -1620,6 +1828,9 @@ body {
 @media (max-width: 640px) {
     .container {
         padding: 14px 12px;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
     }
     .hero-banner {
         padding: 22px 18px;
@@ -1629,7 +1840,18 @@ body {
         font-size: 15px;
     }
     .grid-kpi {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+    }
+    .quick-actions-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .search-input-wrap {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+    .filter-pills {
+        max-width: 100% !important;
+        width: 100% !important;
     }
     .toast-container {
         left: 14px;
@@ -1639,6 +1861,40 @@ body {
     .toast {
         min-width: unset;
         max-width: 100%;
+    }
+    .modal-card {
+        max-width: calc(100vw - 28px) !important;
+        padding: 20px 16px !important;
+        box-sizing: border-box;
+    }
+    /* Auth Page Theme Slot repositioning on mobile */
+    .auth-wrapper {
+        padding: 24px 16px !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        box-sizing: border-box;
+    }
+    .auth-theme-slot {
+        position: static !important;
+        top: auto !important;
+        right: auto !important;
+        margin-bottom: 18px !important;
+        width: 100% !important;
+        max-width: 460px !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+    .auth-card {
+        padding: 28px 20px !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .demo-pill {
+        padding: 8px 10px !important;
+        font-size: 11.5px !important;
+        gap: 6px !important;
+        flex-wrap: wrap !important;
     }
 }
 
@@ -1678,12 +1934,35 @@ body {
         padding: 8px 12px;
         font-size: 13px;
     }
+    .card {
+        padding: 18px 14px;
+    }
+    .active-trip-card {
+        padding: 18px 14px;
+    }
+    .payment-option-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .payment-chip {
+        flex-direction: row !important;
+        justify-content: center !important;
+        padding: 10px 14px !important;
+    }
+    .map-viewport {
+        height: 300px !important;
+    }
 }
 
 /* Micro Devices (320px - 360px) */
 @media (max-width: 360px) {
     .container {
         padding: 10px 8px;
+    }
+    .card {
+        padding: 14px 10px;
+    }
+    .topbar {
+        padding: 6px 8px;
     }
     .driver-cockpit-header {
         padding: 14px 10px;
@@ -1697,8 +1976,162 @@ body {
     .driver-duty-toggle-wrapper {
         width: 100%;
     }
+    .theme-control-wrapper {
+        padding: 4px 6px;
+        gap: 3px;
+    }
+    .theme-control-label {
+        font-size: 9px;
+    }
     .theme-btn {
-        padding: 7px 2px;
-        font-size: 11.5px;
+        padding: 5px 2px;
+        font-size: 10.5px;
+        min-height: 32px;
+    }
+    .auth-card {
+        padding: 20px 12px !important;
+    }
+    .auth-wrapper {
+        padding: 14px 8px !important;
+    }
+    .map-viewport {
+        height: 260px !important;
     }
 }
+
+/* ==========================================================================
+   24. NOTIFICATIONS, TABS, SCHEDULED RIDES & CHARTS
+   ========================================================================== */
+.bell-badge-wrap {
+    position: relative;
+    display: inline-flex;
+}
+.bell-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #EF4444;
+    color: #FFFFFF;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 9999px;
+    line-height: 1.2;
+    border: 2px solid var(--bg-card);
+    display: none;
+    z-index: 2;
+}
+
+.tab-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    overflow-x: auto;
+    max-width: 100%;
+}
+.tab-item {
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.tab-item:hover {
+    color: var(--text-primary);
+    background: var(--bg-card-subtle);
+}
+.tab-item.active {
+    color: var(--primary);
+    background: var(--primary-subtle);
+}
+
+.scheduled-ride-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    box-shadow: var(--shadow-sm);
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.earnings-chart-card {
+    padding: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 24px;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+.chart-bars-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    height: 140px;
+    padding-top: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    box-sizing: border-box;
+}
+.chart-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+    justify-content: flex-end;
+}
+.chart-bar-fill {
+    width: 100%;
+    max-width: 32px;
+    background: linear-gradient(180deg, var(--primary), #0284C7);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.5s ease;
+    min-height: 4px;
+}
+.chart-bar-fill:hover {
+    filter: brightness(1.15);
+}
+.chart-day-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.chart-val-label {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.cab-dist-track {
+    display: flex;
+    height: 16px;
+    border-radius: 9999px;
+    overflow: hidden;
+    background: var(--bg-card-subtle);
+    margin: 12px 0 16px 0;
+    box-sizing: border-box;
+}
+.cab-dist-segment {
+    height: 100%;
+    transition: width 0.4s ease;
+}
+

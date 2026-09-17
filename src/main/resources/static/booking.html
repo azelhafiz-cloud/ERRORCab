@@ -163,6 +163,27 @@
             
             <!-- Left Column: Route, Cab Selection & Payment Form -->
             <div>
+                <!-- Ride Mode Toggle: Now vs Schedule -->
+                <div class="tab-nav" style="margin-bottom: 18px;">
+                    <button type="button" class="tab-nav-item active" id="tabRideNow" onclick="setRideMode('now')">
+                        ⚡ Ride Now
+                    </button>
+                    <button type="button" class="tab-nav-item" id="tabSchedule" onclick="setRideMode('schedule')">
+                        📅 Schedule for Later
+                    </button>
+                </div>
+
+                <!-- Schedule Date & Time Picker (Visible only in schedule mode) -->
+                <div id="scheduleTimeGroup" style="display: none; margin-bottom: 20px; background: var(--bg-card); border: 1.5px solid var(--primary-border); padding: 18px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+                    <label class="form-label" style="font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Pickup Date & Time
+                    </label>
+                    <input type="datetime-local" id="scheduleDateTime" class="form-control" style="font-size: 14px; max-width: 320px;">
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+                        Select a future pickup time (at least 15 minutes ahead). Your cab reservation will be scheduled automatically.
+                    </div>
+                </div>
                 
                 <!-- 1. Route Selector Card -->
                 <div class="card" style="margin-bottom: 20px;">
@@ -198,10 +219,30 @@
                         </div>
                     </div>
 
-                    <!-- Telemetry Stats -->
-                    <div style="display: flex; justify-content: space-between; background: var(--bg-card-subtle); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; border: 1px solid var(--border);">
-                        <div>Calculated Distance: <b style="color: var(--text-primary);" id="distanceDisplay">9.2 km</b></div>
-                        <div>Est. Duration: <b style="color: var(--text-primary);" id="durationDisplay">24 mins</b></div>
+                    <!-- Itinerary Summary & Telemetry -->
+                    <div class="trip-info-card">
+                        <div class="trip-info-route">
+                            <div class="trip-info-point">
+                                <span class="trip-info-point-label">Pickup:</span>
+                                <b id="summaryPickupText" style="color: var(--text-primary);">Kakkanad</b>
+                            </div>
+                            <div class="trip-info-arrow">↓ Route</div>
+                            <div class="trip-info-point">
+                                <span class="trip-info-point-label">Destination:</span>
+                                <b id="summaryDropoffText" style="color: var(--text-primary);">Vyttila</b>
+                            </div>
+                        </div>
+
+                        <div class="trip-metrics-grid">
+                            <div class="trip-metric-item">
+                                <span class="trip-metric-label">Distance:</span>
+                                <span class="trip-metric-value" id="distanceDisplay">9.2 km</span>
+                            </div>
+                            <div class="trip-metric-item">
+                                <span class="trip-metric-label">Estimated Time:</span>
+                                <span class="trip-metric-value" id="durationDisplay">24 mins</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -286,7 +327,7 @@
                     </div>
 
                     <!-- Confirm Booking CTA -->
-                    <button type="button" id="confirmBookBtn" onclick="confirmBooking()" class="btn btn-primary btn-block btn-lg" style="font-weight: 900;">
+                    <button type="button" id="confirmBookBtn" onclick="handleConfirmAction()" class="btn btn-primary btn-block btn-lg" style="font-weight: 900;">
                         Confirm & Book Economy (₹ --)
                     </button>
                 </div>
@@ -394,6 +435,19 @@
         let currentDistance = 9.2;
         let appliedDiscount = 0;
         let currentPromoCode = '';
+        let currentRideMode = 'now'; // 'now' or 'schedule'
+
+        function setSelectValueSafely(selectElem, val) {
+            if (!selectElem || !val) return;
+            for (let i = 0; i < selectElem.options.length; i++) {
+                if (selectElem.options[i].value.toLowerCase() === val.toLowerCase()) {
+                    selectElem.selectedIndex = i;
+                    return;
+                }
+            }
+            selectElem.add(new Option(val, val));
+            selectElem.value = val;
+        }
 
         window.addEventListener('DOMContentLoaded', async () => {
             App.initTheme();
@@ -403,19 +457,23 @@
             simMap = new SimulatedMap('bookingMapCanvas');
             await loadLocations();
 
-            // Read URL query parameters if navigated from passenger dashboard
+            // Read URL query parameters for Book Again or prefill
             const params = new URLSearchParams(window.location.search);
             const p = params.get('pickup');
-            const d = params.get('dropoff');
+            const d = params.get('dropoff') || params.get('destination');
             const c = params.get('cabType');
             const pr = params.get('promo');
+            const mode = params.get('mode');
 
-            if (p) document.getElementById('pickupSelect').value = p;
-            if (d) document.getElementById('dropoffSelect').value = d;
+            if (p) setSelectValueSafely(document.getElementById('pickupSelect'), p);
+            if (d) setSelectValueSafely(document.getElementById('dropoffSelect'), d);
             if (c) selectCab(c);
             if (pr) {
                 document.getElementById('promoInput').value = pr;
                 applyPromo();
+            }
+            if (mode === 'schedule') {
+                setRideMode('schedule');
             }
 
             onRouteChanged();
@@ -460,15 +518,20 @@
                 return;
             }
 
-            if (simMap) {
-                simMap.setRoute(pickup, dropoff);
-            }
-
             try {
                 const routeInfo = await App.get(`/api/map/distance?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}`);
                 currentDistance = routeInfo.distance;
                 document.getElementById('distanceDisplay').textContent = App.formatDistance(currentDistance);
                 document.getElementById('durationDisplay').textContent = App.formatDuration(routeInfo.durationMinutes);
+
+                const pText = document.getElementById('summaryPickupText');
+                const dText = document.getElementById('summaryDropoffText');
+                if (pText) pText.textContent = pickup;
+                if (dText) dText.textContent = dropoff;
+
+                if (simMap) {
+                    simMap.setRoute(pickup, dropoff, currentDistance, routeInfo.durationMinutes);
+                }
 
                 const [ecoRes, premRes, suvRes] = await Promise.all([
                     App.get(`/api/map/estimate-fare?distance=${currentDistance}&cabType=ECONOMY`),
@@ -499,7 +562,11 @@
             });
 
             const finalSelected = Math.max(30, calculatedFares[selectedCabType] - appliedDiscount);
-            document.getElementById('confirmBookBtn').textContent = `Confirm & Book ${selectedCabType} (${App.formatCurrency(finalSelected)})`;
+            if (currentRideMode === 'schedule') {
+                document.getElementById('confirmBookBtn').textContent = `Confirm Schedule ${selectedCabType} (${App.formatCurrency(finalSelected)})`;
+            } else {
+                document.getElementById('confirmBookBtn').textContent = `Confirm & Book ${selectedCabType} (${App.formatCurrency(finalSelected)})`;
+            }
         }
 
         function selectCab(type) {
@@ -629,6 +696,102 @@
                 updateFareDisplays();
                 App.closeModal('searchingModal');
                 App.showToast('Booking Failed', err.message || 'Unable to create booking', 'alertTriangle');
+            }
+        }
+
+        function setRideMode(mode) {
+            currentRideMode = mode;
+            const tabNow = document.getElementById('tabRideNow');
+            const tabSched = document.getElementById('tabSchedule');
+            const schedGroup = document.getElementById('scheduleTimeGroup');
+            const dtInput = document.getElementById('scheduleDateTime');
+
+            if (mode === 'schedule') {
+                tabNow.classList.remove('active');
+                tabSched.classList.add('active');
+                schedGroup.style.display = 'block';
+
+                // Set minimum time to 15 minutes in the future
+                const minDate = new Date(Date.now() + 15 * 60000);
+                const localMin = new Date(minDate.getTime() - minDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                dtInput.min = localMin;
+                if (!dtInput.value) {
+                    const defaultDate = new Date(Date.now() + 30 * 60000);
+                    dtInput.value = new Date(defaultDate.getTime() - defaultDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                }
+            } else {
+                tabNow.classList.add('active');
+                tabSched.classList.remove('active');
+                schedGroup.style.display = 'none';
+            }
+            updateFareDisplays();
+        }
+
+        function handleConfirmAction() {
+            if (currentRideMode === 'schedule') {
+                confirmScheduleBooking();
+            } else {
+                confirmBooking();
+            }
+        }
+
+        async function confirmScheduleBooking() {
+            const pickup = document.getElementById('pickupSelect').value;
+            const dropoff = document.getElementById('dropoffSelect').value;
+
+            if (pickup === dropoff) {
+                App.showToast('Invalid Route', 'Pickup and Dropoff cannot be identical.', 'pin');
+                return;
+            }
+
+            const dtInput = document.getElementById('scheduleDateTime');
+            const scheduleVal = dtInput.value;
+            if (!scheduleVal) {
+                App.showToast('Time Required', 'Please choose a pickup date & time for your scheduled ride.', 'alertTriangle');
+                dtInput.focus();
+                return;
+            }
+
+            const chosenTime = new Date(scheduleVal).getTime();
+            if (isNaN(chosenTime) || chosenTime < Date.now() + 10 * 60000) {
+                App.showToast('Invalid Time', 'Scheduled time must be at least 15 minutes into the future.', 'alertTriangle');
+                return;
+            }
+
+            const btn = document.getElementById('confirmBookBtn');
+            btn.disabled = true;
+            btn.textContent = 'Scheduling...';
+
+            const finalFare = Math.max(30, calculatedFares[selectedCabType] - appliedDiscount);
+
+            try {
+                const bookingData = {
+                    passengerId: user.userId,
+                    pickup: pickup,
+                    destination: dropoff,
+                    pickupLocation: pickup,
+                    dropoffLocation: dropoff,
+                    cabType: selectedCabType,
+                    distanceKm: currentDistance,
+                    estimatedMinutes: Math.round(currentDistance * 2.5),
+                    fare: finalFare,
+                    paymentMethod: selectedPaymentMethod,
+                    promoCode: currentPromoCode,
+                    scheduledTime: new Date(scheduleVal).toISOString()
+                };
+
+                const res = await App.post('/api/bookings/schedule', bookingData);
+                const scheduledDateFormatted = new Date(scheduleVal).toLocaleString('en-IN', {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                App.showToast('Ride Scheduled!', `Reserved ${selectedCabType} for ${scheduledDateFormatted}`, 'checkCircle');
+                setTimeout(() => {
+                    window.location.href = '/passenger-dashboard.html';
+                }, 1400);
+            } catch (err) {
+                btn.disabled = false;
+                updateFareDisplays();
+                App.showToast('Scheduling Failed', err.message || 'Could not schedule ride', 'alertTriangle');
             }
         }
     </script>

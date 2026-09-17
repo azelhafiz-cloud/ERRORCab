@@ -11,6 +11,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -75,5 +77,69 @@ public class PaymentRepository {
             e.printStackTrace();
         }
         return 0.0;
+    }
+
+    public List<java.util.Map<String, Object>> findPaymentsByUser(int userId) {
+        List<java.util.Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT p.id, p.booking_id, p.amount, p.method, p.status, p.transaction_ref, p.paid_at, " +
+                "b.booking_code, b.pickup_location, b.destination_location " +
+                "FROM payments p " +
+                "JOIN bookings b ON p.booking_id = b.id " +
+                "WHERE b.passenger_id = ? OR b.driver_id = ? " +
+                "ORDER BY p.id DESC";
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(java.util.Map.of(
+                            "id", rs.getInt("id"),
+                            "bookingId", rs.getInt("booking_id"),
+                            "bookingCode", rs.getString("booking_code"),
+                            "amount", rs.getDouble("amount"),
+                            "method", rs.getString("method"),
+                            "status", rs.getString("status"),
+                            "transactionRef", rs.getString("transaction_ref"),
+                            "paidAt", rs.getString("paid_at"),
+                            "pickupLocation", rs.getString("pickup_location"),
+                            "destinationLocation", rs.getString("destination_location")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<java.util.Map<String, Object>> findAllPayments() {
+        List<java.util.Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT p.id, p.booking_id, p.amount, p.method, p.status, p.transaction_ref, p.paid_at, " +
+                "b.booking_code, b.pickup_location, b.destination_location " +
+                "FROM payments p " +
+                "JOIN bookings b ON p.booking_id = b.id " +
+                "ORDER BY p.id DESC";
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(java.util.Map.of(
+                        "id", rs.getInt("id"),
+                        "bookingId", rs.getInt("booking_id"),
+                        "bookingCode", rs.getString("booking_code"),
+                        "amount", rs.getDouble("amount"),
+                        "method", rs.getString("method"),
+                        "status", rs.getString("status"),
+                        "transactionRef", rs.getString("transaction_ref"),
+                        "paidAt", rs.getString("paid_at"),
+                        "pickupLocation", rs.getString("pickup_location"),
+                        "destinationLocation", rs.getString("destination_location")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

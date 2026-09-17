@@ -69,4 +69,12 @@ public class PaymentService {
     public double getTotalRevenue() {
         return paymentRepo.getTotalRevenue();
     }
+
+    public java.util.List<java.util.Map<String, Object>> getPaymentsByUser(int userId) {
+        return paymentRepo.findPaymentsByUser(userId);
+    }
+
+    public java.util.List<java.util.Map<String, Object>> getAllPayments() {
+        return paymentRepo.findAllPayments();
+    }
 }

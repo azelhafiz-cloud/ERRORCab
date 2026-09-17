@@ -99,10 +99,21 @@ public class MapService {
             return distanceMatrix.get(key);
         }
 
-        // Coordinate-based geometric fallback if not directly in matrix
+        // Geographic coordinate calculation (Haversine formula + urban road circuity factor)
         Location locFrom = locations.get(from);
         Location locTo = locations.get(to);
         if (locFrom != null && locTo != null) {
+            if (locFrom.getLatitude() != 0 && locTo.getLatitude() != 0) {
+                double directKm = calculateHaversineDistanceKm(
+                        locFrom.getLatitude(), locFrom.getLongitude(),
+                        locTo.getLatitude(), locTo.getLongitude()
+                );
+                // Realistic urban road circuity factor of 1.30x
+                double roadDistanceKm = Math.round((directKm * 1.30) * 10.0) / 10.0;
+                return Math.max(2.5, roadDistanceKm);
+            }
+
+            // Fallback to canvas map coordinates
             double dx = locTo.getMapX() - locFrom.getMapX();
             double dy = locTo.getMapY() - locFrom.getMapY();
             double pixelDist = Math.sqrt(dx * dx + dy * dy);
@@ -113,8 +124,19 @@ public class MapService {
         return 8.0;
     }
 
+    private double calculateHaversineDistanceKm(double lat1, double lon1, double lat2, double lon2) {
+        final double R = 6371.0; // Earth radius in km
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
     public int getEstimatedMinutes(double distanceKm) {
-        // Average Indian urban transit speed ~ 22-25 km/h + 2 min buffer
+        // Average Indian urban transit speed ~ 23 km/h
         int minutes = (int) Math.round((distanceKm / 23.0) * 60.0);
         return Math.max(5, minutes);
     }

@@ -200,6 +200,26 @@ public class DatabaseManager {
             try {
                 stmt.execute("ALTER TABLE bookings ADD COLUMN discount REAL DEFAULT 0.0;");
             } catch (SQLException ignored) {}
+            try {
+                stmt.execute("ALTER TABLE bookings ADD COLUMN otp TEXT;");
+            } catch (SQLException ignored) {}
+            try {
+                stmt.execute("ALTER TABLE bookings ADD COLUMN declined_driver_ids TEXT;");
+            } catch (SQLException ignored) {}
+            try {
+                stmt.execute("ALTER TABLE bookings ADD COLUMN scheduled_time TEXT;");
+            } catch (SQLException ignored) {}
+            try {
+                stmt.execute("ALTER TABLE bookings ADD COLUMN is_scheduled INTEGER DEFAULT 0;");
+            } catch (SQLException ignored) {}
+
+            // Drivers acceptance rate counters
+            try {
+                stmt.execute("ALTER TABLE drivers ADD COLUMN requests_received_count INTEGER DEFAULT 0;");
+            } catch (SQLException ignored) {}
+            try {
+                stmt.execute("ALTER TABLE drivers ADD COLUMN requests_accepted_count INTEGER DEFAULT 0;");
+            } catch (SQLException ignored) {}
 
         } catch (SQLException e) {
             System.err.println("Database initialization error: " + e.getMessage());

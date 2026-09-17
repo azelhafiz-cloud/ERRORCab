@@ -381,6 +381,7 @@ const App = {
     lastNotificationCount: 0,
     initNotificationPoller(userId) {
         if (!userId) return;
+        this.refreshUnreadBadge(userId);
         setInterval(async () => {
             try {
                 const notifs = await this.get(`/api/notifications/${userId}`);
@@ -389,8 +390,138 @@ const App = {
                     this.showToast(latest.title, latest.message, 'bell');
                 }
                 this.lastNotificationCount = notifs ? notifs.length : 0;
+                this.refreshUnreadBadge(userId);
             } catch (e) {}
         }, 4000);
+    },
+
+    async refreshUnreadBadge(userId) {
+        if (!userId) {
+            const u = this.getUser();
+            if (!u) return;
+            userId = u.userId;
+        }
+        try {
+            const res = await this.get(`/api/notifications/${userId}/unread-count`);
+            const count = res && typeof res.count === 'number' ? res.count : 0;
+            document.querySelectorAll('.bell-badge, #unreadBadge').forEach(badge => {
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : count;
+                    badge.style.display = 'inline-flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+        } catch (e) {}
+    },
+
+    async toggleNotifications() {
+        const modal = document.getElementById('notificationCenterModal');
+        if (modal && modal.classList.contains('open')) {
+            this.closeModal('notificationCenterModal');
+        } else {
+            await this.openNotificationCenter();
+        }
+    },
+
+    async openNotificationCenter() {
+        const user = this.getUser();
+        if (!user) return;
+
+        let modal = document.getElementById('notificationCenterModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'notificationCenterModal';
+            modal.className = 'modal-backdrop';
+            modal.innerHTML = `
+                <div class="modal-card notification-center-card" style="max-width: 520px; width: 95%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 14px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="display: flex; align-items: center; color: var(--primary);">${this.icon('bell', 20)}</span>
+                            <h2 style="font-size: 18px; font-weight: 800; margin: 0; color: var(--text-primary);">Notification Center</h2>
+                            <span id="notifCenterCountBadge" class="badge badge-primary" style="font-size: 11px;"></span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button type="button" onclick="App.markAllNotificationsRead(${user.userId})" class="btn btn-outline btn-sm" style="font-size: 11px; padding: 4px 8px;">Mark All Read</button>
+                            <button type="button" onclick="App.closeModal('notificationCenterModal')" class="modal-close" style="font-size: 20px; line-height: 1; border: none; background: none; cursor: pointer; color: var(--text-muted);">&times;</button>
+                        </div>
+                    </div>
+                    <div id="notificationCenterList" style="max-height: 380px; overflow-y: auto; padding-right: 4px;">
+                        <div style="text-align: center; color: var(--text-muted); padding: 24px;">Loading alerts...</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        this.openModal('notificationCenterModal');
+        await this.renderNotificationList(user.userId);
+    },
+
+    async renderNotificationList(userId) {
+        const listEl = document.getElementById('notificationCenterList');
+        const badgeEl = document.getElementById('notifCenterCountBadge');
+        if (!listEl) return;
+
+        try {
+            const notifs = await this.get(`/api/notifications/${userId}`);
+            const unreadList = notifs.filter(n => !n.isRead);
+            if (badgeEl) {
+                badgeEl.textContent = `${unreadList.length} Unread`;
+                badgeEl.style.display = unreadList.length > 0 ? 'inline-block' : 'none';
+            }
+
+            if (!notifs || notifs.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 36px 16px;">
+                        <div style="font-size: 36px; margin-bottom: 8px;">🔕</div>
+                        <div style="font-weight: 700; color: var(--text-primary);">No notifications yet</div>
+                        <div style="font-size: 12px; margin-top: 4px;">Ride updates, driver dispatches, and alerts will appear here.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = notifs.map(n => {
+                const isUnread = !n.isRead;
+                const timeStr = this.formatDate(n.timestamp);
+                return `
+                    <div class="notification-item ${isUnread ? 'unread' : ''}" style="display: flex; gap: 12px; padding: 12px; border-radius: var(--radius-md); margin-bottom: 8px; background: ${isUnread ? 'var(--bg-card-subtle)' : 'transparent'}; border: 1px solid ${isUnread ? 'var(--primary-subtle)' : 'var(--border)'};">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: ${isUnread ? 'var(--primary)' : 'transparent'}; margin-top: 6px; flex-shrink: 0;"></div>
+                        <div style="flex-grow: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                <div style="font-weight: 800; font-size: 13px; color: var(--text-primary);">${n.title}</div>
+                                <span style="font-size: 11px; color: var(--text-muted); white-space: nowrap;">${timeStr}</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 3px; line-height: 1.4;">${n.message}</div>
+                            ${isUnread ? `
+                                <div style="margin-top: 6px; text-align: right;">
+                                    <button type="button" onclick="App.markNotificationRead(${n.id}, ${userId})" class="btn btn-secondary btn-sm" style="font-size: 10px; padding: 2px 8px; font-weight: 700;">Mark Read</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            listEl.innerHTML = `<div style="color: var(--danger); text-align: center; padding: 20px;">Failed to load notifications.</div>`;
+        }
+    },
+
+    async markNotificationRead(id, userId) {
+        try {
+            await this.put(`/api/notifications/${id}/read`, {});
+            await this.renderNotificationList(userId);
+            this.refreshUnreadBadge(userId);
+        } catch (e) {}
+    },
+
+    async markAllNotificationsRead(userId) {
+        try {
+            await this.put(`/api/notifications/user/${userId}/read-all`, {});
+            await this.renderNotificationList(userId);
+            this.refreshUnreadBadge(userId);
+        } catch (e) {}
     }
 };
 

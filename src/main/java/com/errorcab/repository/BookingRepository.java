@@ -26,8 +26,9 @@ public class BookingRepository {
         String sql = "INSERT INTO bookings (booking_code, passenger_id, passenger_name, passenger_phone, " +
                 "driver_id, driver_name, driver_phone, vehicle_model, vehicle_plate_number, driver_rating, " +
                 "pickup_location, destination_location, distance_km, estimated_minutes, cab_type, fare, " +
-                "status, cancellation_reason, created_at, completed_at, promo_code, discount) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "status, cancellation_reason, created_at, completed_at, promo_code, discount, " +
+                "otp, declined_driver_ids, scheduled_time, is_scheduled) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = db.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, booking.getBookingCode());
@@ -52,6 +53,10 @@ public class BookingRepository {
             ps.setString(20, booking.getCompletedAt() != null ? booking.getCompletedAt().toString() : null);
             ps.setString(21, booking.getPromoCode());
             ps.setDouble(22, booking.getDiscount());
+            ps.setString(23, booking.getOtp());
+            ps.setString(24, booking.getDeclinedDriverIds());
+            ps.setString(25, booking.getScheduledTime());
+            ps.setInt(26, booking.isScheduled() ? 1 : 0);
 
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -64,9 +69,9 @@ public class BookingRepository {
     }
 
     public boolean assignDriver(int bookingId, int driverId, String driverName, String driverPhone,
-                                String vehicleModel, String plateNumber, double driverRating) {
+                                String vehicleModel, String plateNumber, double driverRating, String otp) {
         String sql = "UPDATE bookings SET driver_id = ?, driver_name = ?, driver_phone = ?, " +
-                "vehicle_model = ?, vehicle_plate_number = ?, driver_rating = ?, status = ? " +
+                "vehicle_model = ?, vehicle_plate_number = ?, driver_rating = ?, status = ?, otp = ? " +
                 "WHERE id = ?";
         try (Connection conn = db.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -77,7 +82,29 @@ public class BookingRepository {
             ps.setString(5, plateNumber);
             ps.setDouble(6, driverRating);
             ps.setString(7, RideStatus.DRIVER_ASSIGNED.name());
-            ps.setInt(8, bookingId);
+            ps.setString(8, otp);
+            ps.setInt(9, bookingId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean assignDriver(int bookingId, int driverId, String driverName, String driverPhone,
+                                String vehicleModel, String plateNumber, double driverRating) {
+        return assignDriver(bookingId, driverId, driverName, driverPhone, vehicleModel, plateNumber, driverRating, null);
+    }
+
+    public boolean unassignDriver(int bookingId, String declinedDriverIds) {
+        String sql = "UPDATE bookings SET driver_id = NULL, driver_name = NULL, driver_phone = NULL, " +
+                "vehicle_model = NULL, vehicle_plate_number = NULL, status = ?, declined_driver_ids = ?, otp = NULL " +
+                "WHERE id = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, RideStatus.SEARCHING.name());
+            ps.setString(2, declinedDriverIds);
+            ps.setInt(3, bookingId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -266,7 +293,40 @@ public class BookingRepository {
         try {
             b.setPromoCode(rs.getString("promo_code"));
             b.setDiscount(rs.getDouble("discount"));
+            b.setOtp(rs.getString("otp"));
+            b.setDeclinedDriverIds(rs.getString("declined_driver_ids"));
+            b.setScheduledTime(rs.getString("scheduled_time"));
+            b.setScheduled(rs.getInt("is_scheduled") == 1);
         } catch (SQLException ignored) {}
         return b;
+    }
+
+    public List<Booking> getScheduledBookingsByPassenger(int passengerId) {
+        List<Booking> list = new ArrayList<>();
+        String sql = "SELECT * FROM bookings WHERE passenger_id = ? AND is_scheduled = 1 AND status = 'SCHEDULED' ORDER BY id DESC";
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, passengerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapBooking(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public boolean cancelScheduledBooking(int bookingId) {
+        String sql = "UPDATE bookings SET status = 'CANCELLED', cancellation_reason = 'Cancelled by passenger' WHERE id = ? AND status = 'SCHEDULED'";
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, bookingId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

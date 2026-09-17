@@ -65,6 +65,25 @@
         .search-input-wrap {
             position: relative;
             min-width: 260px;
+            max-width: 100%;
+        }
+
+        @media (max-width: 640px) {
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .filter-pills {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 6px;
+            }
+            .search-input-wrap {
+                min-width: 0;
+                width: 100%;
+            }
         }
 
         .search-input-wrap .search-icon {
@@ -241,53 +260,100 @@
             </p>
         </div>
 
-        <!-- Filter Bar -->
-        <div class="filter-bar">
-            <div class="filter-pills">
-                <button class="filter-pill active" onclick="setFilter('ALL', this)">
-                    All Trips (<span id="countAll">0</span>)
-                </button>
-                <button class="filter-pill" onclick="setFilter('COMPLETED', this)">
-                    Completed (<span id="countCompleted">0</span>)
-                </button>
-                <button class="filter-pill" onclick="setFilter('ACTIVE', this)">
-                    In Progress (<span id="countActive">0</span>)
-                </button>
-                <button class="filter-pill" onclick="setFilter('CANCELLED', this)">
-                    Cancelled (<span id="countCancelled">0</span>)
-                </button>
+        <!-- History Tab Navigation -->
+        <div class="tab-nav" style="margin-bottom: 24px;">
+            <button type="button" class="tab-nav-item active" id="tabRidesNav" onclick="switchHistoryTab('rides')">
+                🚖 Ride History
+            </button>
+            <button type="button" class="tab-nav-item" id="tabPaymentsNav" onclick="switchHistoryTab('payments')">
+                💳 Payment History
+            </button>
+        </div>
+
+        <!-- Rides History View -->
+        <div id="sectionRides">
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-pills">
+                    <button class="filter-pill active" onclick="setFilter('ALL', this)">
+                        All Trips (<span id="countAll">0</span>)
+                    </button>
+                    <button class="filter-pill" onclick="setFilter('COMPLETED', this)">
+                        Completed (<span id="countCompleted">0</span>)
+                    </button>
+                    <button class="filter-pill" onclick="setFilter('ACTIVE', this)">
+                        In Progress (<span id="countActive">0</span>)
+                    </button>
+                    <button class="filter-pill" onclick="setFilter('CANCELLED', this)">
+                        Cancelled (<span id="countCancelled">0</span>)
+                    </button>
+                </div>
+
+                <div class="search-input-wrap">
+                    <div class="search-icon" id="searchIconSlot"></div>
+                    <input type="text" id="searchInput" oninput="applyFilters()" class="form-control" placeholder="Search by location, cab, #ID...">
+                </div>
             </div>
 
-            <div class="search-input-wrap">
-                <div class="search-icon" id="searchIconSlot"></div>
-                <input type="text" id="searchInput" oninput="applyFilters()" class="form-control" placeholder="Search by location, cab, #ID...">
+            <!-- Rides Table / Card -->
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div class="table-container">
+                    <table class="table" id="historyTable" style="margin-bottom: 0;">
+                        <thead>
+                            <tr>
+                                <th>Trip #</th>
+                                <th>Date & Time</th>
+                                <th>Route (Pickup ➔ Dropoff)</th>
+                                <th>Cab Type</th>
+                                <th>Fare</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 48px;">
+                                    <div class="loading-spinner" style="margin: 0 auto 12px;"></div>
+                                    Loading trip records...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- Rides Table / Card -->
-        <div class="card" style="padding: 0; overflow: hidden;">
-            <div class="table-container">
-                <table class="table" id="historyTable" style="margin-bottom: 0;">
-                    <thead>
-                        <tr>
-                            <th>Trip #</th>
-                            <th>Date & Time</th>
-                            <th>Route (Pickup ➔ Dropoff)</th>
-                            <th>Cab Type</th>
-                            <th>Fare</th>
-                            <th>Status</th>
-                            <th style="text-align: right;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody">
-                        <tr>
-                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 48px;">
-                                <div class="loading-spinner" style="margin: 0 auto 12px;"></div>
-                                Loading trip records...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- Payments History View -->
+        <div id="sectionPayments" style="display: none;">
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div style="padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h2 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">Payment Transaction Ledger</h2>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Official transaction audit trail for card, UPI, and cash payments</p>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="table" style="margin-bottom: 0;">
+                        <thead>
+                            <tr>
+                                <th>Txn Ref</th>
+                                <th>Booking Code</th>
+                                <th>Payment Method</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Date & Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentHistoryBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                                    Loading payment records...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -444,8 +510,13 @@
 
             await loadHistory();
 
-            // Check if URL specifies auto-opening a receipt
+            // Check if URL specifies tab or auto-opening a receipt
             const params = new URLSearchParams(window.location.search);
+            const tabParam = params.get('tab');
+            if (tabParam === 'payments') {
+                switchHistoryTab('payments');
+            }
+
             const viewId = params.get('view');
             if (viewId) {
                 const target = allTrips.find(t => (t.bookingId == viewId || t.id == viewId));
@@ -584,9 +655,16 @@
                         </td>
                         <td data-label="Action" style="text-align: right; white-space: nowrap;">
                             ${isCompleted 
-                                ? `<button onclick="showReceiptById(${id})" class="btn btn-secondary btn-sm" style="font-weight: 700; gap: 6px;">
-                                    ${App.icon('receipt', 14)} Invoice
-                                   </button>`
+                                ? `<div style="display: inline-flex; gap: 6px; justify-content: flex-end; align-items: center;">
+                                    ${user && user.role === 'PASSENGER' ? `
+                                        <button onclick="bookAgain('${encodeURIComponent(pickup)}', '${encodeURIComponent(dropoff)}', '${encodeURIComponent(t.cabType || 'ECONOMY')}')" class="btn btn-outline btn-sm" style="font-weight: 700; gap: 4px; padding: 4px 10px;">
+                                            ↻ Book Again
+                                        </button>
+                                    ` : ''}
+                                    <button onclick="showReceiptById(${id})" class="btn btn-secondary btn-sm" style="font-weight: 700; gap: 6px;">
+                                        ${App.icon('receipt', 14)} Invoice
+                                    </button>
+                                   </div>`
                                 : (!isCancelled 
                                     ? `<a href="/tracking.html?id=${id}" class="btn btn-primary btn-sm" style="font-weight: 700; gap: 6px;">
                                         <span class="live-pulse" style="width: 6px; height: 6px;"></span> Track
@@ -640,6 +718,95 @@
                 case 'CANCELLED': return 'danger';
                 case 'SEARCHING': return 'warning';
                 default: return 'primary';
+            }
+        }
+
+        function bookAgain(p, d, c) {
+            window.location.href = `/booking.html?pickup=${p}&dropoff=${d}&cabType=${c}`;
+        }
+
+        let allPayments = [];
+        async function loadPayments() {
+            try {
+                let url = `/api/payments/user/${user.userId}`;
+                if (user.role === 'ADMIN') {
+                    url = '/api/payments';
+                }
+                allPayments = await App.get(url);
+                renderPayments(allPayments);
+            } catch (err) {
+                console.error('Failed to load payments:', err);
+                document.getElementById('paymentHistoryBody').innerHTML = `
+                    <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">No payment records found.</td></tr>
+                `;
+            }
+        }
+
+        function renderPayments(payments) {
+            const tbody = document.getElementById('paymentHistoryBody');
+            if (!payments || payments.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">No payment transactions recorded yet.</td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = payments.map(p => {
+                const txn = p.transactionId || `TXN-${p.id || p.paymentId || '000'}`;
+                const bookingId = p.bookingId || '--';
+                const method = p.method || p.paymentMethod || 'CASH';
+                const amt = p.amount || 0;
+                const status = p.status || 'PAID';
+                const date = p.paymentTime || p.createdAt || p.timestamp;
+
+                return `
+                    <tr>
+                        <td data-label="Txn Ref">
+                            <span style="font-family: monospace; font-size: 12px; font-weight: 800; background: var(--bg-card-subtle); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px;">
+                                ${txn}
+                            </span>
+                        </td>
+                        <td data-label="Booking Code">
+                            <a href="/tracking.html?id=${bookingId}" style="font-weight: 800; color: var(--primary); text-decoration: none;">
+                                #${bookingId}
+                            </a>
+                        </td>
+                        <td data-label="Payment Method">
+                            <span class="badge badge-neutral">${method}</span>
+                        </td>
+                        <td data-label="Amount" style="font-weight: 800; font-size: 14px; color: var(--text-primary);">
+                            ${App.formatCurrency(amt)}
+                        </td>
+                        <td data-label="Status">
+                            <span class="badge badge-${status === 'PAID' ? 'success' : (status === 'PENDING' ? 'warning' : 'danger')}">
+                                ${status}
+                            </span>
+                        </td>
+                        <td data-label="Date & Time" style="text-align: right; font-size: 12px; color: var(--text-muted); white-space: nowrap;">
+                            ${App.formatDate(date)}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function switchHistoryTab(tab) {
+            const tabRides = document.getElementById('tabRidesNav');
+            const tabPayments = document.getElementById('tabPaymentsNav');
+            const secRides = document.getElementById('sectionRides');
+            const secPayments = document.getElementById('sectionPayments');
+
+            if (tab === 'payments') {
+                tabRides.classList.remove('active');
+                tabPayments.classList.add('active');
+                secRides.style.display = 'none';
+                secPayments.style.display = 'block';
+                loadPayments();
+            } else {
+                tabRides.classList.add('active');
+                tabPayments.classList.remove('active');
+                secRides.style.display = 'block';
+                secPayments.style.display = 'none';
             }
         }
     </script>

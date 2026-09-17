@@ -31,6 +31,10 @@ public class Booking {
     private String cancellationReason;
     private LocalDateTime createdAt;
     private LocalDateTime completedAt;
+    private String otp;
+    private String declinedDriverIds;
+    private String scheduledTime;
+    private boolean isScheduled;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a");
 
@@ -274,5 +278,57 @@ public class Booking {
 
     public String getRouteDisplay() {
         return pickupLocation + " → " + destinationLocation;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+
+    public String getDeclinedDriverIds() {
+        return declinedDriverIds;
+    }
+
+    public void setDeclinedDriverIds(String declinedDriverIds) {
+        this.declinedDriverIds = declinedDriverIds;
+    }
+
+    public boolean hasDriverDeclined(int driverId) {
+        if (declinedDriverIds == null || declinedDriverIds.trim().isEmpty()) {
+            return false;
+        }
+        for (String idStr : declinedDriverIds.split(",")) {
+            try {
+                if (Integer.parseInt(idStr.trim()) == driverId) return true;
+            } catch (NumberFormatException ignored) {}
+        }
+        return false;
+    }
+
+    public void addDeclinedDriver(int driverId) {
+        if (declinedDriverIds == null || declinedDriverIds.trim().isEmpty()) {
+            declinedDriverIds = String.valueOf(driverId);
+        } else if (!hasDriverDeclined(driverId)) {
+            declinedDriverIds = declinedDriverIds + "," + driverId;
+        }
+    }
+
+    public String getScheduledTime() {
+        return scheduledTime;
+    }
+
+    public void setScheduledTime(String scheduledTime) {
+        this.scheduledTime = scheduledTime;
+    }
+
+    public boolean isScheduled() {
+        return isScheduled;
+    }
+
+    public void setScheduled(boolean scheduled) {
+        isScheduled = scheduled;
     }
 }

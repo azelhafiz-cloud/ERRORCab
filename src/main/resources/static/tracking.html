@@ -169,7 +169,7 @@
                         <span style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">
                             🧪 Viva Demo Controls:
                         </span>
-                        <div style="display: flex; gap: 8px;">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                             <button type="button" onclick="simulateCarMovement()" class="btn btn-secondary btn-sm">
                                 🚗 Simulate Movement
                             </button>
@@ -238,7 +238,7 @@
                         </div>
                         <div class="otp-pill">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                            <span>START OTP: <b id="rideOtp">4921</b></span>
+                            <span>START OTP: <b id="rideOtp">----</b></span>
                         </div>
                     </div>
 
@@ -286,17 +286,34 @@
 
                 <!-- Route & Cancellation Card -->
                 <div class="card">
-                    <div style="margin-bottom: 16px;">
-                        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Itinerary</div>
-                        <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-top: 6px;">
-                            📍 <span id="routePickup">Kakkanad</span>
+                    <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">Trip Itinerary</h3>
+
+                    <div class="trip-info-card">
+                        <div class="trip-info-route">
+                            <div class="trip-info-point">
+                                <span class="trip-info-point-label">Pickup:</span>
+                                <b id="routePickup" style="color: var(--text-primary);">Kakkanad</b>
+                            </div>
+                            <div class="trip-info-arrow">↓ Route</div>
+                            <div class="trip-info-point">
+                                <span class="trip-info-point-label">Destination:</span>
+                                <b id="routeDropoff" style="color: var(--text-primary);">Vyttila</b>
+                            </div>
                         </div>
-                        <div style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">
-                            ■ <span id="routeDropoff">Vyttila</span>
+
+                        <div class="trip-metrics-grid">
+                            <div class="trip-metric-item">
+                                <span class="trip-metric-label">Distance:</span>
+                                <span class="trip-metric-value" id="trackDistanceDisplay">9.2 km</span>
+                            </div>
+                            <div class="trip-metric-item">
+                                <span class="trip-metric-label">Estimated Time:</span>
+                                <span class="trip-metric-value" id="trackDurationDisplay">24 mins</span>
+                            </div>
                         </div>
                     </div>
 
-                    <button type="button" id="cancelRideBtn" onclick="cancelRide()" class="btn btn-outline btn-block" style="color: var(--danger); border-color: var(--danger-border);">
+                    <button type="button" id="cancelRideBtn" onclick="cancelRide()" class="btn btn-outline btn-block" style="color: var(--danger); border-color: var(--danger-border); margin-top: 10px;">
                         Cancel Booking
                     </button>
                 </div>
@@ -420,6 +437,9 @@
                 document.getElementById('fbTotal').textContent = App.formatCurrency(b.fare);
                 document.getElementById('fbDistance').textContent = App.formatDistance(b.distanceKm || 9.2);
 
+                const otpEl = document.getElementById('rideOtp');
+                if (otpEl) otpEl.textContent = b.otp || '----';
+
                 const discount = b.discount || 0;
                 if (discount > 0) {
                     document.getElementById('fbPromoRow').style.display = 'flex';
@@ -429,8 +449,15 @@
                     document.getElementById('fbPromoRow').style.display = 'none';
                 }
 
+                const dist = b.distanceKm || 9.2;
+                const dur = b.estimatedMinutes || Math.round((dist / 23.0) * 60);
+                const distEl = document.getElementById('trackDistanceDisplay');
+                const durEl = document.getElementById('trackDurationDisplay');
+                if (distEl) distEl.textContent = App.formatDistance(dist);
+                if (durEl) durEl.textContent = App.formatDuration(dur);
+
                 if (simMap) {
-                    simMap.setRoute(b.pickupLocation, b.destinationLocation || b.dropoffLocation);
+                    simMap.setRoute(b.pickupLocation, b.destinationLocation || b.dropoffLocation, dist, dur);
                 }
 
                 if (b.driverName) {
@@ -542,7 +569,11 @@
             }
 
             try {
-                await App.put(`/api/bookings/${currentBooking.bookingId || currentBooking.id}/status`, { status: nextStatus });
+                const payload = { status: nextStatus };
+                if (nextStatus === 'RIDE_STARTED' && currentBooking.otp) {
+                    payload.otp = currentBooking.otp;
+                }
+                await App.put(`/api/bookings/${currentBooking.bookingId || currentBooking.id}/status`, payload);
                 App.showToast('Status Updated', `Advanced to ${nextStatus}`, 'check');
                 await loadBookingData();
             } catch (err) {

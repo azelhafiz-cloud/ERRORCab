@@ -104,10 +104,57 @@ public class BookingService {
         return booking;
     }
 
+    public Booking scheduleRide(Passenger passenger, String pickup, String dest, CabType cabType, String scheduledTime, String promoCode) throws SQLException {
+        FareEstimate est = estimateFare(pickup, dest, cabType, promoCode);
+
+        Booking booking = new Booking(
+                passenger.getId(),
+                passenger.getName(),
+                passenger.getPhone(),
+                pickup,
+                dest,
+                est.distanceKm(),
+                est.estimatedMinutes(),
+                cabType,
+                est.finalFare()
+        );
+
+        if (est.discount() > 0) {
+            booking.setPromoCode(promoCode.trim().toUpperCase());
+            booking.setDiscount(est.discount());
+        }
+
+        booking.setStatus(RideStatus.SCHEDULED);
+        booking.setScheduled(true);
+        booking.setScheduledTime(scheduledTime);
+
+        booking = bookingRepo.createBooking(booking);
+
+        NotificationService.getInstance().sendNotification(
+                passenger.getId(),
+                "Ride Scheduled! 📅",
+                "Your ride from " + pickup + " to " + dest + " is scheduled for " + scheduledTime + " (" + cabType.getDisplayName() + ", ₹" + (int) est.finalFare() + ")."
+        );
+
+        return booking;
+    }
+
+    public List<Booking> getScheduledBookings(int passengerId) {
+        return bookingRepo.getScheduledBookingsByPassenger(passengerId);
+    }
+
+    public boolean cancelScheduledRide(int bookingId) {
+        return bookingRepo.cancelScheduledBooking(bookingId);
+    }
+
     public boolean advanceStatus(int bookingId, RideStatus targetStatus) {
+        return advanceStatus(bookingId, targetStatus, null);
+    }
+
+    public boolean advanceStatus(int bookingId, RideStatus targetStatus, String enteredOtp) {
         Optional<Booking> opt = bookingRepo.findById(bookingId);
         if (opt.isEmpty()) throw new IllegalArgumentException("Booking not found.");
-        return rideService.advanceRideStatus(opt.get(), targetStatus);
+        return rideService.advanceRideStatus(opt.get(), targetStatus, enteredOtp);
     }
 
     public boolean cancelRide(int bookingId, String reason) {

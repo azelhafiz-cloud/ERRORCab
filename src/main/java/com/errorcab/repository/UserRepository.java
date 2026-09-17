@@ -255,4 +255,39 @@ public class UserRepository {
             return new Admin(id, name, email, phone, password, active, "Operations & Dispatch");
         }
     }
+
+    public boolean updateUserProfile(int userId, String name, String phone, String address) {
+        String userSql = "UPDATE users SET name = ?, phone = ? WHERE id = ?";
+        try (Connection conn = db.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps = conn.prepareStatement(userSql)) {
+                ps.setString(1, name);
+                ps.setString(2, phone);
+                ps.setInt(3, userId);
+                ps.executeUpdate();
+            }
+
+            if (address != null && !address.trim().isEmpty()) {
+                String passSql = "UPDATE passengers SET default_address = ? WHERE user_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(passSql)) {
+                    ps.setString(1, address.trim());
+                    ps.setInt(2, userId);
+                    ps.executeUpdate();
+                }
+
+                String driverSql = "UPDATE drivers SET current_location = ? WHERE user_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(driverSql)) {
+                    ps.setString(1, address.trim());
+                    ps.setInt(2, userId);
+                    ps.executeUpdate();
+                }
+            }
+
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

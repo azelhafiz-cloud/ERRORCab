@@ -89,6 +89,12 @@ public class RideService {
     }
 
     public boolean assignDriverToBooking(Booking booking, Driver driver) {
+        String otp = booking.getOtp();
+        if (otp == null || otp.trim().isEmpty()) {
+            otp = String.format("%04d", new java.security.SecureRandom().nextInt(10000));
+            booking.setOtp(otp);
+        }
+
         boolean success = bookingRepo.assignDriver(
                 booking.getId(),
                 driver.getId(),
@@ -96,10 +102,12 @@ public class RideService {
                 driver.getPhone(),
                 driver.getVehicle() != null ? driver.getVehicle().getModel() : "Maruti Suzuki Dzire",
                 driver.getVehicle() != null ? driver.getVehicle().getPlateNumber() : "KL 07 AB 1234",
-                driver.getRating()
+                driver.getRating(),
+                otp
         );
 
         if (success) {
+            driverRepo.recordAcceptedRequest(driver.getId());
             booking.setDriverId(driver.getId());
             booking.setDriverName(driver.getName());
             booking.setDriverPhone(driver.getPhone());
@@ -122,8 +130,23 @@ public class RideService {
      * Advances ride status with validation.
      */
     public boolean advanceRideStatus(Booking booking, RideStatus targetStatus) {
+        return advanceRideStatus(booking, targetStatus, null);
+    }
+
+    /**
+     * Advances ride status with OTP validation for RIDE_STARTED.
+     */
+    public boolean advanceRideStatus(Booking booking, RideStatus targetStatus, String enteredOtp) {
         if (!booking.getStatus().canTransitionTo(targetStatus)) {
             throw new IllegalStateException("Invalid status transition from " + booking.getStatus() + " to " + targetStatus);
+        }
+
+        if (targetStatus == RideStatus.RIDE_STARTED) {
+            if (booking.getOtp() != null && !booking.getOtp().trim().isEmpty()) {
+                if (enteredOtp == null || !enteredOtp.trim().equals(booking.getOtp().trim())) {
+                    throw new IllegalArgumentException("Invalid ride start OTP. Please verify OTP with passenger.");
+                }
+            }
         }
 
         boolean updated = bookingRepo.updateStatus(booking.getId(), targetStatus);
@@ -210,5 +233,60 @@ public class RideService {
 
     public List<Booking> getPendingRequests(CabType cabType) {
         return bookingRepo.findPendingRideRequests(cabType);
+    }
+
+    public List<Booking> getPendingRequests(CabType cabType, Integer driverId) {
+        List<Booking> list = bookingRepo.findPendingRideRequests(cabType);
+        if (driverId != null) {
+            return list.stream().filter(b -> !b.hasDriverDeclined(driverId)).toList();
+        }
+        return list;
+    }
+
+    public java.util.Map<String, Object> declineAndReassign(int bookingId, int driverId) {
+        Optional<Booking> opt = bookingRepo.findById(bookingId);
+        if (opt.isEmpty()) {
+            throw new IllegalArgumentException("Booking not found.");
+        }
+        Booking booking = opt.get();
+        driverRepo.recordDeclinedRequest(driverId);
+        booking.addDeclinedDriver(driverId);
+        bookingRepo.unassignDriver(bookingId, booking.getDeclinedDriverIds());
+        booking.setDriverId(null);
+        booking.setStatus(RideStatus.SEARCHING);
+
+        notificationService.sendNotification(booking.getPassengerId(), "Finding New Driver 🚖",
+                "Your driver was unavailable. We are searching for another driver for you...");
+
+        // Find next available online driver
+        List<Driver> candidates = driverRepo.findAvailableDrivers(booking.getCabType());
+        if (candidates.isEmpty()) {
+            candidates = driverRepo.getAllDrivers().stream().filter(Driver::isOnline).toList();
+        }
+
+        Driver nextDriver = null;
+        for (Driver d : candidates) {
+            if (!booking.hasDriverDeclined(d.getId())) {
+                boolean hasActive = bookingRepo.getBookingsByDriver(d.getId()).stream().anyMatch(b ->
+                        b.getStatus() == RideStatus.DRIVER_ASSIGNED ||
+                        b.getStatus() == RideStatus.DRIVER_ARRIVING ||
+                        b.getStatus() == RideStatus.RIDE_STARTED
+                );
+                if (!hasActive) {
+                    nextDriver = d;
+                    break;
+                }
+            }
+        }
+
+        if (nextDriver != null) {
+            assignDriverToBooking(booking, nextDriver);
+            return java.util.Map.of("success", true, "reassigned", true, "driverName", nextDriver.getName(), "bookingId", bookingId);
+        } else {
+            notificationService.sendNotification(booking.getPassengerId(), "Searching for Drivers ⌛",
+                    "No other drivers currently available nearby. We will continue searching.");
+            notifyRideUpdated(booking);
+            return java.util.Map.of("success", true, "reassigned", false, "message", "No other drivers currently available", "bookingId", bookingId);
+        }
     }
 }

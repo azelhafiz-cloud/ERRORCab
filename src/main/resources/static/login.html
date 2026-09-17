@@ -70,11 +70,53 @@
             color: var(--primary);
             transform: translateX(2px);
         }
+        .auth-theme-slot {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            z-index: 10;
+        }
+        @media (max-width: 640px) {
+            .auth-wrapper {
+                padding: 24px 16px !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+            }
+            .auth-theme-slot {
+                position: static !important;
+                top: auto !important;
+                right: auto !important;
+                margin-bottom: 18px !important;
+                width: 100% !important;
+                max-width: 460px !important;
+                display: flex !important;
+                justify-content: center !important;
+            }
+            .auth-card {
+                padding: 28px 20px !important;
+                max-width: 100% !important;
+            }
+            .demo-pill {
+                padding: 8px 10px !important;
+                font-size: 11.5px !important;
+                gap: 6px !important;
+                flex-wrap: wrap !important;
+            }
+        }
+        @media (max-width: 360px) {
+            .auth-wrapper {
+                padding: 16px 10px !important;
+            }
+            .auth-card {
+                padding: 20px 14px !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="auth-wrapper">
-        <div style="position: absolute; top: 18px; right: 18px; z-index: 10;" id="authThemeSlot">
+        <!-- Responsive Theme Selector (Top-Right on Desktop, Centered Above Card on Mobile) -->
+        <div class="auth-theme-slot" id="authThemeSlot">
             <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
                 <span class="theme-control-label">Appearance:</span>
                 <div class="theme-switcher">

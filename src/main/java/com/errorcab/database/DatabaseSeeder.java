@@ -108,6 +108,14 @@ public class DatabaseSeeder {
 
         // Ensure promo codes and favorites exist even if user table was already populated
         seedPromoCodesAndFavoritesIfMissing();
+        seedDriverAcceptanceCountersIfMissing();
+    }
+
+    private static void seedDriverAcceptanceCountersIfMissing() {
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("UPDATE drivers SET requests_received_count = 50, requests_accepted_count = 48 WHERE requests_received_count = 0 OR requests_received_count IS NULL");
+        } catch (Exception ignored) {}
     }
 
     private static void seedPromoCodesAndFavoritesIfMissing() {

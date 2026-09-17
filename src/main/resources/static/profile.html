@@ -89,6 +89,30 @@
             align-items: center;
             justify-content: space-between;
         }
+
+        @media (max-width: 640px) {
+            .profile-hero {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px 16px;
+                gap: 16px;
+            }
+            .profile-hero > div {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .fav-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .fav-card > div:last-child {
+                width: 100%;
+                display: flex;
+                justify-content: flex-end;
+            }
+        }
     </style>
 </head>
 <body>
@@ -146,6 +170,37 @@
                     +91 98765 43210
                 </div>
             </div>
+        </div>
+
+        <!-- Edit Profile Details Card -->
+        <div class="card" style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="width: 28px; height: 28px; border-radius: 6px; background: var(--primary-subtle); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </div>
+                <h2 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">Edit Profile Details</h2>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 16px;">
+                Update your personal contact details across the ERRORCab mobility network.
+            </p>
+
+            <form id="editProfileForm" onsubmit="saveProfileChanges(event)">
+                <div class="form-group">
+                    <label class="form-label" for="editName">Full Name</label>
+                    <input type="text" id="editName" class="form-control" required placeholder="Your Name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editPhone">Phone Number</label>
+                    <input type="tel" id="editPhone" class="form-control" required placeholder="+91 98765 43210">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editAddress">Default Address / Base Location</label>
+                    <input type="text" id="editAddress" class="form-control" placeholder="e.g. Infopark, Kakkanad, Kochi">
+                </div>
+                <button type="submit" id="btnSaveProfile" class="btn btn-primary" style="font-weight: 800;">
+                    Save Profile Changes
+                </button>
+            </form>
         </div>
 
         <!-- Saved Favorite Places (Passenger Only) -->
@@ -313,8 +368,15 @@
             if (user) {
                 document.getElementById('profileName').textContent = user.name || 'User';
                 document.getElementById('profileEmail').textContent = user.email || 'user@example.com';
-                document.getElementById('profilePhone').textContent = user.phoneNumber || '+91 98765 43210';
+                document.getElementById('profilePhone').textContent = user.phoneNumber || user.phone || '+91 98765 43210';
                 
+                const editNameEl = document.getElementById('editName');
+                const editPhoneEl = document.getElementById('editPhone');
+                const editAddressEl = document.getElementById('editAddress');
+                if (editNameEl) editNameEl.value = user.name || '';
+                if (editPhoneEl) editPhoneEl.value = user.phoneNumber || user.phone || '';
+                if (editAddressEl) editAddressEl.value = user.address || '';
+
                 const roleBadge = document.getElementById('profileRoleBadge');
                 roleBadge.textContent = user.role;
                 roleBadge.className = `badge badge-${user.role === 'ADMIN' ? 'warning' : 'primary'}`;
@@ -420,6 +482,46 @@
                 loadFavorites();
             } catch (e) {
                 App.showToast('Error', 'Failed to delete favorite', 'alertTriangle');
+            }
+        }
+
+        async function saveProfileChanges(e) {
+            e.preventDefault();
+            const name = document.getElementById('editName').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            const address = document.getElementById('editAddress').value.trim();
+
+            if (!name || !phone) {
+                App.showToast('Validation Error', 'Name and Phone number are required.', 'alertTriangle');
+                return;
+            }
+
+            const btn = document.getElementById('btnSaveProfile');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            try {
+                const updated = await App.put('/api/auth/profile', {
+                    userId: user.userId,
+                    name: name,
+                    phoneNumber: phone,
+                    address: address
+                });
+
+                // Update session
+                const newUser = { ...user, ...updated };
+                App.setCurrentUser(newUser);
+
+                // Update UI
+                document.getElementById('profileName').textContent = newUser.name;
+                document.getElementById('profilePhone').textContent = newUser.phoneNumber || newUser.phone;
+
+                App.showToast('Profile Updated', 'Your profile details have been updated!', 'check');
+            } catch (err) {
+                App.showToast('Update Failed', err.message || 'Could not update profile', 'alertTriangle');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Save Profile Changes';
             }
         }
     </script>

@@ -8,6 +8,7 @@ import com.errorcab.model.User;
 import com.errorcab.service.AuthenticationService;
 import com.errorcab.service.BookingService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -115,11 +116,51 @@ public class BookingController {
     public ResponseEntity<?> updateStatus(@PathVariable int id, @RequestBody Map<String, String> body) {
         try {
             RideStatus target = RideStatus.valueOf(body.get("status").toUpperCase().trim());
-            boolean ok = bookingService.advanceStatus(id, target);
+            String otp = body.get("otp");
+            boolean ok = bookingService.advanceStatus(id, target, otp);
             return ResponseEntity.ok(Map.of("success", ok, "status", target.name()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @PostMapping("/schedule")
+    public ResponseEntity<?> scheduleBooking(@RequestBody Map<String, Object> body) {
+        try {
+            int passengerId = Integer.parseInt(body.get("passengerId").toString());
+            String pickup = body.containsKey("pickup") && body.get("pickup") != null ? body.get("pickup").toString() :
+                           (body.get("pickupLocation") != null ? body.get("pickupLocation").toString() : "");
+            String destination = body.containsKey("destination") && body.get("destination") != null ? body.get("destination").toString() :
+                                (body.containsKey("dropoff") && body.get("dropoff") != null ? body.get("dropoff").toString() :
+                                (body.get("dropoffLocation") != null ? body.get("dropoffLocation").toString() : ""));
+            String cabTypeStr = body.get("cabType").toString();
+            String scheduledTime = body.get("scheduledTime").toString();
+            String promoCode = body.get("promoCode") != null ? body.get("promoCode").toString() : null;
+
+            Optional<User> userOpt = authService.getUserById(passengerId);
+            if (userOpt.isEmpty() || !(userOpt.get() instanceof Passenger)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid passenger account."));
+            }
+
+            Passenger passenger = (Passenger) userOpt.get();
+            CabType cabType = CabType.valueOf(cabTypeStr.toUpperCase().trim());
+
+            Booking booking = bookingService.scheduleRide(passenger, pickup, destination, cabType, scheduledTime, promoCode);
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/passenger/{passengerId}/scheduled")
+    public ResponseEntity<?> getScheduledBookings(@PathVariable int passengerId) {
+        return ResponseEntity.ok(bookingService.getScheduledBookings(passengerId));
+    }
+
+    @DeleteMapping("/{id}/cancel-schedule")
+    public ResponseEntity<?> cancelSchedule(@PathVariable int id) {
+        boolean ok = bookingService.cancelScheduledRide(id);
+        return ResponseEntity.ok(Map.of("success", ok, "bookingId", id));
     }
 
     @PostMapping("/{id}/cancel")

@@ -105,10 +105,22 @@
             background: var(--bg-card);
             margin-bottom: 10px;
             transition: var(--transition-fast);
+            flex-wrap: wrap;
+            gap: 12px;
         }
         .ride-item:hover {
             border-color: var(--primary-border);
             background: var(--bg-card-subtle);
+        }
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 480px) {
+            .quick-actions-grid {
+                grid-template-columns: 1fr !important;
+            }
         }
     </style>
 </head>
@@ -150,9 +162,12 @@
             </div>
 
             <!-- Notifications Bell -->
-            <button type="button" onclick="App.showToast('Notifications', 'No pending alerts at this time.', 'bell')" class="btn btn-outline btn-icon-only" title="Notifications" aria-label="View notifications">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            </button>
+            <div class="bell-badge-wrap">
+                <button type="button" onclick="App.toggleNotifications()" class="btn btn-outline btn-icon-only" title="Notifications" aria-label="View notifications">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <span class="bell-badge" id="unreadBadge"></span>
+                </button>
+            </div>
 
             <!-- User Profile Chip -->
             <a href="/profile.html" class="user-chip" title="View Profile">
@@ -265,13 +280,35 @@
                         </div>
                     </div>
 
-                    <!-- Distance & Time Pill -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card-subtle); padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 18px; border: 1px solid var(--border);">
-                        <div style="color: var(--text-secondary);">
-                            Route Distance: <b style="color: var(--text-primary);" id="distanceDisplay">-- km</b>
+                    <!-- Real-Time Distance & Route Summary -->
+                    <div class="trip-info-card" id="dashboardTripCard" style="margin-bottom: 18px;">
+                        <div class="trip-info-row">
+                            <div class="trip-info-label">
+                                <span class="trip-info-dot pickup"></span>
+                                <span>Pickup</span>
+                            </div>
+                            <span class="trip-info-val" id="dashboardPickupText">Select location</span>
                         </div>
-                        <div style="color: var(--text-secondary);">
-                            Estimated Travel Time: <b style="color: var(--text-primary);" id="durationDisplay">-- mins</b>
+                        <div class="trip-info-divider">
+                            <span class="trip-info-route-line"></span>
+                            <span class="trip-info-route-badge">Direct Route</span>
+                        </div>
+                        <div class="trip-info-row">
+                            <div class="trip-info-label">
+                                <span class="trip-info-dot dropoff"></span>
+                                <span>Destination</span>
+                            </div>
+                            <span class="trip-info-val" id="dashboardDropoffText">Select destination</span>
+                        </div>
+                        <div class="trip-info-telemetry">
+                            <div class="trip-telemetry-col">
+                                <span class="telemetry-label">Distance</span>
+                                <span class="telemetry-value" id="distanceDisplay">-- km</span>
+                            </div>
+                            <div class="trip-telemetry-col">
+                                <span class="telemetry-label">Estimated Time</span>
+                                <span class="telemetry-value" id="durationDisplay">-- mins</span>
+                            </div>
                         </div>
                     </div>
 
@@ -360,7 +397,7 @@
             <div>
                 
                 <!-- KPI Metrics Cards -->
-                <div class="grid-kpi" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+                <div class="grid-kpi" style="margin-bottom: 20px;">
                     <div class="kpi-card">
                         <div class="kpi-icon">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
@@ -389,10 +426,21 @@
                     <div style="font-size: 12px; color: #94A3B8; margin-top: 4px;">Transparent pricing • Zero surge charges</div>
                 </div>
 
+                <!-- Scheduled Rides Section -->
+                <div class="card" id="scheduledRidesSection" style="margin-bottom: 20px; display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                        <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 6px;">
+                            <span>📅</span> Scheduled Rides
+                        </h3>
+                        <a href="/booking.html" style="font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none;">+ Schedule New</a>
+                    </div>
+                    <div id="scheduledRidesList"></div>
+                </div>
+
                 <!-- Quick Actions Grid -->
                 <div class="card" style="margin-bottom: 20px;">
                     <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--text-primary);">Quick Actions</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="quick-actions-grid">
                         <a href="/history.html" class="quick-action-card">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                             <span style="font-size: 13px; font-weight: 700;">Ride Invoices</span>
@@ -521,6 +569,11 @@
         async function onRouteChanged() {
             const pickup = document.getElementById('pickupSelect').value;
             const dropoff = document.getElementById('dropoffSelect').value;
+
+            const pickupEl = document.getElementById('dashboardPickupText');
+            const dropoffEl = document.getElementById('dashboardDropoffText');
+            if (pickupEl) pickupEl.textContent = pickup;
+            if (dropoffEl) dropoffEl.textContent = dropoff;
 
             if (pickup === dropoff) {
                 App.showToast('Route Notice', 'Pickup and Destination cannot be identical.', 'pin');
@@ -657,11 +710,57 @@
                     renderRecentRides(history.slice(0, 4));
                 }
 
-                // 3. Load Saved Favorites
+                // 3. Load Scheduled Rides
+                loadScheduledRides();
+
+                // 4. Load Saved Favorites
                 loadFavorites();
 
             } catch (err) {
                 console.error('Error loading dashboard:', err);
+            }
+        }
+
+        async function loadScheduledRides() {
+            try {
+                const list = await App.get(`/api/bookings/passenger/${user.userId}/scheduled`);
+                const container = document.getElementById('scheduledRidesSection');
+                const listEl = document.getElementById('scheduledRidesList');
+                if (Array.isArray(list) && list.length > 0) {
+                    container.style.display = 'block';
+                    listEl.innerHTML = list.map(b => `
+                        <div class="scheduled-ride-card">
+                            <div style="flex-grow: 1;">
+                                <div style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span>${b.pickupLocation} ➔ ${b.destinationLocation}</span>
+                                    <span class="badge badge-primary" style="font-size: 10px; font-weight: 800;">${b.cabType}</span>
+                                    <span class="badge badge-secondary" style="font-size: 10px; background: rgba(139, 92, 246, 0.15); color: #8B5CF6;">SCHEDULED</span>
+                                </div>
+                                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                                    Pickup Time: <b style="color: var(--text-primary);">${b.scheduledTime || 'Upcoming'}</b> • Fare: <b style="color: var(--primary);">${App.formatCurrency(b.fare)}</b>
+                                </div>
+                            </div>
+                            <button type="button" onclick="cancelScheduledRide(${b.id || b.bookingId})" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: var(--danger); font-size: 11px; padding: 4px 10px; font-weight: 700;">
+                                Cancel Schedule
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    container.style.display = 'none';
+                }
+            } catch (e) {
+                console.error('Failed to load scheduled rides:', e);
+            }
+        }
+
+        async function cancelScheduledRide(id) {
+            if (!confirm('Are you sure you want to cancel this scheduled ride?')) return;
+            try {
+                await App.delete(`/api/bookings/${id}/cancel-schedule`);
+                App.showToast('Cancelled', 'Scheduled ride cancelled successfully.', 'check');
+                await loadScheduledRides();
+            } catch (err) {
+                App.showToast('Cancellation Failed', err.message || 'Could not cancel schedule.', 'alertTriangle');
             }
         }
 

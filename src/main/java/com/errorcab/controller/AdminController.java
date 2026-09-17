@@ -68,14 +68,23 @@ public class AdminController {
         long completedRides = allBookings.stream().filter(b -> b.getStatus() == RideStatus.RIDE_COMPLETED).count();
         long cancelledRides = allBookings.stream().filter(b -> b.getStatus() == RideStatus.CANCELLED).count();
         double totalRevenue = paymentService.getTotalRevenue();
+        long activeOnlineDrivers = driverRepo.getAllDrivers().stream().filter(Driver::isOnline).count();
+        double avgFare = completedRides > 0 ? (allBookings.stream().filter(b -> b.getStatus() == RideStatus.RIDE_COMPLETED).mapToDouble(Booking::getFare).average().orElse(0.0)) : 0.0;
+
+        long ecoCount = allBookings.stream().filter(b -> b.getCabType() == com.errorcab.model.CabType.ECONOMY).count();
+        long premCount = allBookings.stream().filter(b -> b.getCabType() == com.errorcab.model.CabType.PREMIUM).count();
+        long suvCount = allBookings.stream().filter(b -> b.getCabType() == com.errorcab.model.CabType.SUV).count();
 
         return ResponseEntity.ok(Map.of(
                 "totalPassengers", passengerCount,
                 "totalDrivers", driverCount,
+                "activeOnlineDrivers", activeOnlineDrivers,
                 "totalRides", totalRides,
                 "completedRides", completedRides,
                 "cancelledRides", cancelledRides,
-                "totalRevenue", totalRevenue
+                "totalRevenue", totalRevenue,
+                "averageFare", Math.round(avgFare * 100.0) / 100.0,
+                "cabTypeBreakdown", Map.of("ECONOMY", ecoCount, "PREMIUM", premCount, "SUV", suvCount)
         ));
     }
 

@@ -5,6 +5,7 @@ package com.errorcab.model;
  * Implements strict transition rules as required by Section 23.
  */
 public enum RideStatus {
+    SCHEDULED("Scheduled", "#8B5CF6", 0),
     SEARCHING("Finding Driver", "#F59E0B", 1),
     DRIVER_ASSIGNED("Driver Assigned", "#3B82F6", 2),
     DRIVER_ARRIVING("Driver Arriving", "#6366F1", 3),
@@ -39,11 +40,13 @@ public enum RideStatus {
      */
     public boolean canTransitionTo(RideStatus target) {
         if (target == CANCELLED) {
-            // Cancellation only permitted during initial and arriving states
-            return this == SEARCHING || this == DRIVER_ASSIGNED || this == DRIVER_ARRIVING;
+            // Cancellation only permitted during scheduled, initial and arriving states
+            return this == SCHEDULED || this == SEARCHING || this == DRIVER_ASSIGNED || this == DRIVER_ARRIVING;
         }
 
         switch (this) {
+            case SCHEDULED:
+                return target == SEARCHING || target == DRIVER_ASSIGNED;
             case SEARCHING:
                 return target == DRIVER_ASSIGNED;
             case DRIVER_ASSIGNED:
@@ -64,6 +67,6 @@ public enum RideStatus {
     }
 
     public boolean isCancellable() {
-        return this == SEARCHING || this == DRIVER_ASSIGNED || this == DRIVER_ARRIVING;
+        return this == SCHEDULED || this == SEARCHING || this == DRIVER_ASSIGNED || this == DRIVER_ARRIVING;
     }
 }

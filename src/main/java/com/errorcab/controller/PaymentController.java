@@ -49,4 +49,14 @@ public class PaymentController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getPaymentHistory(@PathVariable int userId) {
+        return ResponseEntity.ok(paymentService.getPaymentsByUser(userId));
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getAllPayments() {
+        return ResponseEntity.ok(paymentService.getAllPayments());
+    }
 }

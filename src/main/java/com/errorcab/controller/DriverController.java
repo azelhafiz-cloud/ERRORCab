@@ -3,6 +3,7 @@ package com.errorcab.controller;
 import com.errorcab.model.Booking;
 import com.errorcab.model.CabType;
 import com.errorcab.model.Driver;
+import com.errorcab.model.RideStatus;
 import com.errorcab.service.DriverService;
 import com.errorcab.service.RideService;
 import org.springframework.http.ResponseEntity;
@@ -73,8 +74,37 @@ public class DriverController {
     }
 
     @GetMapping("/available-rides")
-    public ResponseEntity<?> getAllAvailableRides() {
+    public ResponseEntity<?> getAllAvailableRides(@RequestParam(required = false) Integer driverId) {
+        if (driverId != null) {
+            Optional<Driver> dOpt = driverService.getDriverProfile(driverId);
+            CabType type = dOpt.map(d -> d.getVehicle() != null ? d.getVehicle().getCabType() : CabType.ECONOMY).orElse(CabType.ECONOMY);
+            return ResponseEntity.ok(rideService.getPendingRequests(type, driverId));
+        }
         return ResponseEntity.ok(rideService.getPendingRequests(CabType.ECONOMY));
+    }
+
+    @GetMapping("/{id}/earnings")
+    public ResponseEntity<?> getDriverEarnings(@PathVariable int id) {
+        try {
+            return ResponseEntity.ok(driverService.getDriverEarningsAnalytics(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{driverId}/rides/{bookingId}/status")
+    public ResponseEntity<?> updateRideStatus(
+            @PathVariable int driverId,
+            @PathVariable int bookingId,
+            @RequestBody Map<String, String> body) {
+        try {
+            RideStatus target = RideStatus.valueOf(body.get("status").toUpperCase().trim());
+            String otp = body.get("otp");
+            boolean ok = driverService.updateRideStatus(driverId, bookingId, target, otp);
+            return ResponseEntity.ok(Map.of("success", ok, "status", target.name()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/{id}/accept")
@@ -105,7 +135,14 @@ public class DriverController {
     @PostMapping("/reject/{bookingId}")
     public ResponseEntity<?> rejectRide(
             @PathVariable int bookingId,
-            @RequestParam(required = false) Integer driverId) {
-        return ResponseEntity.ok(Map.of("success", true, "bookingId", bookingId));
+            @RequestParam(required = false) Integer driverId,
+            @RequestBody(required = false) Map<String, Object> body) {
+        try {
+            int dId = driverId != null ? driverId : (body != null && body.containsKey("driverId") ? Integer.parseInt(body.get("driverId").toString()) : 2);
+            Map<String, Object> res = driverService.declineRide(dId, bookingId);
+            return ResponseEntity.ok(res);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

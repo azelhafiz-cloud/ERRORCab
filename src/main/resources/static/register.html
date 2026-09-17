@@ -69,11 +69,55 @@
             color: var(--primary);
             box-shadow: var(--shadow-xs);
         }
+        .auth-theme-slot {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            z-index: 10;
+        }
+        .vehicle-fields-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        @media (max-width: 640px) {
+            .auth-wrapper {
+                padding: 24px 16px !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+            }
+            .auth-theme-slot {
+                position: static !important;
+                top: auto !important;
+                right: auto !important;
+                margin-bottom: 18px !important;
+                width: 100% !important;
+                max-width: 520px !important;
+                display: flex !important;
+                justify-content: center !important;
+            }
+            .auth-card {
+                padding: 28px 20px !important;
+                max-width: 100% !important;
+            }
+            .vehicle-fields-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        @media (max-width: 360px) {
+            .auth-wrapper {
+                padding: 16px 10px !important;
+            }
+            .auth-card {
+                padding: 20px 14px !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="auth-wrapper">
-        <div style="position: absolute; top: 18px; right: 18px; z-index: 10;" id="authThemeSlot">
+        <!-- Responsive Theme Selector (Top-Right on Desktop, Centered Above Card on Mobile) -->
+        <div class="auth-theme-slot" id="authThemeSlot">
             <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
                 <span class="theme-control-label">Appearance:</span>
                 <div class="theme-switcher">
@@ -151,7 +195,7 @@
                         <input type="text" id="licenseNumber" class="form-control" placeholder="e.g. KL-07-20210012345">
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="vehicle-fields-grid">
                         <div class="form-group">
                             <label class="form-label" for="vehicleModel">Vehicle Model</label>
                             <input type="text" id="vehicleModel" class="form-control" placeholder="e.g. Hyundai Aura">

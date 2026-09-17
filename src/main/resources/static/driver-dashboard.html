@@ -133,6 +133,14 @@
                 </div>
             </div>
 
+            <!-- Notification Center Bell -->
+            <div class="bell-badge-wrap">
+                <button type="button" class="btn btn-outline btn-sm" onclick="App.toggleNotifications()" title="Notifications" aria-label="Notifications">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                </button>
+                <span id="unreadBellBadge" class="bell-badge" style="display: none;">0</span>
+            </div>
+
             <!-- Sign Out Button -->
             <button type="button" onclick="App.logout()" class="btn btn-outline btn-sm">Sign Out</button>
         </div>
@@ -322,9 +330,34 @@
                     <span id="kpiShieldIcon"></span>
                 </div>
                 <div>
-                    <div class="kpi-value">98%</div>
+                    <div class="kpi-value" id="kpiAcceptanceRate">100%</div>
                     <div class="kpi-label">Acceptance Rate</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Earnings Analytics & 7-Day Trend Chart -->
+        <div class="earnings-chart-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <h2 style="font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0;">Earnings Analytics & 7-Day Trend</h2>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Visual daily payouts across the Kochi network</p>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <span class="badge badge-primary" id="weekEarningsBadge">Week: ₹0</span>
+                    <span class="badge badge-success" id="monthEarningsBadge">Month: ₹0</span>
+                </div>
+            </div>
+
+            <div class="chart-bars-wrap" id="driverEarningsChart">
+                <div style="width: 100%; text-align: center; color: var(--text-muted); font-size: 12px; padding: 40px 0;">
+                    Loading earnings chart...
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap; gap: 8px;">
+                <span>Average Fare: <b style="color: var(--text-primary);" id="avgFareDisplay">₹0</b></span>
+                <span>All-Time Payout: <b style="color: var(--success);" id="totalPayoutDisplay">₹0</b></span>
             </div>
         </div>
 
@@ -396,10 +429,13 @@
             if (user) {
                 document.getElementById('driverGreeting').textContent = `Welcome back, ${user.name}!`;
                 await loadDriverDetails();
+                await loadEarningsAnalytics();
                 await refreshDriverState();
+                App.refreshUnreadBadge();
 
                 // Poll every 3 seconds for new dispatch requests and active trip status updates
                 setInterval(refreshDriverState, 3000);
+                setInterval(App.refreshUnreadBadge, 10000);
             }
         });
 
@@ -414,6 +450,10 @@
                 document.getElementById('driverRatingScore').textContent = rating;
                 document.getElementById('kpiRating').textContent = rating;
                 
+                const accRate = driver.acceptanceRate != null ? Math.round(driver.acceptanceRate) : 100;
+                const accRateEl = document.getElementById('kpiAcceptanceRate');
+                if (accRateEl) accRateEl.textContent = `${accRate}%`;
+
                 const isAvail = driver.isAvailable !== false;
                 document.getElementById('dutyCheckbox').checked = isAvail;
                 updateDutyUI(isAvail);
@@ -492,7 +532,7 @@
 
         async function checkForIncomingRides() {
             try {
-                const available = await App.get('/api/drivers/available-rides');
+                const available = await App.get(`/api/drivers/available-rides?driverId=${user.userId}`);
                 if (Array.isArray(available) && available.length > 0) {
                     incomingTrip = available[0];
                     document.getElementById('incomingPickup').textContent = incomingTrip.pickupLocation || incomingTrip.pickup;
@@ -514,6 +554,8 @@
                 await App.post(`/api/drivers/accept/${tripId}?driverId=${user.userId}`);
                 App.showToast('Ride Accepted', 'Trip assigned to you. Drive safely!', 'check');
                 document.getElementById('incomingRideContainer').style.display = 'none';
+                loadDriverDetails();
+                loadEarningsAnalytics();
                 refreshDriverState();
             } catch (err) {
                 App.showToast('Acceptance Failed', err.message || 'Ride was taken or unavailable', 'alertTriangle');
@@ -527,9 +569,13 @@
             try {
                 await App.post(`/api/drivers/reject/${tripId}?driverId=${user.userId}`);
                 document.getElementById('incomingRideContainer').style.display = 'none';
-                App.showToast('Declined', 'Ride offer declined', 'bell');
+                App.showToast('Declined', 'Ride offer declined. System is reassigning to another driver.', 'bell');
                 incomingTrip = null;
-            } catch (e) {}
+                loadDriverDetails();
+            } catch (e) {
+                document.getElementById('incomingRideContainer').style.display = 'none';
+                incomingTrip = null;
+            }
         }
 
         function renderActiveTrip(trip) {
@@ -567,18 +613,66 @@
         async function updateActiveStage(newStatus) {
             if (!activeTrip) return;
             const id = activeTrip.bookingId || activeTrip.id;
+            let enteredOtp = null;
 
             if (newStatus === 'RIDE_STARTED') {
-                const entered = prompt('Please enter Passenger Start OTP (default 4921):', '4921');
-                if (!entered) return;
+                enteredOtp = prompt('Please enter the 4-digit Ride Start OTP provided by passenger:');
+                if (!enteredOtp) {
+                    App.showToast('OTP Required', 'You must enter passenger OTP to start the trip.', 'alertTriangle');
+                    return;
+                }
+                enteredOtp = enteredOtp.trim();
             }
 
             try {
-                await App.put(`/api/bookings/${id}/status`, { status: newStatus });
+                const payload = { status: newStatus };
+                if (enteredOtp) payload.otp = enteredOtp;
+
+                await App.put(`/api/drivers/${user.userId}/rides/${id}/status`, payload);
                 App.showToast('Updated', `Ride status updated to ${newStatus.replace('_', ' ')}`, 'check');
                 refreshDriverState();
+                if (newStatus === 'RIDE_COMPLETED') {
+                    loadEarningsAnalytics();
+                    loadDriverDetails();
+                }
             } catch (err) {
                 App.showToast('Error', err.message || 'Failed to update stage', 'alertTriangle');
+            }
+        }
+
+        async function loadEarningsAnalytics() {
+            try {
+                const earnings = await App.get(`/api/drivers/${user.userId}/earnings`);
+                if (!earnings) return;
+
+                document.getElementById('kpiTodayEarnings').textContent = App.formatCurrency(earnings.todayEarnings || 0);
+                const weekEl = document.getElementById('weekEarningsBadge');
+                if (weekEl) weekEl.textContent = `Week: ${App.formatCurrency(earnings.weekEarnings || 0)}`;
+                const monthEl = document.getElementById('monthEarningsBadge');
+                if (monthEl) monthEl.textContent = `Month: ${App.formatCurrency(earnings.monthEarnings || 0)}`;
+
+                const avgFareEl = document.getElementById('avgFareDisplay');
+                if (avgFareEl) avgFareEl.textContent = App.formatCurrency(earnings.averageFare || 0);
+                const totalPayoutEl = document.getElementById('totalPayoutDisplay');
+                if (totalPayoutEl) totalPayoutEl.textContent = App.formatCurrency(earnings.totalEarnings || 0);
+
+                const chartEl = document.getElementById('driverEarningsChart');
+                if (chartEl && Array.isArray(earnings.dailyTrend)) {
+                    const maxAmount = Math.max(...earnings.dailyTrend.map(d => d.amount || 0), 100);
+                    chartEl.innerHTML = earnings.dailyTrend.map(item => {
+                        const amt = item.amount || 0;
+                        const pct = Math.max(4, Math.round((amt / maxAmount) * 100));
+                        return `
+                            <div class="chart-col">
+                                <span class="chart-val-label">${amt > 0 ? '₹' + Math.round(amt) : ''}</span>
+                                <div class="chart-bar-fill" style="height: ${pct}%;" title="${item.day}: ₹${amt}"></div>
+                                <span class="chart-day-label">${item.day}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load driver earnings:', err);
             }
         }
 

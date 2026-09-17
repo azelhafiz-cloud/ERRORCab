@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -166,5 +167,37 @@ public class AuthController {
         return authService.getUserById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> body, HttpServletRequest request) {
+        var userOpt = sessionService.resolveUser(request);
+        int userId;
+        if (userOpt.isPresent()) {
+            userId = userOpt.get().getId();
+        } else if (body.containsKey("userId")) {
+            userId = Integer.parseInt(body.get("userId"));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required."));
+        }
+
+        String name = body.get("name");
+        String phone = body.get("phone");
+        String address = body.get("address") != null ? body.get("address") : body.get("defaultAddress");
+
+        if (name == null || name.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Name cannot be empty."));
+        }
+        if (phone == null || phone.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Phone number cannot be empty."));
+        }
+
+        boolean ok = new com.errorcab.repository.UserRepository().updateUserProfile(userId, name.trim(), phone.trim(), address);
+        if (ok) {
+            var updatedUser = authService.getUserById(userId);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Profile updated successfully.", "user", updatedUser.orElse(null)));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to update profile."));
+        }
     }
 }
