@@ -568,6 +568,10 @@
                 return;
             }
 
+            const btn = document.getElementById('confirmBookBtn');
+            btn.disabled = true;
+            btn.textContent = 'Connecting...';
+
             const finalFare = Math.max(30, calculatedFares[selectedCabType] - appliedDiscount);
 
             // Open Dispatch Radar Modal
@@ -577,9 +581,11 @@
             App.openModal('searchingModal');
 
             try {
-                // Call booking API
+                // Call existing booking API: POST /api/bookings
                 const bookingData = {
                     passengerId: user.userId,
+                    pickup: pickup,
+                    destination: dropoff,
                     pickupLocation: pickup,
                     dropoffLocation: dropoff,
                     cabType: selectedCabType,
@@ -590,27 +596,37 @@
                     promoCode: currentPromoCode
                 };
 
-                const res = await App.post('/api/bookings/create', bookingData);
+                const res = await App.post('/api/bookings', bookingData);
                 const bookingId = res.bookingId || res.id;
 
                 // Simulated driver dispatch delay for authentic UX
-                setTimeout(() => {
-                    document.getElementById('modalStageSearching').style.display = 'none';
-                    document.getElementById('modalStageDriverFound').style.display = 'block';
+                setTimeout(async () => {
+                    try {
+                        const updated = await App.get(`/api/bookings/${bookingId}`);
+                        document.getElementById('modalStageSearching').style.display = 'none';
+                        document.getElementById('modalStageDriverFound').style.display = 'block';
 
-                    if (res.driverName) {
-                        document.getElementById('foundDriverName').textContent = res.driverName;
-                    }
-                    if (res.vehiclePlateNumber) {
-                        document.getElementById('foundPlateNumber').textContent = res.vehiclePlateNumber;
-                    }
+                        if (updated.driverName) {
+                            document.getElementById('foundDriverName').textContent = updated.driverName;
+                        }
+                        if (updated.vehicleModel) {
+                            document.getElementById('foundVehicleInfo').textContent = updated.vehicleModel;
+                        }
+                        if (updated.vehiclePlateNumber) {
+                            document.getElementById('foundPlateNumber').textContent = updated.vehiclePlateNumber;
+                        }
 
-                    setTimeout(() => {
-                        window.location.href = `/tracking.html?id=${bookingId}`;
-                    }, 2200);
+                        setTimeout(() => {
+                            window.location.href = `/tracking.html?id=${bookingId}&paymentMethod=${encodeURIComponent(selectedPaymentMethod)}`;
+                        }, 2200);
+                    } catch (e) {
+                        window.location.href = `/tracking.html?id=${bookingId}&paymentMethod=${encodeURIComponent(selectedPaymentMethod)}`;
+                    }
                 }, 2000);
 
             } catch (err) {
+                btn.disabled = false;
+                updateFareDisplays();
                 App.closeModal('searchingModal');
                 App.showToast('Booking Failed', err.message || 'Unable to create booking', 'alertTriangle');
             }

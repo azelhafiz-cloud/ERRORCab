@@ -142,20 +142,39 @@
         
         <!-- Driver Cockpit Hero / Duty Control Bar -->
         <div class="driver-cockpit-header">
-            <div>
-                <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="driver-cockpit-info">
+                <div class="driver-cockpit-meta">
                     <span class="badge badge-primary">PARTNER COCKPIT</span>
-                    <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Kochi Central Operations</span>
+                    <span class="driver-cockpit-location">Kochi Central Operations</span>
                 </div>
-                <h1 style="font-size: 26px; font-weight: 900; color: var(--text-primary); letter-spacing: -0.5px; margin-top: 4px;" id="driverGreeting">
+                <h1 class="driver-cockpit-title" id="driverGreeting">
                     Welcome back, Driver!
                 </h1>
-                <p style="color: var(--text-muted); font-size: 13px; margin-top: 2px;">
+                <p class="driver-cockpit-desc">
                     Stay online to automatically receive instant passenger booking dispatches.
                 </p>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+            <div class="driver-cockpit-controls">
+                <!-- Rating Score Pill -->
+                <div class="driver-stat-pill">
+                    <span id="ratingStarIcon"></span>
+                    <span id="driverRatingScore" style="color: var(--text-primary);">4.8</span>
+                    <span class="driver-stat-sub">Score</span>
+                </div>
+
+                <!-- Animated Online/Offline Duty Switch -->
+                <div class="driver-duty-toggle-wrapper">
+                    <div class="driver-duty-status-badge">
+                        <span id="dutyPulseDot" class="live-pulse-dot"></span>
+                        <span id="dutyLabel" style="color: var(--success);">ONLINE</span>
+                    </div>
+                    <label class="driver-duty-switch" aria-label="Toggle Online Duty Status">
+                        <input type="checkbox" id="dutyCheckbox" checked onchange="toggleDutyStatus()">
+                        <span class="driver-duty-slider"></span>
+                    </label>
+                </div>
+
                 <!-- Appearance Switcher in Cockpit -->
                 <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
                     <span class="theme-control-label">Appearance:</span>
@@ -170,25 +189,6 @@
                             <span>&#9881; System</span>
                         </button>
                     </div>
-                </div>
-
-                <!-- Rating Score Pill -->
-                <div style="background: var(--bg-card-subtle); border: 1px solid var(--border); padding: 8px 16px; border-radius: var(--radius-full); font-weight: 800; font-size: 13px; color: var(--warning); display: flex; align-items: center; gap: 6px;">
-                    <span id="ratingStarIcon"></span>
-                    <span id="driverRatingScore" style="color: var(--text-primary);">4.8</span>
-                    <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">Score</span>
-                </div>
-
-                <!-- Animated Online/Offline Duty Switch -->
-                <div class="driver-duty-toggle-wrapper">
-                    <div class="driver-duty-status-badge">
-                        <span id="dutyPulseDot" class="live-pulse-dot"></span>
-                        <span id="dutyLabel" style="color: var(--success);">ONLINE</span>
-                    </div>
-                    <label class="driver-duty-switch" aria-label="Toggle Online Duty Status">
-                        <input type="checkbox" id="dutyCheckbox" checked onchange="toggleDutyStatus()">
-                        <span class="driver-duty-slider"></span>
-                    </label>
                 </div>
             </div>
         </div>
