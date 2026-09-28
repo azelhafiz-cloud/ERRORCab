@@ -197,8 +197,9 @@
             </div>
 
             <!-- Footer Links -->
-            <div style="text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted);">
-                Don't have an account? <a href="/register.html" style="color: var(--primary); font-weight: 700; text-decoration: none;">Register now</a>
+            <div style="text-align: center; margin-top: 18px; font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px;">
+                <div>Don't have an account? <a href="/register.html" style="color: var(--primary); font-weight: 700; text-decoration: none;">Register as Passenger</a></div>
+                <div style="font-size: 12px;">Want to earn with us? <a href="/register.html?role=driver" style="color: var(--primary-light); font-weight: 700; text-decoration: underline;">Drive with ERRORCab (Driver Registration)</a></div>
             </div>
 
         </div>
@@ -239,6 +240,9 @@
                     email: user.email,
                     role: user.role,
                     phone: user.phone || user.phoneNumber,
+                    phoneNumber: user.phoneNumber || user.phone,
+                    address: user.address || user.defaultAddress || (user.user && (user.user.defaultAddress || user.user.address)) || '',
+                    defaultAddress: user.defaultAddress || user.address || (user.user && (user.user.defaultAddress || user.user.address)) || '',
                     sessionToken: user.sessionToken
                 });
 

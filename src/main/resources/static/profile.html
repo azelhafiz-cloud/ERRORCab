@@ -347,7 +347,7 @@
 
     <script src="/js/app.js"></script>
     <script>
-        const user = App.requireAuth();
+        let user = App.requireAuth();
 
         window.addEventListener('DOMContentLoaded', async () => {
             App.initTheme();
@@ -365,17 +365,38 @@
             document.getElementById('navHistoryIcon').innerHTML = App.icon('clock', 20);
             document.getElementById('navProfileIcon').innerHTML = App.icon('user', 20);
 
+            // Fetch live user data from server if session exists
+            try {
+                const freshUser = await App.get('/api/auth/me');
+                if (freshUser && (freshUser.id || freshUser.userId)) {
+                    user = {
+                        ...user,
+                        userId: freshUser.userId || freshUser.id || user.userId,
+                        name: freshUser.name || user.name,
+                        email: freshUser.email || user.email,
+                        phone: freshUser.phone || freshUser.phoneNumber || user.phone,
+                        phoneNumber: freshUser.phoneNumber || freshUser.phone || user.phone,
+                        role: freshUser.role || user.role,
+                        address: freshUser.address || freshUser.defaultAddress || user.address || '',
+                        defaultAddress: freshUser.defaultAddress || freshUser.address || user.defaultAddress || ''
+                    };
+                    App.setUser(user);
+                }
+            } catch (err) {
+                // Fall back gracefully to local session data
+            }
+
             if (user) {
                 document.getElementById('profileName').textContent = user.name || 'User';
                 document.getElementById('profileEmail').textContent = user.email || 'user@example.com';
-                document.getElementById('profilePhone').textContent = user.phoneNumber || user.phone || '+91 98765 43210';
+                document.getElementById('profilePhone').textContent = user.phone || user.phoneNumber || '+91 98765 43210';
                 
                 const editNameEl = document.getElementById('editName');
                 const editPhoneEl = document.getElementById('editPhone');
                 const editAddressEl = document.getElementById('editAddress');
                 if (editNameEl) editNameEl.value = user.name || '';
-                if (editPhoneEl) editPhoneEl.value = user.phoneNumber || user.phone || '';
-                if (editAddressEl) editAddressEl.value = user.address || '';
+                if (editPhoneEl) editPhoneEl.value = user.phone || user.phoneNumber || '';
+                if (editAddressEl) editAddressEl.value = user.address || user.defaultAddress || '';
 
                 const roleBadge = document.getElementById('profileRoleBadge');
                 roleBadge.textContent = user.role;
@@ -502,19 +523,32 @@
 
             try {
                 const updated = await App.put('/api/auth/profile', {
-                    userId: user.userId,
+                    userId: user.userId || user.id,
                     name: name,
+                    phone: phone,
                     phoneNumber: phone,
-                    address: address
+                    address: address,
+                    defaultAddress: address
                 });
 
                 // Update session
-                const newUser = { ...user, ...updated };
-                App.setCurrentUser(newUser);
+                const returnedUser = updated.user || updated;
+                user = {
+                    ...user,
+                    name: returnedUser.name || name,
+                    phone: returnedUser.phone || returnedUser.phoneNumber || phone,
+                    phoneNumber: returnedUser.phoneNumber || returnedUser.phone || phone,
+                    address: returnedUser.address || returnedUser.defaultAddress || address,
+                    defaultAddress: returnedUser.defaultAddress || returnedUser.address || address
+                };
+                App.setUser(user);
 
                 // Update UI
-                document.getElementById('profileName').textContent = newUser.name;
-                document.getElementById('profilePhone').textContent = newUser.phoneNumber || newUser.phone;
+                document.getElementById('profileName').textContent = user.name;
+                document.getElementById('profilePhone').textContent = user.phone || user.phoneNumber;
+                document.getElementById('editName').value = user.name;
+                document.getElementById('editPhone').value = user.phone;
+                document.getElementById('editAddress').value = user.address || user.defaultAddress || '';
 
                 App.showToast('Profile Updated', 'Your profile details have been updated!', 'check');
             } catch (err) {

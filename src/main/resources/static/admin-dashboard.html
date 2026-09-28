@@ -836,8 +836,14 @@
                         <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Review driver partners, commercial vehicle registrations, ratings, and live duty states.</p>
                     </div>
 
-                    <div style="position: relative; min-width: 260px;">
-                        <input type="text" id="driverSearchInput" oninput="filterDrivers()" class="form-control" placeholder="Search driver, plate, vehicle..." style="height: 42px; font-size: 13px;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <div style="position: relative; min-width: 220px;">
+                            <input type="text" id="driverSearchInput" oninput="filterDrivers()" class="form-control" placeholder="Search driver, plate, vehicle..." style="height: 42px; font-size: 13px;">
+                        </div>
+                        <button type="button" onclick="openAddDriverModal()" class="btn btn-primary" style="height: 42px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; padding: 0 16px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Add Driver
+                        </button>
                     </div>
                 </div>
 
@@ -1016,6 +1022,94 @@
             </section>
 
         </main>
+    </div>
+
+    <!-- Admin Add Driver Modal -->
+    <div class="modal-backdrop" id="addDriverModal">
+        <div class="modal-card" style="max-width: 520px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--primary-subtle); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Register New Driver Partner</h3>
+                        <div style="font-size: 12px; color: var(--text-muted);">Enroll driver & commercial vehicle into Kerala fleet</div>
+                    </div>
+                </div>
+                <button type="button" onclick="App.closeModal('addDriverModal')" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
+            </div>
+
+            <!-- 1-Click Viva Demo Quick-Fill -->
+            <div style="background: var(--bg-card-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">⚡ Fast Demo Preset:</span>
+                <button type="button" onclick="quickFillDriverDemo()" class="btn btn-secondary btn-sm" style="font-size: 11px; font-weight: 800;">
+                    Fill Viva Demo Driver
+                </button>
+            </div>
+
+            <form id="adminAddDriverForm" onsubmit="submitAddDriver(event)">
+                <div class="form-group">
+                    <label class="form-label" for="drvName">Driver Full Name</label>
+                    <input type="text" id="drvName" class="form-control" placeholder="e.g. Kiran Varma" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label class="form-label" for="drvEmail">Email Address</label>
+                        <input type="email" id="drvEmail" class="form-control" placeholder="driver@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="drvPhone">Mobile (+91)</label>
+                        <input type="tel" id="drvPhone" class="form-control" placeholder="+91 94475 12345" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="drvPassword">Driver Login Password</label>
+                    <input type="password" id="drvPassword" class="form-control" value="password123" required>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">Pre-filled with password123 for viva demonstration.</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="drvLicense">Driving License Number</label>
+                    <input type="text" id="drvLicense" class="form-control" placeholder="e.g. KL-07-2023-0045678" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label class="form-label" for="drvModel">Vehicle Model</label>
+                        <input type="text" id="drvModel" class="form-control" placeholder="e.g. Maruti Suzuki Dzire" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="drvPlate">Plate Number</label>
+                        <input type="text" id="drvPlate" class="form-control" placeholder="e.g. KL 07 CD 8901" style="text-transform: uppercase;" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group">
+                        <label class="form-label" for="drvCabType">Cab Category</label>
+                        <select id="drvCabType" class="form-control">
+                            <option value="ECONOMY">Economy (Hatchback)</option>
+                            <option value="PREMIUM" selected>Premium (Sedan)</option>
+                            <option value="SUV">SUV (6-7 Seater)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="drvColor">Vehicle Color</label>
+                        <input type="text" id="drvColor" class="form-control" value="White" placeholder="e.g. White, Silver, Grey">
+                    </div>
+                </div>
+
+                <div id="addDriverError" style="display: none; padding: 10px 14px; background: var(--danger-subtle); border: 1px solid var(--danger-border); color: var(--danger-dark); border-radius: var(--radius-md); font-size: 12px; font-weight: 600; margin-bottom: 14px;"></div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px;">
+                    <button type="button" onclick="App.closeModal('addDriverModal')" class="btn btn-secondary" style="font-weight: 700;">Cancel</button>
+                    <button type="submit" id="btnSubmitAddDriver" class="btn btn-primary" style="font-weight: 800; padding: 10px 24px;">Register Driver</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="/js/app.js"></script>
@@ -1468,6 +1562,62 @@
             });
 
             renderDriversTable(filtered);
+        }
+
+        // ------------------ ADD DRIVER MODAL & ACTION ------------------
+        function openAddDriverModal() {
+            const errEl = document.getElementById('addDriverError');
+            if (errEl) errEl.style.display = 'none';
+            App.openModal('addDriverModal');
+        }
+
+        function quickFillDriverDemo() {
+            const randSuffix = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('drvName').value = 'Kiran Varma';
+            document.getElementById('drvEmail').value = `kiran.${randSuffix}@example.com`;
+            document.getElementById('drvPhone').value = `+91 94475 ${randSuffix}`;
+            document.getElementById('drvPassword').value = 'password123';
+            document.getElementById('drvLicense').value = `KL-07-2024-${randSuffix}`;
+            document.getElementById('drvModel').value = 'Maruti Suzuki Dzire';
+            document.getElementById('drvPlate').value = `KL 07 EF ${randSuffix}`;
+            document.getElementById('drvCabType').value = 'PREMIUM';
+            document.getElementById('drvColor').value = 'Pearl White';
+        }
+
+        async function submitAddDriver(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitAddDriver');
+            const errEl = document.getElementById('addDriverError');
+            btn.disabled = true;
+            btn.textContent = 'Enrolling...';
+            errEl.style.display = 'none';
+
+            const payload = {
+                name: document.getElementById('drvName').value.trim(),
+                email: document.getElementById('drvEmail').value.trim(),
+                phone: document.getElementById('drvPhone').value.trim(),
+                password: document.getElementById('drvPassword').value,
+                licenseNumber: document.getElementById('drvLicense').value.trim(),
+                vehicleModel: document.getElementById('drvModel').value.trim(),
+                plateNumber: document.getElementById('drvPlate').value.trim().toUpperCase(),
+                cabType: document.getElementById('drvCabType').value,
+                color: document.getElementById('drvColor').value.trim()
+            };
+
+            try {
+                const res = await App.post('/api/admin/drivers', payload);
+                App.closeModal('addDriverModal');
+                App.showToast('Driver Enrolled', `Registered driver partner ${payload.name} (${payload.plateNumber})!`, 'check');
+                document.getElementById('adminAddDriverForm').reset();
+                document.getElementById('drvPassword').value = 'password123';
+                await loadAllAdminData();
+            } catch (err) {
+                errEl.textContent = err.message || 'Failed to add driver. Please check inputs.';
+                errEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Register Driver';
+            }
         }
 
         // ------------------ RIDES MANAGEMENT ------------------

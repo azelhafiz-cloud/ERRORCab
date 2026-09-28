@@ -8,6 +8,7 @@ import com.errorcab.model.Role;
 import com.errorcab.model.User;
 import com.errorcab.repository.DriverRepository;
 import com.errorcab.repository.UserRepository;
+import com.errorcab.service.AuthenticationService;
 import com.errorcab.service.PaymentService;
 import com.errorcab.service.RideService;
 import com.errorcab.service.SessionService;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,9 +38,11 @@ public class AdminController {
     private final RideService rideService = RideService.getInstance();
     private final PaymentService paymentService = PaymentService.getInstance();
     private final SessionService sessionService;
+    private final AuthenticationService authService;
 
-    public AdminController(SessionService sessionService) {
+    public AdminController(SessionService sessionService, AuthenticationService authService) {
         this.sessionService = sessionService;
+        this.authService = authService;
     }
 
     private ResponseEntity<?> checkAdminAuth(HttpServletRequest request) {
@@ -124,5 +128,54 @@ public class AdminController {
         boolean active = body.getOrDefault("active", true);
         boolean ok = userRepo.toggleUserActiveStatus(id, active);
         return ResponseEntity.ok(Map.of("success", ok, "id", id, "active", active));
+    }
+
+    @PostMapping("/drivers")
+    public ResponseEntity<?> addDriver(@RequestBody Map<String, String> body, HttpServletRequest request) {
+        ResponseEntity<?> authCheck = checkAdminAuth(request);
+        if (authCheck != null) return authCheck;
+
+        try {
+            String name = body.get("name");
+            String email = body.get("email");
+            String phone = body.get("phone") != null ? body.get("phone") : body.get("phoneNumber");
+            String pass = body.get("password");
+            if (pass == null || pass.trim().isEmpty()) {
+                pass = "password123";
+            }
+            String confirmPass = body.get("confirmPassword");
+            if (confirmPass == null || confirmPass.trim().isEmpty()) {
+                confirmPass = pass;
+            }
+
+            String license = body.get("licenseNumber") != null ? body.get("licenseNumber") : body.get("license");
+            String vehicleModel = body.get("vehicleModel") != null ? body.get("vehicleModel") : "Hyundai Aura";
+            String plate = body.get("plateNumber") != null ? body.get("plateNumber") : body.get("licensePlate");
+            String cabType = body.get("cabType") != null ? body.get("cabType") : "PREMIUM";
+            String color = body.get("color") != null ? body.get("color") : "White";
+
+            Driver d = authService.registerDriver(
+                    name,
+                    email,
+                    phone,
+                    pass,
+                    confirmPass,
+                    license,
+                    vehicleModel,
+                    plate,
+                    cabType,
+                    color
+            );
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "success", true,
+                    "message", "Driver successfully added to ERRORCab fleet.",
+                    "driver", d
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Failed to register driver."));
+        }
     }
 }

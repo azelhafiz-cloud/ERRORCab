@@ -118,6 +118,10 @@ const App = {
         localStorage.setItem('errorcab_user', JSON.stringify(user));
     },
 
+    setCurrentUser(user) {
+        this.setUser(user);
+    },
+
     async logout() {
         try {
             await this.post('/api/auth/logout', {});

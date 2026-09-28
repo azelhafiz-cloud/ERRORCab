@@ -238,6 +238,12 @@
             App.initTheme();
             const slot = document.getElementById('authThemeSlot');
             if (slot) slot.innerHTML = App.renderThemeSelectorHTML();
+
+            const params = new URLSearchParams(window.location.search);
+            const roleParam = (params.get('role') || '').toUpperCase();
+            if (roleParam === 'DRIVER') {
+                switchRole('DRIVER');
+            }
         });
 
         function switchRole(role) {
@@ -294,6 +300,9 @@
                     email: user.email,
                     role: user.role,
                     phone: user.phone || user.phoneNumber,
+                    phoneNumber: user.phoneNumber || user.phone,
+                    address: user.address || user.defaultAddress || (user.user && (user.user.defaultAddress || user.user.address)) || '',
+                    defaultAddress: user.defaultAddress || user.address || (user.user && (user.user.defaultAddress || user.user.address)) || '',
                     sessionToken: user.sessionToken
                 });
 

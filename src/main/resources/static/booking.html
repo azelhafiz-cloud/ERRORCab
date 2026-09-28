@@ -219,28 +219,81 @@
                         </div>
                     </div>
 
-                    <!-- Itinerary Summary & Telemetry -->
-                    <div class="trip-info-card">
-                        <div class="trip-info-route">
-                            <div class="trip-info-point">
-                                <span class="trip-info-point-label">Pickup:</span>
-                                <b id="summaryPickupText" style="color: var(--text-primary);">Kakkanad</b>
+                    <!-- Modern Compact Route Summary & Telemetry -->
+                    <div class="route-summary-card">
+                        <div class="route-summary-header">
+                            <div class="route-summary-title">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                                </svg>
+                                <span>ROUTE SUMMARY</span>
                             </div>
-                            <div class="trip-info-arrow">↓ Route</div>
-                            <div class="trip-info-point">
-                                <span class="trip-info-point-label">Destination:</span>
-                                <b id="summaryDropoffText" style="color: var(--text-primary);">Vyttila</b>
+                            <span class="route-type-badge">Direct Route</span>
+                        </div>
+
+                        <!-- Compact Connected Route Timeline -->
+                        <div class="route-timeline">
+                            <!-- Pickup Node -->
+                            <div class="route-node">
+                                <div class="route-marker pickup">
+                                    <div class="marker-core"></div>
+                                </div>
+                                <div class="route-node-content">
+                                    <span class="route-node-label">Pickup Hub</span>
+                                    <b id="summaryPickupText" class="route-node-name">Kakkanad</b>
+                                    <span id="summaryPickupLandmark" class="route-node-landmark">Infopark IT Hub</span>
+                                </div>
+                            </div>
+
+                            <!-- Connecting Stem / Flow Indicator -->
+                            <div class="route-timeline-stem">
+                                <div class="stem-line"></div>
+                                <div class="stem-pill">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Destination Node -->
+                            <div class="route-node">
+                                <div class="route-marker destination">
+                                    <div class="marker-core"></div>
+                                </div>
+                                <div class="route-node-content">
+                                    <span class="route-node-label">Destination Hub</span>
+                                    <b id="summaryDropoffText" class="route-node-name">Vyttila</b>
+                                    <span id="summaryDropoffLandmark" class="route-node-landmark">Mobility Hub</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="trip-metrics-grid">
-                            <div class="trip-metric-item">
-                                <span class="trip-metric-label">Distance:</span>
-                                <span class="trip-metric-value" id="distanceDisplay">9.2 km</span>
+                        <!-- Telemetry Metric Cards (Distance + Estimated Time) -->
+                        <div class="route-telemetry-grid">
+                            <div class="telemetry-chip">
+                                <div class="telemetry-icon-box distance">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+                                    </svg>
+                                </div>
+                                <div class="telemetry-info">
+                                    <span class="telemetry-label">Distance</span>
+                                    <span class="telemetry-value" id="distanceDisplay">9.2 km</span>
+                                </div>
                             </div>
-                            <div class="trip-metric-item">
-                                <span class="trip-metric-label">Estimated Time:</span>
-                                <span class="trip-metric-value" id="durationDisplay">24 mins</span>
+
+                            <div class="telemetry-chip">
+                                <div class="telemetry-icon-box duration">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                </div>
+                                <div class="telemetry-info">
+                                    <span class="telemetry-label">Estimated Time</span>
+                                    <span class="telemetry-value" id="durationDisplay">24 mins</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -479,6 +532,8 @@
             onRouteChanged();
         });
 
+        let locationsLookup = {};
+
         async function loadLocations() {
             try {
                 const locations = await App.get('/api/map/locations');
@@ -488,7 +543,9 @@
                 pickup.innerHTML = '';
                 dropoff.innerHTML = '';
 
+                locationsLookup = {};
                 locations.forEach(loc => {
+                    locationsLookup[loc.name] = loc;
                     pickup.add(new Option(`${loc.name} (${loc.landmark || 'Kochi'})`, loc.name));
                     dropoff.add(new Option(`${loc.name} (${loc.landmark || 'Kochi'})`, loc.name));
                 });
@@ -528,6 +585,13 @@
                 const dText = document.getElementById('summaryDropoffText');
                 if (pText) pText.textContent = pickup;
                 if (dText) dText.textContent = dropoff;
+
+                const pLandmark = document.getElementById('summaryPickupLandmark');
+                const dLandmark = document.getElementById('summaryDropoffLandmark');
+                const pLoc = locationsLookup[pickup];
+                const dLoc = locationsLookup[dropoff];
+                if (pLandmark) pLandmark.textContent = pLoc ? (pLoc.landmark || pLoc.city || 'Kochi') : 'Kochi Hub';
+                if (dLandmark) dLandmark.textContent = dLoc ? (dLoc.landmark || dLoc.city || 'Kochi') : 'Kochi Hub';
 
                 if (simMap) {
                     simMap.setRoute(pickup, dropoff, currentDistance, routeInfo.durationMinutes);

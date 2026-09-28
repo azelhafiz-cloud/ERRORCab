@@ -29,41 +29,55 @@ public class BookingRepository {
                 "status, cancellation_reason, created_at, completed_at, promo_code, discount, " +
                 "otp, declined_driver_ids, scheduled_time, is_scheduled) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (Connection conn = db.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, booking.getBookingCode());
-            ps.setInt(2, booking.getPassengerId());
-            ps.setString(3, booking.getPassengerName());
-            ps.setString(4, booking.getPassengerPhone());
-            if (booking.getDriverId() != null) ps.setInt(5, booking.getDriverId()); else ps.setNull(5, Types.INTEGER);
-            ps.setString(6, booking.getDriverName());
-            ps.setString(7, booking.getDriverPhone());
-            ps.setString(8, booking.getVehicleModel());
-            ps.setString(9, booking.getVehiclePlateNumber());
-            ps.setDouble(10, booking.getDriverRating());
-            ps.setString(11, booking.getPickupLocation());
-            ps.setString(12, booking.getDestinationLocation());
-            ps.setDouble(13, booking.getDistanceKm());
-            ps.setInt(14, booking.getEstimatedMinutes());
-            ps.setString(15, booking.getCabType().name());
-            ps.setDouble(16, booking.getFare());
-            ps.setString(17, booking.getStatus().name());
-            ps.setString(18, booking.getCancellationReason());
-            ps.setString(19, booking.getCreatedAt().toString());
-            ps.setString(20, booking.getCompletedAt() != null ? booking.getCompletedAt().toString() : null);
-            ps.setString(21, booking.getPromoCode());
-            ps.setDouble(22, booking.getDiscount());
-            ps.setString(23, booking.getOtp());
-            ps.setString(24, booking.getDeclinedDriverIds());
-            ps.setString(25, booking.getScheduledTime());
-            ps.setInt(26, booking.isScheduled() ? 1 : 0);
+        SQLException lastEx = null;
+        for (int attempt = 0; attempt < 5; attempt++) {
+            try (Connection conn = db.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setString(1, booking.getBookingCode());
+                ps.setInt(2, booking.getPassengerId());
+                ps.setString(3, booking.getPassengerName());
+                ps.setString(4, booking.getPassengerPhone());
+                if (booking.getDriverId() != null) ps.setInt(5, booking.getDriverId()); else ps.setNull(5, Types.INTEGER);
+                ps.setString(6, booking.getDriverName());
+                ps.setString(7, booking.getDriverPhone());
+                ps.setString(8, booking.getVehicleModel());
+                ps.setString(9, booking.getVehiclePlateNumber());
+                ps.setDouble(10, booking.getDriverRating());
+                ps.setString(11, booking.getPickupLocation());
+                ps.setString(12, booking.getDestinationLocation());
+                ps.setDouble(13, booking.getDistanceKm());
+                ps.setInt(14, booking.getEstimatedMinutes());
+                ps.setString(15, booking.getCabType().name());
+                ps.setDouble(16, booking.getFare());
+                ps.setString(17, booking.getStatus().name());
+                ps.setString(18, booking.getCancellationReason());
+                ps.setString(19, booking.getCreatedAt().toString());
+                ps.setString(20, booking.getCompletedAt() != null ? booking.getCompletedAt().toString() : null);
+                ps.setString(21, booking.getPromoCode());
+                ps.setDouble(22, booking.getDiscount());
+                ps.setString(23, booking.getOtp());
+                ps.setString(24, booking.getDeclinedDriverIds());
+                ps.setString(25, booking.getScheduledTime());
+                ps.setInt(26, booking.isScheduled() ? 1 : 0);
 
-            ps.executeUpdate();
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    booking.setId(rs.getInt(1));
+                ps.executeUpdate();
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        booking.setId(rs.getInt(1));
+                    }
                 }
+                return booking;
+            } catch (SQLException e) {
+                lastEx = e;
+                if (e.getMessage() != null && e.getMessage().contains("bookings.booking_code")) {
+                    booking.setBookingCode("EC-" + (1000 + (int)(Math.random() * 90000)));
+                    continue;
+                }
+                throw e;
             }
+        }
+        if (lastEx != null) {
+            throw lastEx;
         }
         return booking;
     }

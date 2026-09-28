@@ -48,10 +48,18 @@ public class AuthController {
             resp.put("name", user.getName());
             resp.put("email", user.getEmail());
             resp.put("phone", user.getPhone());
+            resp.put("phoneNumber", user.getPhone());
             resp.put("role", user.getRole().name());
             resp.put("active", user.isActive());
             resp.put("sessionToken", sessionToken);
             resp.put("user", user);
+            if (user instanceof Passenger p) {
+                resp.put("address", p.getDefaultAddress());
+                resp.put("defaultAddress", p.getDefaultAddress());
+            } else if (user instanceof Driver d) {
+                resp.put("address", d.getCurrentLocation());
+                resp.put("defaultAddress", d.getCurrentLocation());
+            }
 
             return ResponseEntity.ok(resp);
         } catch (IllegalArgumentException | IllegalStateException e) {
@@ -87,7 +95,10 @@ public class AuthController {
             resp.put("name", p.getName());
             resp.put("email", p.getEmail());
             resp.put("phone", p.getPhone());
+            resp.put("phoneNumber", p.getPhone());
             resp.put("role", p.getRole().name());
+            resp.put("address", p.getDefaultAddress());
+            resp.put("defaultAddress", p.getDefaultAddress());
             resp.put("active", p.isActive());
             resp.put("sessionToken", sessionToken);
             resp.put("user", p);
@@ -132,7 +143,10 @@ public class AuthController {
             resp.put("name", d.getName());
             resp.put("email", d.getEmail());
             resp.put("phone", d.getPhone());
+            resp.put("phoneNumber", d.getPhone());
             resp.put("role", d.getRole().name());
+            resp.put("address", d.getCurrentLocation());
+            resp.put("defaultAddress", d.getCurrentLocation());
             resp.put("active", d.isActive());
             resp.put("sessionToken", sessionToken);
             resp.put("user", d);
@@ -155,7 +169,26 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> getMe(HttpServletRequest request) {
         return sessionService.resolveUser(request)
-                .map(ResponseEntity::ok)
+                .map(user -> {
+                    Map<String, Object> resp = new LinkedHashMap<>();
+                    resp.put("id", user.getId());
+                    resp.put("userId", user.getId());
+                    resp.put("name", user.getName());
+                    resp.put("email", user.getEmail());
+                    resp.put("phone", user.getPhone());
+                    resp.put("phoneNumber", user.getPhone());
+                    resp.put("role", user.getRole().name());
+                    resp.put("active", user.isActive());
+                    if (user instanceof Passenger p) {
+                        resp.put("address", p.getDefaultAddress());
+                        resp.put("defaultAddress", p.getDefaultAddress());
+                    } else if (user instanceof Driver d) {
+                        resp.put("address", d.getCurrentLocation());
+                        resp.put("defaultAddress", d.getCurrentLocation());
+                    }
+                    resp.put("user", user);
+                    return ResponseEntity.ok(resp);
+                })
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 
@@ -177,13 +210,39 @@ public class AuthController {
             userId = userOpt.get().getId();
         } else if (body.containsKey("userId")) {
             userId = Integer.parseInt(body.get("userId"));
+        } else if (body.containsKey("id")) {
+            userId = Integer.parseInt(body.get("id"));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required."));
         }
 
+        var existingUserOpt = authService.getUserById(userId);
+        User existingUser = existingUserOpt.orElse(null);
+
         String name = body.get("name");
-        String phone = body.get("phone");
+        String phone = body.get("phone") != null ? body.get("phone") : body.get("phoneNumber");
         String address = body.get("address") != null ? body.get("address") : body.get("defaultAddress");
+
+        if (body.containsKey("name") && (name == null || name.trim().isEmpty())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Name cannot be empty."));
+        }
+
+        // If name was omitted from payload (e.g. phone-only update), preserve existing name
+        if (name == null || name.trim().isEmpty()) {
+            name = existingUser != null ? existingUser.getName() : null;
+        }
+
+        // Preserve existing values for partial updates (e.g. when updating name only or phone field omitted/disabled)
+        if ((phone == null || phone.trim().isEmpty()) && existingUser != null && existingUser.getPhone() != null && !existingUser.getPhone().trim().isEmpty()) {
+            phone = existingUser.getPhone();
+        }
+        if (address == null && existingUser != null) {
+            if (existingUser instanceof Passenger p) {
+                address = p.getDefaultAddress();
+            } else if (existingUser instanceof Driver d) {
+                address = d.getCurrentLocation();
+            }
+        }
 
         if (name == null || name.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Name cannot be empty."));
@@ -194,8 +253,29 @@ public class AuthController {
 
         boolean ok = new com.errorcab.repository.UserRepository().updateUserProfile(userId, name.trim(), phone.trim(), address);
         if (ok) {
-            var updatedUser = authService.getUserById(userId);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Profile updated successfully.", "user", updatedUser.orElse(null)));
+            var updatedUserOpt = authService.getUserById(userId);
+            User updatedUser = updatedUserOpt.orElse(null);
+            Map<String, Object> resp = new LinkedHashMap<>();
+            resp.put("success", true);
+            resp.put("message", "Profile updated successfully.");
+            resp.put("user", updatedUser);
+            if (updatedUser != null) {
+                resp.put("id", updatedUser.getId());
+                resp.put("userId", updatedUser.getId());
+                resp.put("name", updatedUser.getName());
+                resp.put("email", updatedUser.getEmail());
+                resp.put("phone", updatedUser.getPhone());
+                resp.put("phoneNumber", updatedUser.getPhone());
+                resp.put("role", updatedUser.getRole().name());
+                if (updatedUser instanceof Passenger p) {
+                    resp.put("address", p.getDefaultAddress());
+                    resp.put("defaultAddress", p.getDefaultAddress());
+                } else if (updatedUser instanceof Driver d) {
+                    resp.put("address", d.getCurrentLocation());
+                    resp.put("defaultAddress", d.getCurrentLocation());
+                }
+            }
+            return ResponseEntity.ok(resp);
         } else {
             return ResponseEntity.badRequest().body(Map.of("error", "Failed to update profile."));
         }
