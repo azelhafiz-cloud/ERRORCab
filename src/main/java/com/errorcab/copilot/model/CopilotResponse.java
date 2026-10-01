@@ -1,13 +1,20 @@
 package com.errorcab.copilot.model;
 
+import com.errorcab.copilot.destination.model.DestinationProfile;
+import com.errorcab.copilot.destination.model.SafetyAdvisory;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Result structure returned by ERRORCab AI Travel Copilot.
- * Contains personalized itinerary, dining spots, local tips, and actionable ERRORCab rides.
+ * Contains personalized itinerary, destination intelligence profile,
+ * verified safety advisories, curated culinary highlights, budget breakdown,
+ * smart day balance, and actionable ERRORCab rides.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CopilotResponse {
     private boolean success;
     private String title;
@@ -19,10 +26,23 @@ public class CopilotResponse {
     private List<ItineraryLeg> itinerary = new ArrayList<>();
     private List<String> foodRecommendations = new ArrayList<>();
     private List<String> travelTips = new ArrayList<>();
+    private List<String> specialties = new ArrayList<>();
+    private List<String> warnings = new ArrayList<>();
     private List<CopilotRideSuggestion> recommendedRides = new ArrayList<>();
     private double estimatedTotalCabFare;
     private String providerName;
     private LocalDateTime generatedAt;
+
+    // Enhanced Intelligence & UX Fields
+    private DestinationProfile destinationProfile;
+    private CuratedCulinaryInfo curatedCulinary;
+    private BudgetBreakdown budgetBreakdown;
+    private DayBalance dayBalance;
+    private List<String> tripReadiness = new ArrayList<>();
+    private String tripExplanation;
+    private String assistanceType = "SMART_OFFLINE"; // "AI_ASSISTED" or "SMART_OFFLINE"
+    private String weatherNote;
+    private List<SafetyAdvisory> safetyAdvisories = new ArrayList<>();
 
     public CopilotResponse() {
         this.generatedAt = LocalDateTime.now();
@@ -98,11 +118,7 @@ public class CopilotResponse {
     }
 
     public void setFoodRecommendations(List<String> foodRecommendations) {
-        this.foodRecommendations = foodRecommendations != null ? foodPreferences(foodRecommendations) : new ArrayList<>();
-    }
-
-    private List<String> foodPreferences(List<String> list) {
-        return list != null ? list : new ArrayList<>();
+        this.foodRecommendations = foodRecommendations != null ? foodRecommendations : new ArrayList<>();
     }
 
     public List<String> getTravelTips() {
@@ -111,6 +127,22 @@ public class CopilotResponse {
 
     public void setTravelTips(List<String> travelTips) {
         this.travelTips = travelTips != null ? travelTips : new ArrayList<>();
+    }
+
+    public List<String> getSpecialties() {
+        return specialties;
+    }
+
+    public void setSpecialties(List<String> specialties) {
+        this.specialties = specialties != null ? specialties : new ArrayList<>();
+    }
+
+    public List<String> getWarnings() {
+        return warnings;
+    }
+
+    public void setWarnings(List<String> warnings) {
+        this.warnings = warnings != null ? warnings : new ArrayList<>();
     }
 
     public List<CopilotRideSuggestion> getRecommendedRides() {
@@ -143,5 +175,77 @@ public class CopilotResponse {
 
     public void setGeneratedAt(LocalDateTime generatedAt) {
         this.generatedAt = generatedAt;
+    }
+
+    public DestinationProfile getDestinationProfile() {
+        return destinationProfile;
+    }
+
+    public void setDestinationProfile(DestinationProfile destinationProfile) {
+        this.destinationProfile = destinationProfile;
+    }
+
+    public CuratedCulinaryInfo getCuratedCulinary() {
+        return curatedCulinary;
+    }
+
+    public void setCuratedCulinary(CuratedCulinaryInfo curatedCulinary) {
+        this.curatedCulinary = curatedCulinary;
+    }
+
+    public BudgetBreakdown getBudgetBreakdown() {
+        return budgetBreakdown;
+    }
+
+    public void setBudgetBreakdown(BudgetBreakdown budgetBreakdown) {
+        this.budgetBreakdown = budgetBreakdown;
+    }
+
+    public DayBalance getDayBalance() {
+        return dayBalance;
+    }
+
+    public void setDayBalance(DayBalance dayBalance) {
+        this.dayBalance = dayBalance;
+    }
+
+    public List<String> getTripReadiness() {
+        return tripReadiness;
+    }
+
+    public void setTripReadiness(List<String> tripReadiness) {
+        this.tripReadiness = tripReadiness != null ? tripReadiness : new ArrayList<>();
+    }
+
+    public String getTripExplanation() {
+        return tripExplanation;
+    }
+
+    public void setTripExplanation(String tripExplanation) {
+        this.tripExplanation = tripExplanation;
+    }
+
+    public String getAssistanceType() {
+        return assistanceType;
+    }
+
+    public void setAssistanceType(String assistanceType) {
+        this.assistanceType = assistanceType;
+    }
+
+    public String getWeatherNote() {
+        return weatherNote;
+    }
+
+    public void setWeatherNote(String weatherNote) {
+        this.weatherNote = weatherNote;
+    }
+
+    public List<SafetyAdvisory> getSafetyAdvisories() {
+        return safetyAdvisories;
+    }
+
+    public void setSafetyAdvisories(List<SafetyAdvisory> safetyAdvisories) {
+        this.safetyAdvisories = safetyAdvisories != null ? safetyAdvisories : new ArrayList<>();
     }
 }

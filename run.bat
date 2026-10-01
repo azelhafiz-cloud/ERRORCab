@@ -23,10 +23,7 @@ echo   - Admin:     admin@example.com
 echo =======================================================
 echo.
 
-if exist "target\errorcab-1.0.0.jar" (
-    java -jar target\errorcab-1.0.0.jar
-) else (
-    mvn spring-boot:run
-)
+mvn spring-boot:run
 
 pause
+

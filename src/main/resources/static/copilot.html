@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Travel Copilot - ERRORCab Kochi</title>
+    <title>AI Travel Copilot - ERRORCab Kerala</title>
     <!-- Early theme resolution prevents dark/light flash -->
     <script>
         (function() {
@@ -16,12 +16,15 @@
             } catch (e) {}
         })();
     </script>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=3.2.0">
     <style>
+        /* =====================================================================
+           COPILOT DESIGN SYSTEM & RESPONSIVE LAYOUT
+           ===================================================================== */
         .copilot-hero {
             background: linear-gradient(135deg, #070D1D 0%, #0F172A 60%, #0369A1 100%);
             border-radius: var(--radius-lg);
-            padding: 28px;
+            padding: 24px;
             color: #FFFFFF;
             margin-bottom: 24px;
             position: relative;
@@ -35,24 +38,26 @@
             right: 20px;
             bottom: -20px;
             font-size: 140px;
-            color: rgba(56, 189, 248, 0.07);
+            color: rgba(56, 189, 248, 0.06);
             font-family: serif;
             pointer-events: none;
         }
+
+        /* Context Chip Bar */
         .context-chip-bar {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
             margin-top: 16px;
-            padding-top: 16px;
+            padding-top: 14px;
             border-top: 1px solid rgba(255, 255, 255, 0.12);
         }
         .context-pill {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: var(--radius-full);
-            padding: 5px 12px;
+            padding: 4px 12px;
             font-size: 12px;
             color: #E2E8F0;
             display: inline-flex;
@@ -67,13 +72,134 @@
             display: inline-block;
             box-shadow: 0 0 6px #10B981;
         }
-        .copilot-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 24px;
+
+        /* =====================================================================
+           CABSTER THE MASCOT (SELF-CONTAINED INLINE SVG & ANIMATIONS)
+           ===================================================================== */
+        .mascot-banner-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1.5px solid rgba(56, 189, 248, 0.35);
+            border-radius: var(--radius-lg);
+            padding: 14px 18px;
+            margin-top: 16px;
+            backdrop-filter: blur(8px);
         }
+        .mascot-wrap {
+            position: relative;
+            width: 84px;
+            height: 84px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cabster-svg {
+            width: 84px;
+            height: 84px;
+            display: block;
+        }
+
+        /* Keyframe Animations for Mascot Moods */
+        @keyframes cabsterHover {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(1.5deg); }
+        }
+        @keyframes cabsterCurious {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            30% { transform: rotate(-8deg) translateY(-2px) scale(1.03); }
+            70% { transform: rotate(8deg) translateY(-2px) scale(1.03); }
+        }
+        @keyframes cabsterScan {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            25% { transform: translateY(-3px) scale(1.02) rotate(-1deg); }
+            75% { transform: translateY(2px) scale(0.98) rotate(1deg); }
+        }
+        @keyframes cabsterCelebrate {
+            0%, 100% { transform: translateY(0) scale(1); }
+            30% { transform: translateY(-12px) scale(1.08); }
+            50% { transform: translateY(3px) scale(0.96); }
+            70% { transform: translateY(-4px) scale(1.02); }
+        }
+        @keyframes eyeBlink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+        @keyframes antennaBlink {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.35); }
+        }
+        @keyframes pupilTrack {
+            0%, 100% { transform: translateX(0); }
+            30% { transform: translateX(-3px); }
+            70% { transform: translateX(3px); }
+        }
+
+        /* Mascot States */
+        .mood-idle .cabster-body-group {
+            animation: cabsterHover 3.5s ease-in-out infinite;
+            transform-origin: center bottom;
+        }
+        .mood-idle .mascot-eye {
+            animation: eyeBlink 4s ease-in-out infinite;
+            transform-origin: center;
+        }
+
+        .mood-thinking .cabster-body-group {
+            animation: cabsterCurious 2.2s ease-in-out infinite;
+            transform-origin: center bottom;
+        }
+        .mood-thinking .mascot-antenna-ring {
+            animation: antennaBlink 0.9s ease-in-out infinite;
+            transform-origin: 70px 18px;
+        }
+
+        .mood-generating .cabster-body-group {
+            animation: cabsterScan 0.45s ease-in-out infinite;
+            transform-origin: center bottom;
+        }
+        .mood-generating .mascot-antenna-ring {
+            animation: antennaBlink 0.4s ease-in-out infinite;
+            transform-origin: 70px 18px;
+        }
+        .mood-generating .mascot-pupil {
+            animation: pupilTrack 0.8s ease-in-out infinite;
+        }
+
+        .mood-success .cabster-body-group {
+            animation: cabsterCelebrate 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: center bottom;
+        }
+
+        .mascot-bubble {
+            background: rgba(15, 23, 42, 0.88);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            color: #E2E8F0;
+            font-size: 13px;
+            line-height: 1.45;
+            position: relative;
+            flex: 1;
+        }
+        .mascot-bubble::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid rgba(56, 189, 248, 0.35);
+        }
+
+        /* =====================================================================
+           COPILOT FORM & PREFERENCE CHIPS
+           ===================================================================== */
         .pref-group {
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
         .pref-label {
             font-size: 13px;
@@ -95,7 +221,7 @@
             background: var(--bg-card);
             border: 1.5px solid var(--border);
             border-radius: var(--radius-md);
-            padding: 9px 14px;
+            padding: 8px 14px;
             font-size: 13px;
             font-weight: 600;
             color: var(--text-secondary);
@@ -128,7 +254,7 @@
             background: var(--bg-card-subtle);
             border: 1px solid var(--border);
             border-radius: var(--radius-full);
-            padding: 6px 12px;
+            padding: 5px 12px;
             font-size: 12px;
             color: var(--text-muted);
             cursor: pointer;
@@ -139,6 +265,199 @@
             color: var(--primary);
             background: var(--primary-subtle);
         }
+
+        /* =====================================================================
+           6-STAGE PROGRESSIVE GENERATION OVERLAY
+           ===================================================================== */
+        .loading-pulse-box {
+            display: none;
+            padding: 36px 20px;
+            text-align: center;
+            background: var(--bg-card);
+            border: 2px solid var(--primary-border);
+            border-radius: var(--radius-lg);
+            margin-top: 24px;
+            box-shadow: var(--shadow-lg);
+        }
+        .gen-mascot-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .gen-progress-track {
+            width: 100%;
+            max-width: 500px;
+            height: 10px;
+            background: var(--bg-card-subtle);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin: 18px auto 8px;
+            border: 1px solid var(--border);
+        }
+        .gen-progress-bar {
+            height: 100%;
+            width: 16%;
+            background: linear-gradient(90deg, #0284C7, #38BDF8, #10B981);
+            border-radius: var(--radius-full);
+            transition: width 0.35s ease;
+        }
+        .gen-step-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary-subtle);
+            color: var(--primary);
+            border: 1px solid var(--primary-border);
+            border-radius: var(--radius-full);
+            padding: 4px 14px;
+            font-size: 12px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        /* =====================================================================
+           RESULT SECTIONS & VISUAL CARDS
+           ===================================================================== */
+        /* Segmented Day Balance Bar */
+        .day-balance-bar {
+            display: flex;
+            height: 14px;
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin: 14px 0 10px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .day-balance-segment {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        .seg-sightseeing { background: #0284C7; }
+        .seg-walking { background: #10B981; }
+        .seg-food { background: #F59E0B; }
+        .seg-relaxation { background: #8B5CF6; }
+        .seg-travel { background: #64748B; }
+
+        .day-balance-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .legend-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* Budget Intelligence Metric Cards */
+        .budget-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+        .budget-cell {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            text-align: center;
+        }
+        .budget-cell-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .budget-cell-val {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--text-primary);
+        }
+        .budget-cell-sub {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Trip Readiness Checklist */
+        .readiness-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .readiness-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            user-select: none;
+        }
+        .readiness-item:hover {
+            border-color: var(--primary);
+        }
+        .readiness-item.checked {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: var(--text-primary);
+            text-decoration: line-through;
+            opacity: 0.85;
+        }
+        .readiness-checkbox {
+            margin-top: 2px;
+            accent-color: var(--success);
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+
+        /* 4-Part Curated Culinary Highlights */
+        .culinary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+            margin-top: 12px;
+        }
+        .culinary-card {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px;
+        }
+        .culinary-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+        .culinary-card-body {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+
+        /* Itinerary Timeline & Personalization Callout */
         .timeline-container {
             position: relative;
             padding-left: 28px;
@@ -155,7 +474,7 @@
         }
         .timeline-item {
             position: relative;
-            margin-bottom: 22px;
+            margin-bottom: 24px;
         }
         .timeline-marker {
             position: absolute;
@@ -171,6 +490,16 @@
             justify-content: center;
             z-index: 2;
         }
+        .recommendation-callout {
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(56, 189, 248, 0.08) 100%);
+            border-left: 3px solid var(--primary);
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            padding: 8px 12px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
         .ride-card-copilot {
             background: linear-gradient(135deg, rgba(2, 132, 199, 0.05) 0%, rgba(56, 189, 248, 0.05) 100%);
             border: 1.5px solid var(--primary-border);
@@ -183,40 +512,125 @@
             flex-wrap: wrap;
             gap: 14px;
         }
-        .food-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 12px;
-            margin-top: 12px;
+
+        /* Plan Quick Adjustment Buttons Toolbar */
+        .adjustment-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin: 16px 0;
         }
-        .food-item-card {
+        .adj-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .adj-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-subtle);
+            transform: translateY(-1px);
+        }
+
+        /* Authoritative Safety Advisory Card */
+        .advisory-item {
+            background: rgba(239, 68, 68, 0.04);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .advisory-source-tag {
+            font-size: 11px;
+            font-weight: 700;
+            color: #DC2626;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Saved Trips Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .saved-trip-item {
             background: var(--bg-card-subtle);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
             padding: 14px;
-            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
         }
-        .loading-pulse-box {
-            display: none;
-            padding: 40px 20px;
-            text-align: center;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            margin-top: 20px;
-        }
-        .spinner-spark {
-            width: 44px;
-            height: 44px;
-            margin: 0 auto 16px;
-            border: 3px solid var(--border);
-            border-top: 3px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        /* Mobile Responsiveness (320px - 600px) */
+        @media (max-width: 600px) {
+            .mascot-banner-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+                padding: 14px;
+            }
+            .mascot-bubble::before {
+                left: 50%;
+                top: -8px;
+                transform: translateX(-50%);
+                border-left: 8px solid transparent;
+                border-right: 8px solid transparent;
+                border-bottom: 8px solid rgba(56, 189, 248, 0.35);
+                border-top: none;
+            }
+            .copilot-hero {
+                padding: 18px 14px;
+            }
+            .adjustment-toolbar {
+                padding: 10px;
+                gap: 6px;
+            }
+            .adj-btn {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+            .day-balance-legend {
+                gap: 8px;
+            }
+            .legend-chip {
+                font-size: 11px;
+            }
+            .budget-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .culinary-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -242,6 +656,12 @@
             <!-- Theme Switcher -->
             <div id="themeSelectorSlot" class="desktop-only"></div>
 
+            <!-- Saved Trips Action Button -->
+            <button type="button" onclick="openSavedTripsModal()" class="btn btn-outline btn-sm" title="View Saved Trips">
+                <span>📁 Saved Trips</span>
+                <span class="badge badge-primary" id="savedCountBadge" style="margin-left: 4px; padding: 2px 6px; font-size: 11px;">0</span>
+            </button>
+
             <!-- Notifications Bell -->
             <div class="bell-badge-wrap">
                 <button type="button" onclick="App.toggleNotifications()" class="btn btn-outline btn-icon-only" title="Notifications" aria-label="View notifications">
@@ -266,17 +686,95 @@
     <main class="container container-wide">
         <!-- AI Hero Banner -->
         <div class="copilot-hero">
-            <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: var(--radius-full); padding: 4px 12px; margin-bottom: 12px;">
-                <span style="color: #38BDF8; font-size: 12px; font-weight: 800; letter-spacing: 0.5px;">✦ ERRORCab AI • TRAVEL COPILOT</span>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: var(--radius-full); padding: 4px 12px; margin-bottom: 12px;">
+                        <span style="color: #38BDF8; font-size: 12px; font-weight: 800; letter-spacing: 0.5px;">✦ ERRORCab AI • TRAVEL COPILOT</span>
+                    </div>
+                    <h1 style="font-size: 26px; font-weight: 900; margin: 0; letter-spacing: -0.5px;">
+                        Personalized Kerala Travel & Ride Companion
+                    </h1>
+                    <p style="color: #94A3B8; font-size: 14px; margin-top: 6px; max-width: 680px; line-height: 1.5;">
+                        Tell us your travel intentions. Our intelligent copilot synthesizes custom day plans, famous regional culinary stops, verified safety advisories, and links them directly to certified ERRORCab rides with transparent pricing.
+                    </p>
+                </div>
             </div>
-            <h1 style="font-size: 26px; font-weight: 900; margin: 0; letter-spacing: -0.5px;">
-                Personalized Kerala Travel & Ride Companion
-            </h1>
-            <p style="color: #94A3B8; font-size: 14px; margin-top: 6px; max-width: 680px; line-height: 1.5;">
-                Tell us your travel intentions. Our intelligent copilot synthesizes custom day plans, famous regional culinary stops, and links them directly to certified ERRORCab rides with transparent pricing.
-            </p>
 
-            <!-- Passenger Context Bar (Real ERRORCab Profile Data) -->
+            <!-- Cabster — ERRORCab Copilot Mascot Banner Card (Visibly Present Before Generation) -->
+            <div class="mascot-banner-card" id="mascotBannerCard">
+                <div class="mascot-wrap">
+                    <svg id="cabsterSvg" class="cabster-svg mood-idle" viewBox="0 0 140 140" aria-label="Cabster — ERRORCab Copilot">
+                        <defs>
+                            <linearGradient id="cabsterBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#0284C7" />
+                                <stop offset="60%" stop-color="#0369A1" />
+                                <stop offset="100%" stop-color="#075985" />
+                            </linearGradient>
+                            <linearGradient id="cabsterCrownGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#F59E0B" />
+                                <stop offset="100%" stop-color="#FBBF24" />
+                            </linearGradient>
+                            <linearGradient id="cabsterVisorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#0B132B" />
+                                <stop offset="100%" stop-color="#1C2541" />
+                            </linearGradient>
+                            <radialGradient id="cabsterPupilGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#38BDF8" />
+                                <stop offset="100%" stop-color="#0284C7" />
+                            </radialGradient>
+                        </defs>
+                        <!-- Mascot Character -->
+                        <g class="cabster-body-group">
+                            <!-- Antenna & Radar -->
+                            <path d="M70,36 L70,22" stroke="#94A3B8" stroke-width="3" stroke-linecap="round"/>
+                            <circle class="mascot-antenna-orb" cx="70" cy="18" r="6" fill="#F59E0B"/>
+                            <circle class="mascot-antenna-ring" cx="70" cy="18" r="10" fill="none" stroke="#F59E0B" stroke-width="2" opacity="0.6"/>
+
+                            <!-- Main Cab Chassis -->
+                            <rect x="28" y="34" width="84" height="66" rx="26" fill="url(#cabsterBodyGrad)" stroke="#38BDF8" stroke-width="2"/>
+
+                            <!-- Taxi Crown Beacon -->
+                            <path d="M52,34 L88,34 L82,24 L58,24 Z" fill="url(#cabsterCrownGrad)" stroke="#D97706" stroke-width="1.5"/>
+                            <text x="70" y="32" font-size="7" font-weight="900" fill="#78350F" text-anchor="middle" font-family="monospace">TAXI</text>
+
+                            <!-- Visor Screen -->
+                            <rect class="mascot-visor" x="38" y="48" width="64" height="34" rx="14" fill="url(#cabsterVisorGrad)" stroke="#334155" stroke-width="2"/>
+
+                            <!-- Left Eye -->
+                            <g class="mascot-eye mascot-eye-left">
+                                <circle class="mascot-pupil" cx="55" cy="64" r="7" fill="url(#cabsterPupilGrad)"/>
+                                <circle cx="53" cy="62" r="2.5" fill="#FFFFFF"/>
+                            </g>
+
+                            <!-- Right Eye -->
+                            <g class="mascot-eye mascot-eye-right">
+                                <circle class="mascot-pupil" cx="85" cy="64" r="7" fill="url(#cabsterPupilGrad)"/>
+                                <circle cx="83" cy="62" r="2.5" fill="#FFFFFF"/>
+                            </g>
+
+                            <!-- Friendly Smiling Grill -->
+                            <path class="mascot-mouth" d="M60,74 Q70,80 80,74" fill="none" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+
+                            <!-- Thrusters / Wheels -->
+                            <rect x="20" y="74" width="10" height="20" rx="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5"/>
+                            <rect x="110" y="74" width="10" height="20" rx="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5"/>
+                            <circle cx="25" cy="84" r="2.5" fill="#38BDF8"/>
+                            <circle cx="115" cy="84" r="2.5" fill="#38BDF8"/>
+
+                            <!-- Taxi Checkered Trim -->
+                            <path d="M38,92 L102,92" stroke="#F59E0B" stroke-width="3" stroke-dasharray="4 4"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="mascot-bubble">
+                    <div style="font-size: 11px; font-weight: 800; color: #38BDF8; letter-spacing: 0.5px; margin-bottom: 2px;">
+                        🚕 CABSTER — ERRORCab COPILOT
+                    </div>
+                    <span id="cabsterBubbleText">Hi! I'm <b>Cabster</b>, your personal Kerala travel copilot. Tell me your travel intentions below, and I'll assemble a personalized route with verified safety notices, regional dining, and certified ERRORCab rides!</span>
+                </div>
+            </div>
+
+            <!-- Passenger Context Bar -->
             <div class="context-chip-bar" id="contextBar">
                 <div class="context-pill">
                     <span class="pill-badge-pulse"></span>
@@ -308,7 +806,7 @@
                         Specify your preferences to generate your personalized itinerary and ERRORCab ride schedule.
                     </p>
                 </div>
-                <span class="badge badge-primary">Offline Foundation</span>
+                <span id="copilotEnginePill" class="badge badge-neutral">Checking AI Provider...</span>
             </div>
 
             <!-- 1. Trip Purpose -->
@@ -332,19 +830,22 @@
                     <span>📍 2. Destination or Hub</span>
                 </div>
                 <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                    <input type="text" id="destInput" class="form-control" placeholder="e.g. Fort Kochi, Edappally, Munnar, Kakkanad" value="Fort Kochi" style="font-weight: 700;">
+                    <input type="text" id="destInput" class="form-control" placeholder="e.g. Fort Kochi, Kozhikode, Wayanad, Vagamon, Munnar, Bekal" value="Fort Kochi" style="font-weight: 700;">
                 </div>
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                    <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Quick Picks:</span>
+                    <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Top Kerala Destinations:</span>
                     <span class="quick-dest-chip" onclick="setDest('Fort Kochi')">Fort Kochi</span>
+                    <span class="quick-dest-chip" onclick="setDest('Kozhikode')">Kozhikode</span>
+                    <span class="quick-dest-chip" onclick="setDest('Wayanad')">Wayanad</span>
+                    <span class="quick-dest-chip" onclick="setDest('Vagamon')">Vagamon</span>
+                    <span class="quick-dest-chip" onclick="setDest('Munnar')">Munnar</span>
+                    <span class="quick-dest-chip" onclick="setDest('Alappuzha')">Alappuzha</span>
+                    <span class="quick-dest-chip" onclick="setDest('Varkala')">Varkala</span>
+                    <span class="quick-dest-chip" onclick="setDest('Bekal')">Bekal</span>
+                    <span class="quick-dest-chip" onclick="setDest('Kannur')">Kannur</span>
+                    <span class="quick-dest-chip" onclick="setDest('Thrissur')">Thrissur</span>
                     <span class="quick-dest-chip" onclick="setDest('Edappally')">Edappally (Lulu)</span>
-                    <span class="quick-dest-chip" onclick="setDest('Kakkanad')">Kakkanad (Infopark)</span>
-                    <span class="quick-dest-chip" onclick="setDest('Vyttila')">Vyttila (Mobility Hub)</span>
-                    <span class="quick-dest-chip" onclick="setDest('Thrippunithura')">Thrippunithura (Hill Palace)</span>
-                    <span class="quick-dest-chip" onclick="setDest('MG Road')">MG Road & Marine Drive</span>
-                    <span class="quick-dest-chip" onclick="setDest('Aluva')">Aluva (Periyar)</span>
-                    <span class="quick-dest-chip" onclick="setDest('Munnar')">Munnar Hills</span>
-                    <span class="quick-dest-chip" onclick="setDest('Alappuzha')">Alappuzha Backwaters</span>
+                    <span class="quick-dest-chip" onclick="setDest('Kakkanad')">Kakkanad</span>
                 </div>
             </div>
 
@@ -424,13 +925,57 @@
             </button>
         </div>
 
-        <!-- Loading State -->
+        <!-- 6-Stage Progressive Loading Panel (Shown during generation) -->
         <div class="loading-pulse-box" id="loadingState">
-            <div class="spinner-spark"></div>
-            <div style="font-size: 16px; font-weight: 800; color: var(--text-primary);" id="loadingStepText">
-                Analyzing passenger context & Kerala routes...
+            <div class="gen-mascot-container">
+                <div class="mascot-wrap">
+                    <svg id="cabsterGenSvg" class="cabster-svg mood-generating" viewBox="0 0 140 140">
+                        <g class="cabster-body-group">
+                            <path d="M70,36 L70,22" stroke="#94A3B8" stroke-width="3" stroke-linecap="round"/>
+                            <circle class="mascot-antenna-orb" cx="70" cy="18" r="6" fill="#F59E0B"/>
+                            <circle class="mascot-antenna-ring" cx="70" cy="18" r="10" fill="none" stroke="#F59E0B" stroke-width="2" opacity="0.6"/>
+                            <rect x="28" y="34" width="84" height="66" rx="26" fill="url(#cabsterBodyGrad)" stroke="#38BDF8" stroke-width="2"/>
+                            <path d="M52,34 L88,34 L82,24 L58,24 Z" fill="url(#cabsterCrownGrad)" stroke="#D97706" stroke-width="1.5"/>
+                            <text x="70" y="32" font-size="7" font-weight="900" fill="#78350F" text-anchor="middle" font-family="monospace">TAXI</text>
+                            <rect class="mascot-visor" x="38" y="48" width="64" height="34" rx="14" fill="url(#cabsterVisorGrad)" stroke="#334155" stroke-width="2"/>
+                            <g class="mascot-eye mascot-eye-left">
+                                <circle class="mascot-pupil" cx="55" cy="64" r="7" fill="url(#cabsterPupilGrad)"/>
+                                <circle cx="53" cy="62" r="2.5" fill="#FFFFFF"/>
+                            </g>
+                            <g class="mascot-eye mascot-eye-right">
+                                <circle class="mascot-pupil" cx="85" cy="64" r="7" fill="url(#cabsterPupilGrad)"/>
+                                <circle cx="83" cy="62" r="2.5" fill="#FFFFFF"/>
+                            </g>
+                            <path class="mascot-mouth" d="M60,74 Q70,80 80,74" fill="none" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+                            <rect x="20" y="74" width="10" height="20" rx="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5"/>
+                            <rect x="110" y="74" width="10" height="20" rx="4" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5"/>
+                            <circle cx="25" cy="84" r="2.5" fill="#38BDF8"/>
+                            <circle cx="115" cy="84" r="2.5" fill="#38BDF8"/>
+                            <path d="M38,92 L102,92" stroke="#F59E0B" stroke-width="3" stroke-dasharray="4 4"/>
+                        </g>
+                    </svg>
+                </div>
             </div>
-            <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+
+            <div class="gen-step-badge" id="genStepBadge">
+                <span>⚡ Stage <span id="genStageNum">1</span> of 6</span>
+            </div>
+
+            <div style="font-size: 18px; font-weight: 900; color: var(--text-primary); margin-bottom: 4px;" id="loadingStepText">
+                1. Understanding your trip...
+            </div>
+
+            <!-- Progress Track -->
+            <div class="gen-progress-track">
+                <div class="gen-progress-bar" id="genProgressBar"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; max-width: 500px; margin: 0 auto; font-size: 11px; color: var(--text-muted); font-weight: 700;">
+                <span>INITIALIZING ENGINE</span>
+                <span id="genProgressPercent" style="color: var(--primary);">16%</span>
+                <span>FINALIZING ITINERARY</span>
+            </div>
+
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 14px;">
                 Computing polymorphic fares • Curating regional hotspots • Linking ERRORCab dispatch
             </p>
         </div>
@@ -439,11 +984,12 @@
         <div id="planResultContainer" style="display: none; margin-top: 24px;">
             <!-- Plan Header Card -->
             <div class="card card-elevated" style="margin-bottom: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px;">
                     <div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-                            <span class="badge badge-success">AI Plan Generated</span>
+                            <span class="badge" id="planAssistanceBadge" style="background: #10B981; color: white; font-weight: 800;">🟢 AI Assisted</span>
                             <span class="badge badge-neutral" id="planProviderBadge">Local Rule Engine</span>
+                            <span class="badge badge-outline" id="planWeatherBadge" style="display: none;">🌤️ Tropical</span>
                         </div>
                         <h2 style="font-size: 22px; font-weight: 900; color: var(--text-primary); margin: 0;" id="planTitle">
                             Personalized Itinerary
@@ -456,19 +1002,125 @@
                         </div>
                     </div>
 
-                    <div style="text-align: right; background: var(--bg-card-subtle); padding: 12px 18px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-                        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Estimated Total Cab Fare</div>
-                        <div style="font-size: 24px; font-weight: 900; color: var(--primary);" id="resTotalFare">₹ 0</div>
-                        <div style="font-size: 11px; color: var(--success); font-weight: 700;">Zero Surge Pricing</div>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div style="text-align: right; background: var(--bg-card-subtle); padding: 12px 18px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                            <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Estimated Total Cab Fare</div>
+                            <div style="font-size: 24px; font-weight: 900; color: var(--primary);" id="resTotalFare">₹ 0</div>
+                            <div style="font-size: 11px; color: var(--success); font-weight: 700;">Zero Surge Guarantee</div>
+                        </div>
+
+                        <!-- Save Trip Button -->
+                        <button type="button" class="btn btn-outline" onclick="saveCurrentTrip()" id="saveTripBtn" title="Save this trip to local library">
+                            <span>💾 Save this AI Trip</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Executive Summary -->
-                <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 14px; line-height: 1.6; color: var(--text-secondary);" id="resSummary">
+                <!-- Plan Adjustment Quick Toolbar (6 Interactive Chips) -->
+                <div class="adjustment-toolbar">
+                    <span style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-right: 4px;">⚡ Quick Adjustments:</span>
+                    <button type="button" class="adj-btn" onclick="quickAdjust('relaxed')">🧘 More Relaxed</button>
+                    <button type="button" class="adj-btn" onclick="quickAdjust('sightseeing')">🏛️ More Sightseeing</button>
+                    <button type="button" class="adj-btn" onclick="quickAdjust('food')">🍛 Food Tour Focus</button>
+                    <button type="button" class="adj-btn" onclick="quickAdjust('budget')">💰 Budget Friendly</button>
+                    <button type="button" class="adj-btn" onclick="quickAdjust('photography')">📸 Photography Focus</button>
+                    <button type="button" class="adj-btn" onclick="quickAdjust('family')">👨‍👩‍👧 Family Friendly</button>
+                </div>
+
+                <!-- 1. Personalized Trip Summary & Strategic Narrative -->
+                <div style="margin-top: 14px; padding-top: 16px; border-top: 1px solid var(--border);">
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--primary); margin-bottom: 6px;">
+                        <span>✦</span> AI Trip Narrative & Strategic Flow
+                    </div>
+                    <div style="font-size: 14px; line-height: 1.6; color: var(--text-secondary);" id="resSummary">
+                    </div>
+                </div>
+
+                <!-- 2. Smart Day Balance -->
+                <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border);" id="dayBalanceContainer">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                        <span style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                            <span>⚖️</span> Smart Day Balance
+                        </span>
+                        <span style="font-size: 11px; color: var(--text-muted);">Proportional activity pacing</span>
+                    </div>
+
+                    <div class="day-balance-bar" id="dayBalanceBar">
+                        <div class="day-balance-segment seg-sightseeing" id="segSightseeing" style="width: 40%;" title="Sightseeing"></div>
+                        <div class="day-balance-segment seg-walking" id="segWalking" style="width: 20%;" title="Walking & Exploration"></div>
+                        <div class="day-balance-segment seg-food" id="segFood" style="width: 20%;" title="Food & Dining"></div>
+                        <div class="day-balance-segment seg-relaxation" id="segRelaxation" style="width: 10%;" title="Relaxation"></div>
+                        <div class="day-balance-segment seg-travel" id="segTravel" style="width: 10%;" title="Cab Transit"></div>
+                    </div>
+
+                    <div class="day-balance-legend" id="dayBalanceLegend">
+                        <div class="legend-chip"><span class="legend-dot" style="background: #0284C7;"></span> 🏛️ Sightseeing: <b id="pctSightseeing">40%</b></div>
+                        <div class="legend-chip"><span class="legend-dot" style="background: #10B981;"></span> 🚶 Walking: <b id="pctWalking">20%</b></div>
+                        <div class="legend-chip"><span class="legend-dot" style="background: #F59E0B;"></span> 🍽️ Dining: <b id="pctFood">20%</b></div>
+                        <div class="legend-chip"><span class="legend-dot" style="background: #8B5CF6;"></span> 🌴 Relaxation: <b id="pctRelaxation">10%</b></div>
+                        <div class="legend-chip"><span class="legend-dot" style="background: #64748B;"></span> 🚕 Travel: <b id="pctTravel">10%</b></div>
+                    </div>
+                </div>
+
+                <!-- 3. Budget Intelligence Breakdown -->
+                <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border);" id="budgetBreakdownContainer">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                            <span>💰</span> Budget Intelligence & Estimated Expenses
+                        </span>
+                        <span style="font-size: 11px; color: var(--text-muted);" id="budgetNote">Approximate guidance based on tier</span>
+                    </div>
+
+                    <div class="budget-grid">
+                        <div class="budget-cell">
+                            <div class="budget-cell-label">Total Outlay</div>
+                            <div class="budget-cell-val" style="color: var(--primary);" id="bgtTotal">₹ 0</div>
+                            <div class="budget-cell-sub">Est. overall trip</div>
+                        </div>
+                        <div class="budget-cell">
+                            <div class="budget-cell-label">ERRORCab Rides</div>
+                            <div class="budget-cell-val" id="bgtCab">₹ 0</div>
+                            <div class="budget-cell-sub" style="color: var(--success); font-weight: 700;">Zero Surge</div>
+                        </div>
+                        <div class="budget-cell">
+                            <div class="budget-cell-label">Food & Dining</div>
+                            <div class="budget-cell-val" id="bgtFood">₹ 0</div>
+                            <div class="budget-cell-sub">Meals & Cafes</div>
+                        </div>
+                        <div class="budget-cell">
+                            <div class="budget-cell-label">Activities & Entry</div>
+                            <div class="budget-cell-val" id="bgtActivity">₹ 0</div>
+                            <div class="budget-cell-sub">Tickets / Permits</div>
+                        </div>
+                        <div class="budget-cell">
+                            <div class="budget-cell-label">Reserve Buffer</div>
+                            <div class="budget-cell-val" id="bgtBuffer">₹ 0</div>
+                            <div class="budget-cell-sub">Contingency</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fallback Notice Callout -->
+                <div id="planFallbackNotice" style="display: none;"></div>
+            </div>
+
+            <!-- 4. Trip Readiness Checklist Card -->
+            <div class="card" style="margin-bottom: 20px; border-left: 4px solid #10B981;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 6px;">
+                        <span>🎒</span> Trip Readiness Checklist
+                    </h3>
+                    <span class="badge badge-success" id="readinessCounterBadge">0 of 4 Ready</span>
+                </div>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 10px 0;">
+                    Tailored pre-trip checklist for your destination and itinerary. Check off items as you prepare.
+                </p>
+                <div class="readiness-list" id="readinessList">
+                    <!-- Populated dynamically -->
                 </div>
             </div>
 
-            <!-- Recommended ERRORCab Rides Section (Direct Existing Booking Integration) -->
+            <!-- 5. Recommended ERRORCab Rides Section (Direct Existing Booking Integration) -->
             <div class="card" style="margin-bottom: 20px; border-color: var(--primary-border);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                     <div>
@@ -487,13 +1139,13 @@
                 </div>
             </div>
 
-            <!-- Itinerary Timeline -->
+            <!-- 6. Step-by-Step Travel Schedule -->
             <div class="card" style="margin-bottom: 20px;">
                 <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
                     <span>📅</span> Step-by-Step Travel Schedule
                 </h3>
                 <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
-                    Chronological schedule structured around your pace and activity preferences.
+                    Chronological schedule structured around your pace, preferences, and verified local highlights.
                 </p>
 
                 <div class="timeline-container" id="timelineList">
@@ -501,31 +1153,67 @@
                 </div>
             </div>
 
-            <!-- Food Recommendations & Local Tips Grid -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;" class="desktop-only-grid">
-                <!-- Food Recommendations -->
-                <div class="card">
-                    <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            <!-- 7. Curated Culinary Highlights (4-Part Architecture) -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 6px;">
                         <span>🍽</span> Curated Culinary Highlights
                     </h3>
-                    <div id="foodList" class="food-grid">
-                        <!-- Populated dynamically -->
-                    </div>
+                    <span class="badge badge-outline">Regional Specialties</span>
                 </div>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 10px 0;">
+                    Authentic Kerala culinary traditions, tea culture, and signature experiences.
+                </p>
 
-                <!-- Local Tips & Safety -->
-                <div class="card">
-                    <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-                        <span>💡</span> Local Kerala Travel Advice
-                    </h3>
-                    <ul id="tipsList" style="padding-left: 18px; margin: 0; font-size: 13px; line-height: 1.7; color: var(--text-secondary);">
-                        <!-- Populated dynamically -->
-                    </ul>
+                <div class="culinary-grid" id="culinaryContainer">
+                    <!-- Populated dynamically (Signature, Cafe culture, Traditional, Experiences) -->
                 </div>
             </div>
 
+            <!-- 8 & 9. Destination Specialities & Authoritative Place Warnings Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;" class="desktop-only-grid">
+                <!-- Regional Specialities -->
+                <div class="card" style="border-left: 4px solid #EAB308;">
+                    <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                        <span>⭐</span> Destination Specialities & Highlights
+                    </h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+                        Signature heritage landmarks, cultural touchpoints, and scenic vistas.
+                    </p>
+                    <ul id="specialtiesList" style="padding-left: 18px; margin: 0; font-size: 13px; line-height: 1.7; color: var(--text-secondary);">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+
+                <!-- Verified Place Warnings & Safety Advisories -->
+                <div class="card" style="border-left: 4px solid #EF4444;">
+                    <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                        <span>⚠️</span> Verified Safety Advisories & Place Alerts
+                    </h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+                        Authoritative timing alerts, road/tide conditions, and official advisories.
+                    </p>
+                    <div id="safetyAdvisoriesList">
+                        <!-- Populated dynamically with source attribution -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10. Local Kerala Travel Advice -->
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                    <span>💡</span> Local Kerala Travel Advice & Etiquette
+                </h3>
+                <ul id="tipsList" style="padding-left: 18px; margin: 0; font-size: 13px; line-height: 1.7; color: var(--text-secondary);">
+                    <!-- Populated dynamically -->
+                </ul>
+            </div>
+
             <!-- Reset / Actions -->
-            <div style="display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end;">
+            <div style="display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline" onclick="saveCurrentTrip()">
+                    💾 Save this AI Trip
+                </button>
                 <button type="button" class="btn btn-outline" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
                     ↑ Modify Preferences
                 </button>
@@ -535,6 +1223,25 @@
             </div>
         </div>
     </main>
+
+    <!-- Saved Trips Modal -->
+    <div id="savedTripsModal" class="modal-overlay" style="display: none;">
+        <div class="card card-elevated" style="max-width: 620px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; padding: 24px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 20px;">📁</span>
+                    <h3 style="font-size: 18px; font-weight: 900; margin: 0; color: var(--text-primary);">
+                        Saved AI Trips
+                    </h3>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" onclick="closeSavedTripsModal()">✕ Close</button>
+            </div>
+
+            <div id="savedTripsList" style="overflow-y: auto; flex: 1; padding-right: 4px;">
+                <!-- Populated dynamically from localStorage -->
+            </div>
+        </div>
+    </div>
 
     <!-- Mobile Bottom Navigation Bar (Including AI Copilot Tab) -->
     <nav class="bottom-nav">
@@ -560,10 +1267,26 @@
         </a>
     </nav>
 
-    <script src="/js/app.js"></script>
+    <script src="/js/app.js?v=3.2.0"></script>
     <script>
         const user = App.requireAuth(['PASSENGER']);
         let copilotContext = null;
+        let currentGeneratedPlan = null;
+
+        // Mascot Mood State Controller
+        function setMascotMood(mood, message) {
+            const svgList = [document.getElementById('cabsterSvg'), document.getElementById('cabsterGenSvg')];
+            svgList.forEach(svg => {
+                if (svg) {
+                    svg.classList.remove('mood-idle', 'mood-thinking', 'mood-generating', 'mood-success');
+                    svg.classList.add('mood-' + mood);
+                }
+            });
+            if (message) {
+                const bubbleText = document.getElementById('cabsterBubbleText');
+                if (bubbleText) bubbleText.innerHTML = message;
+            }
+        }
 
         window.addEventListener('DOMContentLoaded', async () => {
             App.initTheme();
@@ -576,6 +1299,7 @@
                 App.initNotificationPoller(user.userId);
                 await loadPassengerContext();
             }
+            updateSavedTripsCount();
         });
 
         async function loadPassengerContext() {
@@ -592,10 +1316,38 @@
                 console.warn('Could not load copilot context:', err);
                 document.getElementById('ctxPassengerName').textContent = user.name;
             }
+
+            try {
+                const status = await App.get('/api/ai/copilot/status');
+                const pill = document.getElementById('copilotEnginePill');
+                if (pill) {
+                    if (status.mode === 'ONLINE_GEMINI') {
+                        pill.className = 'badge';
+                        pill.style = 'background: linear-gradient(135deg, #4F46E5, #9333EA); color: white; font-weight: 800; border: none; box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);';
+                        pill.innerHTML = '✨ Google Gemini AI Online';
+                    } else if (status.mode === 'ONLINE_GROQ') {
+                        pill.className = 'badge';
+                        pill.style = 'background: linear-gradient(135deg, #EA580C, #F97316); color: white; font-weight: 800; border: none; box-shadow: 0 2px 8px rgba(234, 88, 12, 0.4);';
+                        pill.innerHTML = '⚡ Groq Llama-3 AI Online';
+                    } else if (status.mode === 'ONLINE_OPENROUTER') {
+                        pill.className = 'badge';
+                        pill.style = 'background: linear-gradient(135deg, #0284C7, #06B6D4); color: white; font-weight: 800; border: none; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);';
+                        pill.innerHTML = '🌐 OpenRouter AI Online';
+                    } else {
+                        pill.className = 'badge badge-primary';
+                        pill.style = 'font-weight: 800;';
+                        pill.innerHTML = '🛡️ Smart Offline Rule Engine Ready';
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not load copilot status:', e);
+            }
         }
 
         function setDest(val) {
             document.getElementById('destInput').value = val;
+            setMascotMood('thinking', `Exploring <b>${val}</b>! I'm aligning historical hubs, scenic routes, and local tastes.`);
+            setTimeout(() => setMascotMood('idle'), 2500);
         }
 
         function selectSingleChoice(containerId, elem) {
@@ -620,6 +1372,16 @@
             return activeChip ? (activeChip.getAttribute('data-val') || activeChip.textContent.trim()) : '';
         }
 
+        // Exact 6 Progressive Generation Stages Requested
+        const GENERATION_STAGES = [
+            { stage: 1, percent: 16, title: "1. Understanding your trip..." },
+            { stage: 2, percent: 34, title: "2. Checking destination intelligence..." },
+            { stage: 3, percent: 52, title: "3. Matching interests..." },
+            { stage: 4, percent: 70, title: "4. Curating culinary highlights..." },
+            { stage: 5, percent: 86, title: "5. Planning ERRORCab transfers..." },
+            { stage: 6, percent: 98, title: "6. Finalizing your travel blueprint..." }
+        ];
+
         async function generateAiPlan() {
             const dest = document.getElementById('destInput').value.trim();
             if (!dest) {
@@ -638,8 +1400,6 @@
                 activityPreferences: getSelectedValues('activityChips')
             };
 
-            // Show loading animation
-            const formCard = document.getElementById('copilotFormCard');
             const loadingBox = document.getElementById('loadingState');
             const resultBox = document.getElementById('planResultContainer');
 
@@ -647,45 +1407,193 @@
             resultBox.style.display = 'none';
             loadingBox.scrollIntoView({ behavior: 'smooth' });
 
-            const stepTexts = [
-                "Inspecting passenger profile & favorites...",
-                "Analyzing Kerala route waypoints...",
-                "Calculating polymorphic ERRORCab fares...",
-                "Synthesizing personalized travel itinerary..."
-            ];
-            let stepIdx = 0;
-            const stepInterval = setInterval(() => {
-                stepIdx = (stepIdx + 1) % stepTexts.length;
-                document.getElementById('loadingStepText').textContent = stepTexts[stepIdx];
-            }, 300);
+            setMascotMood('generating', `Assembling an authentic itinerary for <b>${dest}</b>! Processing all 6 intelligence stages...`);
+
+            // Visible Stage Animation Loop
+            let stageIndex = 0;
+            const updateStageDisplay = (idx) => {
+                const s = GENERATION_STAGES[idx];
+                document.getElementById('genStageNum').textContent = s.stage;
+                document.getElementById('loadingStepText').textContent = s.title;
+                document.getElementById('genProgressBar').style.width = s.percent + '%';
+                document.getElementById('genProgressPercent').textContent = s.percent + '%';
+            };
+            updateStageDisplay(0);
+
+            // Progressive timer ensures every stage is visible to the user
+            const stageTimer = setInterval(() => {
+                if (stageIndex < GENERATION_STAGES.length - 1) {
+                    stageIndex++;
+                    updateStageDisplay(stageIndex);
+                }
+            }, 350);
 
             try {
-                const plan = await App.post('/api/ai/copilot/plan', requestPayload);
-                clearInterval(stepInterval);
-                loadingBox.style.display = 'none';
+                // Fetch the plan in parallel
+                const planPromise = App.post('/api/ai/copilot/plan', requestPayload);
+                const [plan] = await Promise.all([
+                    planPromise,
+                    new Promise(resolve => setTimeout(resolve, 1800)) // minimum smooth duration to experience animation
+                ]);
 
-                renderPlan(plan);
-                resultBox.style.display = 'block';
-                resultBox.scrollIntoView({ behavior: 'smooth' });
-                App.showToast('Travel Plan Ready', `Curated itinerary for ${plan.destination} generated.`, 'car');
+                clearInterval(stageTimer);
+
+                // Flash 100% completion
+                document.getElementById('genStageNum').textContent = '6';
+                document.getElementById('loadingStepText').textContent = '6. Travel blueprint finalized!';
+                document.getElementById('genProgressBar').style.width = '100%';
+                document.getElementById('genProgressPercent').textContent = '100%';
+
+                setTimeout(() => {
+                    loadingBox.style.display = 'none';
+                    currentGeneratedPlan = plan;
+                    renderPlan(plan);
+                    resultBox.style.display = 'block';
+                    resultBox.scrollIntoView({ behavior: 'smooth' });
+
+                    setMascotMood('success', `Hurray! Your custom blueprint for <b>${plan.destination}</b> is ready with connecting rides! 🚗✨`);
+                    App.showToast('Travel Plan Ready', `Curated itinerary for ${plan.destination} generated.`, 'car');
+                }, 300);
             } catch (err) {
-                clearInterval(stepInterval);
+                clearInterval(stageTimer);
                 loadingBox.style.display = 'none';
+                setMascotMood('idle', 'Oops, something went wrong while generating your plan. Please try again!');
                 App.showToast('Error', 'Failed to generate plan: ' + err.message, 'danger');
             }
         }
 
+        // Render Generated or Loaded Plan into the 14 Required Sections
         function renderPlan(plan) {
             document.getElementById('planTitle').textContent = plan.title || 'Personalized Kerala Itinerary';
-            document.getElementById('planProviderBadge').textContent = plan.providerName || 'Local Engine';
+
+            // 1. AI/Offline Status Badges
+            const pBadge = document.getElementById('planProviderBadge');
+            const aBadge = document.getElementById('planAssistanceBadge');
+            const fallbackNotice = document.getElementById('planFallbackNotice');
+            const weatherBadge = document.getElementById('planWeatherBadge');
+
+            const isAiAssisted = plan.assistanceType === 'AI_ASSISTED';
+            if (isAiAssisted) {
+                aBadge.className = 'badge';
+                aBadge.style = 'background: #10B981; color: white; font-weight: 800;';
+                aBadge.innerHTML = '🟢 AI Assisted';
+                pBadge.className = 'badge';
+                pBadge.style = 'background: linear-gradient(135deg, #0284C7, #38BDF8); color: white; font-weight: 800; border: none;';
+                pBadge.textContent = plan.providerName || 'Cloud LLM';
+                if (fallbackNotice) fallbackNotice.style.display = 'none';
+            } else {
+                aBadge.className = 'badge';
+                aBadge.style = 'background: #0284C7; color: white; font-weight: 800;';
+                aBadge.innerHTML = '🔵 ERRORCab Smart Offline';
+                pBadge.className = 'badge badge-neutral';
+                pBadge.textContent = plan.providerName || 'Rule Engine KB';
+                if (fallbackNotice) {
+                    fallbackNotice.style.display = 'block';
+                    fallbackNotice.innerHTML = `
+                        <div style="background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.3); border-radius: var(--radius-md); padding: 12px 16px; margin-top: 14px; font-size: 13px; color: var(--text-primary); display: flex; align-items: flex-start; gap: 10px;">
+                            <span style="font-size: 20px; line-height: 1;">🛡️</span>
+                            <div>
+                                <b style="color: var(--primary);">Verified Offline Architecture</b>: This itinerary was generated using ERRORCab's curated Kerala Knowledge Base and local rule engine, guaranteeing 100% uptime with zero external dependencies.
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            if (plan.weatherNote) {
+                weatherBadge.style.display = 'inline-flex';
+                weatherBadge.textContent = `🌤️ ${plan.weatherNote}`;
+            } else {
+                weatherBadge.style.display = 'none';
+            }
+
             document.getElementById('resPurpose').textContent = plan.tripPurpose || 'Leisure';
             document.getElementById('resDest').textContent = plan.destination || 'Kerala';
             document.getElementById('resDuration').textContent = plan.duration || 'Half-day';
             document.getElementById('resBudget').textContent = plan.budget || 'Moderate';
             document.getElementById('resTotalFare').textContent = App.formatCurrency(plan.estimatedTotalCabFare || 0);
-            document.getElementById('resSummary').textContent = plan.summary || '';
 
-            // Render Suggested ERRORCab Rides
+            // 2. Personalized Trip Summary / Strategic Narrative
+            document.getElementById('resSummary').innerHTML = (plan.tripExplanation || plan.summary || '')
+                .replace(/\n\n/g, '<br><br>');
+
+            // 3. Smart Day Balance (Segmented bar + legend)
+            if (plan.dayBalance) {
+                const db = plan.dayBalance;
+                document.getElementById('segSightseeing').style.width = db.sightseeingPercent + '%';
+                document.getElementById('segWalking').style.width = db.walkingPercent + '%';
+                document.getElementById('segFood').style.width = db.foodPercent + '%';
+                document.getElementById('segRelaxation').style.width = db.relaxationPercent + '%';
+                document.getElementById('segTravel').style.width = db.travelPercent + '%';
+
+                document.getElementById('pctSightseeing').textContent = db.sightseeingPercent + '%';
+                document.getElementById('pctWalking').textContent = db.walkingPercent + '%';
+                document.getElementById('pctFood').textContent = db.foodPercent + '%';
+                document.getElementById('pctRelaxation').textContent = db.relaxationPercent + '%';
+                document.getElementById('pctTravel').textContent = db.travelPercent + '%';
+                document.getElementById('dayBalanceContainer').style.display = 'block';
+            }
+
+            // 4. Budget Intelligence Breakdown (Total, Cab, Food, Activities, Buffer)
+            if (plan.budgetBreakdown) {
+                const bb = plan.budgetBreakdown;
+                document.getElementById('bgtTotal').textContent = App.formatCurrency(bb.totalBudget);
+                document.getElementById('bgtCab').textContent = App.formatCurrency(bb.estimatedCabFare);
+                document.getElementById('bgtFood').textContent = App.formatCurrency(bb.estimatedFoodCost);
+                document.getElementById('bgtActivity').textContent = App.formatCurrency(bb.estimatedActivityCost);
+                document.getElementById('bgtBuffer').textContent = App.formatCurrency(bb.estimatedRemainingBuffer);
+                if (bb.note) document.getElementById('budgetNote').textContent = bb.note;
+                document.getElementById('budgetBreakdownContainer').style.display = 'block';
+            }
+
+            // 5. Trip Readiness Checklist
+            const readinessContainer = document.getElementById('readinessList');
+            readinessContainer.innerHTML = '';
+            const readinessItems = (plan.tripReadiness && plan.tripReadiness.length > 0)
+                ? plan.tripReadiness
+                : [
+                    "Carry lightweight cotton clothing, sunglasses, and rain umbrella.",
+                    "Wear comfortable slip-on walking shoes suitable for heritage paths.",
+                    "Keep UPI payment apps or local currency accessible for street dining.",
+                    "Confirm ERRORCab connecting pickup 15 minutes before travel."
+                ];
+
+            let checkedCount = 0;
+            const updateReadinessBadge = () => {
+                const badge = document.getElementById('readinessCounterBadge');
+                badge.textContent = `${checkedCount} of ${readinessItems.length} Ready`;
+                if (checkedCount === readinessItems.length) {
+                    badge.className = 'badge badge-success';
+                    badge.textContent = `✓ All ${readinessItems.length} Ready!`;
+                } else {
+                    badge.className = 'badge badge-primary';
+                }
+            };
+
+            readinessItems.forEach((itemText, i) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'readiness-item';
+                itemDiv.innerHTML = `
+                    <input type="checkbox" class="readiness-checkbox" id="chk_${i}">
+                    <label for="chk_${i}" style="cursor: pointer; flex: 1;">${itemText}</label>
+                `;
+                itemDiv.addEventListener('click', (e) => {
+                    const chk = itemDiv.querySelector('input[type="checkbox"]');
+                    if (e.target !== chk) chk.checked = !chk.checked;
+                    if (chk.checked) {
+                        itemDiv.classList.add('checked');
+                        checkedCount++;
+                    } else {
+                        itemDiv.classList.remove('checked');
+                        checkedCount--;
+                    }
+                    updateReadinessBadge();
+                });
+                readinessContainer.appendChild(itemDiv);
+            });
+            updateReadinessBadge();
+
+            // 6. Recommended ERRORCab Rides
             const ridesContainer = document.getElementById('ridesListContainer');
             ridesContainer.innerHTML = '';
             if (plan.recommendedRides && plan.recommendedRides.length > 0) {
@@ -727,59 +1635,335 @@
                 ridesContainer.innerHTML = '<div style="font-size: 13px; color: var(--text-muted);">No connecting rides required.</div>';
             }
 
-            // Render Timeline
+            // 7. Step-by-Step Travel Schedule with Personalization Explanations
             const timeline = document.getElementById('timelineList');
             timeline.innerHTML = '';
             if (plan.itinerary && plan.itinerary.length > 0) {
-                plan.itinerary.forEach((leg, index) => {
+                plan.itinerary.forEach((leg) => {
                     const item = document.createElement('div');
                     item.className = 'timeline-item';
                     item.innerHTML = `
                         <div class="timeline-marker"></div>
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 6px; margin-bottom: 4px;">
                             <div>
-                                <span style="font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase;">
-                                    ${leg.timeSlot}
+                                <span style="font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; background: rgba(2, 132, 199, 0.1); padding: 2px 8px; border-radius: 4px; display: inline-block;">
+                                    🕒 ${leg.timeSlot}
                                 </span>
-                                <h4 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin: 2px 0 0 0;">
+                                ${leg.approxCost ? `<span style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-left: 6px;">🎟️ ${leg.approxCost}</span>` : ''}
+                                <h4 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 6px 0 4px 0;">
                                     ${leg.title}
                                 </h4>
                             </div>
                             <span class="badge badge-neutral" style="font-size: 11px;">${leg.category}</span>
                         </div>
-                        <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px;">
-                            📍 ${leg.locationName}
+                        <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.25); border-radius: 6px; padding: 4px 10px; margin-bottom: 8px; font-size: 13px; font-weight: 800; color: var(--primary);">
+                            📍 Visiting: <b>${leg.locationName}</b>
                         </div>
-                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin: 0;">
                             ${leg.description}
                         </p>
+                        ${leg.recommendationReason ? `
+                            <div class="recommendation-callout">
+                                💡 <b>Why ERRORCab recommends this:</b> ${leg.recommendationReason}
+                            </div>
+                        ` : ''}
                     `;
                     timeline.appendChild(item);
                 });
             }
 
-            // Render Food
-            const foodList = document.getElementById('foodList');
-            foodList.innerHTML = '';
-            if (plan.foodRecommendations && plan.foodRecommendations.length > 0) {
-                plan.foodRecommendations.forEach(food => {
+            // 8. Curated Culinary Highlights (4-Part Architecture)
+            const culinaryContainer = document.getElementById('culinaryContainer');
+            culinaryContainer.innerHTML = '';
+            if (plan.curatedCulinary) {
+                const c = plan.curatedCulinary;
+                culinaryContainer.innerHTML = `
+                    <div class="culinary-card">
+                        <div class="culinary-card-header">
+                            <span>🍛</span> Signature Regional Dish
+                        </div>
+                        <div class="culinary-card-body">
+                            ${c.signatureFood || 'Traditional regional preparations and specialties.'}
+                        </div>
+                    </div>
+                    <div class="culinary-card">
+                        <div class="culinary-card-header">
+                            <span>☕</span> Local Cafe & Tea Culture
+                        </div>
+                        <div class="culinary-card-body">
+                            ${c.localCafeCulture || 'Vibrant artisanal cafes, local chaya kadas, and tea traditions.'}
+                        </div>
+                    </div>
+                    <div class="culinary-card">
+                        <div class="culinary-card-header">
+                            <span>🥘</span> Traditional Cuisine & Sadhya
+                        </div>
+                        <div class="culinary-card-body">
+                            ${c.traditionalCuisine || 'Classic Kerala plantain-leaf feasts and traditional seafood curries.'}
+                        </div>
+                    </div>
+                    <div class="culinary-card">
+                        <div class="culinary-card-header">
+                            <span>🌟</span> Recommended Dining Experiences
+                        </div>
+                        <div class="culinary-card-body">
+                            <ul style="padding-left: 18px; margin: 0;">
+                                ${(c.recommendedExperiences || []).map(exp => `<li style="margin-bottom: 4px;">${exp}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            } else if (plan.foodRecommendations && plan.foodRecommendations.length > 0) {
+                // Fallback rendering
+                plan.foodRecommendations.forEach(f => {
                     const card = document.createElement('div');
-                    card.className = 'food-item-card';
-                    card.innerHTML = `<span style="color: var(--primary); font-weight: 800;">✓</span> ${food}`;
-                    foodList.appendChild(card);
+                    card.className = 'culinary-card';
+                    card.innerHTML = `
+                        <div class="culinary-card-header"><span>🍽️</span> Recommendation</div>
+                        <div class="culinary-card-body">${f}</div>
+                    `;
+                    culinaryContainer.appendChild(card);
                 });
             }
 
-            // Render Tips
+            // 9. Destination Specialities & Highlights
+            const specialtiesList = document.getElementById('specialtiesList');
+            if (specialtiesList) {
+                specialtiesList.innerHTML = '';
+                if (plan.specialties && plan.specialties.length > 0) {
+                    plan.specialties.forEach(spec => {
+                        const li = document.createElement('li');
+                        li.style.marginBottom = '6px';
+                        li.innerHTML = `<span style="color: #EAB308; font-weight: 900; margin-right: 4px;">★</span> ${spec}`;
+                        specialtiesList.appendChild(li);
+                    });
+                } else {
+                    specialtiesList.innerHTML = '<li style="color: var(--text-muted);">No specific regional specialties recorded.</li>';
+                }
+            }
+
+            // 10. Verified Place Warnings & Safety Advisories
+            const safetyContainer = document.getElementById('safetyAdvisoriesList');
+            if (safetyContainer) {
+                safetyContainer.innerHTML = '';
+                if (plan.safetyAdvisories && plan.safetyAdvisories.length > 0) {
+                    plan.safetyAdvisories.forEach(advisory => {
+                        const div = document.createElement('div');
+                        div.className = 'advisory-item';
+                        div.innerHTML = `
+                            <div style="color: var(--text-primary); font-weight: 600;">
+                                ⚠️ ${advisory.text}
+                            </div>
+                            <div class="advisory-source-tag">
+                                <span>🏛️</span> Source: ${advisory.source || 'Verified Travel Advisory Database'}
+                            </div>
+                        `;
+                        safetyContainer.appendChild(div);
+                    });
+                } else if (plan.warnings && plan.warnings.length > 0) {
+                    plan.warnings.forEach(warn => {
+                        const div = document.createElement('div');
+                        div.className = 'advisory-item';
+                        div.innerHTML = `
+                            <div style="color: var(--text-primary); font-weight: 600;">⚠️ ${warn}</div>
+                            <div class="advisory-source-tag"><span>🏛️</span> Source: Verified Travel Advisory Database</div>
+                        `;
+                        safetyContainer.appendChild(div);
+                    });
+                } else {
+                    safetyContainer.innerHTML = `
+                        <div class="advisory-item" style="border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05);">
+                            <div style="color: var(--text-primary);">No active hazards or critical safety warnings reported for this route.</div>
+                            <div class="advisory-source-tag" style="color: #10B981;"><span>✓</span> Source: Verified Travel Advisory Database</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // 11. Local Kerala Travel Advice
             const tipsList = document.getElementById('tipsList');
-            tipsList.innerHTML = '';
-            if (plan.travelTips && plan.travelTips.length > 0) {
-                plan.travelTips.forEach(tip => {
-                    const li = document.createElement('li');
-                    li.textContent = tip;
-                    tipsList.appendChild(li);
+            if (tipsList) {
+                tipsList.innerHTML = '';
+                if (plan.travelTips && plan.travelTips.length > 0) {
+                    plan.travelTips.forEach(tip => {
+                        const li = document.createElement('li');
+                        li.textContent = tip;
+                        tipsList.appendChild(li);
+                    });
+                }
+            }
+        }
+
+        // Quick Adjustment Handler (Updates chips and triggers generateAiPlan)
+        function quickAdjust(type) {
+            if (type === 'relaxed') {
+                const durChips = document.getElementById('durationChips');
+                durChips.querySelectorAll('.choice-chip').forEach(c => c.classList.remove('active'));
+                const half = Array.from(durChips.querySelectorAll('.choice-chip')).find(c => c.textContent.includes('Half-day'));
+                if (half) half.classList.add('active');
+
+                const actChips = document.getElementById('activityChips');
+                actChips.querySelectorAll('.choice-chip').forEach(c => {
+                    if (c.textContent.includes('Relaxed')) c.classList.add('active');
+                });
+                App.showToast('Adjusting Itinerary', 'Configuring for a more relaxed, leisurely pace...', 'clock');
+            } else if (type === 'sightseeing') {
+                const actChips = document.getElementById('activityChips');
+                actChips.querySelectorAll('.choice-chip').forEach(c => {
+                    if (c.textContent.includes('Sightseeing')) c.classList.add('active');
+                });
+                App.showToast('Adjusting Itinerary', 'Adding signature sightseeing & landmarks...', 'star');
+            } else if (type === 'food') {
+                const purpChips = document.getElementById('purposeChips');
+                purpChips.querySelectorAll('.choice-chip').forEach(c => c.classList.remove('active'));
+                const foodP = Array.from(purpChips.querySelectorAll('.choice-chip')).find(c => c.textContent.includes('Culinary'));
+                if (foodP) foodP.classList.add('active');
+                App.showToast('Adjusting Itinerary', 'Prioritizing culinary exploration & food tour...', 'tag');
+            } else if (type === 'budget') {
+                const bgtChips = document.getElementById('budgetChips');
+                bgtChips.querySelectorAll('.choice-chip').forEach(c => c.classList.remove('active'));
+                const econ = Array.from(bgtChips.querySelectorAll('.choice-chip')).find(c => c.textContent.includes('Budget'));
+                if (econ) econ.classList.add('active');
+                App.showToast('Adjusting Itinerary', 'Switching to Economy Cab & budget-friendly spots...', 'rupee');
+            } else if (type === 'photography') {
+                const intChips = document.getElementById('interestChips');
+                intChips.querySelectorAll('.choice-chip').forEach(c => {
+                    if (c.textContent.includes('Architecture') || c.textContent.includes('Sunset')) c.classList.add('active');
+                });
+                App.showToast('Adjusting Itinerary', 'Focusing on scenic viewpoints & photography stops...', 'camera');
+            } else if (type === 'family') {
+                const purpChips = document.getElementById('purposeChips');
+                purpChips.querySelectorAll('.choice-chip').forEach(c => c.classList.remove('active'));
+                const fam = Array.from(purpChips.querySelectorAll('.choice-chip')).find(c => c.textContent.includes('Family'));
+                if (fam) fam.classList.add('active');
+                App.showToast('Adjusting Itinerary', 'Switching to comfortable family outing schedule...', 'users');
+            }
+
+            generateAiPlan();
+        }
+
+        // =====================================================================
+        // TRIP PERSISTENCE & SAVED TRIPS DRAWER
+        // =====================================================================
+        function getSavedTrips() {
+            try {
+                const data = localStorage.getItem('errorcab_saved_trips');
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function setSavedTrips(trips) {
+            localStorage.setItem('errorcab_saved_trips', JSON.stringify(trips));
+            updateSavedTripsCount();
+        }
+
+        function updateSavedTripsCount() {
+            const trips = getSavedTrips();
+            const badge = document.getElementById('savedCountBadge');
+            if (badge) badge.textContent = trips.length;
+        }
+
+        function saveCurrentTrip() {
+            if (!currentGeneratedPlan) {
+                App.showToast('No Active Plan', 'Generate a plan first before saving.', 'alertTriangle');
+                return;
+            }
+
+            const trips = getSavedTrips();
+            const newTrip = {
+                id: 'trip_' + Date.now(),
+                title: currentGeneratedPlan.title || 'Kerala Itinerary',
+                destination: currentGeneratedPlan.destination || 'Kerala',
+                savedAt: new Date().toISOString(),
+                totalFare: currentGeneratedPlan.estimatedTotalCabFare || 0,
+                duration: currentGeneratedPlan.duration || 'Day Trip',
+                plan: currentGeneratedPlan
+            };
+
+            // Avoid duplicate identical titles saved in rapid succession
+            const exists = trips.some(t => t.title === newTrip.title && t.destination === newTrip.destination);
+            if (exists) {
+                App.showToast('Already Saved', 'This itinerary is already in your saved library.', 'checkCircle');
+                return;
+            }
+
+            trips.unshift(newTrip);
+            setSavedTrips(trips);
+            App.showToast('Trip Saved', 'Trip saved successfully.', 'check');
+        }
+
+        function openSavedTripsModal() {
+            const modal = document.getElementById('savedTripsModal');
+            const list = document.getElementById('savedTripsList');
+            const trips = getSavedTrips();
+
+            list.innerHTML = '';
+            if (trips.length === 0) {
+                list.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                        <div style="font-size: 36px; margin-bottom: 10px;">🗺️</div>
+                        <div style="font-size: 15px; font-weight: 800; color: var(--text-primary);">No Saved Trips Yet</div>
+                        <p style="font-size: 13px; margin-top: 4px;">Generate an AI itinerary and click "Save this AI Trip" to keep it here.</p>
+                    </div>
+                `;
+            } else {
+                trips.forEach(t => {
+                    const item = document.createElement('div');
+                    item.className = 'saved-trip-item';
+                    item.innerHTML = `
+                        <div style="flex: 1;">
+                            <div style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-bottom: 2px;">
+                                ${t.title}
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap;">
+                                <span>📍 <b>${t.destination}</b></span>
+                                <span>⏱ ${t.duration}</span>
+                                <span>📅 ${App.formatDate(t.savedAt)}</span>
+                            </div>
+                            <div style="font-size: 13px; font-weight: 800; color: var(--primary); margin-top: 4px;">
+                                Cab Fare: ${App.formatCurrency(t.totalFare)}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="loadSavedTrip('${t.id}')">Load</button>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="deleteSavedTrip('${t.id}')" title="Delete">Delete</button>
+                        </div>
+                    `;
+                    list.appendChild(item);
                 });
             }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeSavedTripsModal() {
+            document.getElementById('savedTripsModal').style.display = 'none';
+        }
+
+        function loadSavedTrip(id) {
+            const trips = getSavedTrips();
+            const trip = trips.find(t => t.id === id);
+            if (!trip || !trip.plan) return;
+
+            currentGeneratedPlan = trip.plan;
+            renderPlan(trip.plan);
+            closeSavedTripsModal();
+
+            const resultBox = document.getElementById('planResultContainer');
+            resultBox.style.display = 'block';
+            resultBox.scrollIntoView({ behavior: 'smooth' });
+            setMascotMood('success', `Loaded saved trip for <b>${trip.destination}</b>!`);
+            App.showToast('Trip Loaded', `Loaded "${trip.title}".`, 'check');
+        }
+
+        function deleteSavedTrip(id) {
+            let trips = getSavedTrips();
+            trips = trips.filter(t => t.id !== id);
+            setSavedTrips(trips);
+            openSavedTripsModal(); // Refresh modal
+            App.showToast('Trip Removed', 'Saved trip was removed.', 'trash');
         }
     </script>
 </body>

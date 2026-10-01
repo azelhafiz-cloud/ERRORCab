@@ -23,8 +23,4 @@ Write-Host "  - Admin:     admin@example.com" -ForegroundColor White
 Write-Host "=======================================================" -ForegroundColor Cyan
 Write-Host ""
 
-if (Test-Path "target\errorcab-1.0.0.jar") {
-    java -jar target\errorcab-1.0.0.jar
-} else {
-    mvn spring-boot:run
-}
+mvn spring-boot:run
