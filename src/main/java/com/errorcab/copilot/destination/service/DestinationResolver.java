@@ -1,6 +1,7 @@
 package com.errorcab.copilot.destination.service;
 
 import com.errorcab.copilot.destination.model.DestinationProfile;
+import com.errorcab.copilot.destination.model.DestinationResult;
 import com.errorcab.copilot.destination.model.SafetyAdvisory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,86 +23,157 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Resolves user destinations through a layered intelligence pipeline:
- * 1. Verified Local Knowledge Base (Instant, authentic, zero-network)
- * 2. In-memory & local cache
- * 3. Public factual discovery (Wikipedia REST summary API) with zero hallucination
- * 4. Safe limited-framework fallback if no reliable information is available.
+ * Resolves arbitrary Indian destinations through a modular intelligence pipeline:
+ * 1. In-memory resolution cache
+ * 2. Verified Knowledge Base (Instant, authentic, zero-network)
+ * 3. Geocoding Provider (OpenStreetMap Nominatim for India)
+ * 4. Public factual discovery (Wikipedia REST summary API)
+ * 5. Strict unresolved handling ("Couldn't confidently locate this destination")
+ * Never silently uses a random fallback destination.
  */
 public class DestinationResolver {
 
     private static final Logger LOGGER = Logger.getLogger(DestinationResolver.class.getName());
-    private static final Map<String, DestinationProfile> DISCOVERY_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, DestinationResult> RESULT_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, DestinationProfile> PROFILE_CACHE = new ConcurrentHashMap<>();
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(3))
+            .connectTimeout(Duration.ofMillis(2500))
             .build();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    private final GeocodingProvider geocodingProvider;
     private final boolean allowPublicDiscovery;
 
-    public DestinationResolver(boolean allowPublicDiscovery) {
+    public DestinationResolver(GeocodingProvider geocodingProvider, boolean allowPublicDiscovery) {
+        this.geocodingProvider = geocodingProvider != null ? geocodingProvider : new NominatimGeocodingProvider();
         this.allowPublicDiscovery = allowPublicDiscovery;
     }
 
+    public DestinationResolver(boolean allowPublicDiscovery) {
+        this(new NominatimGeocodingProvider(), allowPublicDiscovery);
+    }
+
     public DestinationResolver() {
-        this(true);
+        this(new NominatimGeocodingProvider(), true);
     }
 
     /**
-     * Resolves a destination into a normalized DestinationProfile.
+     * Resolves a destination into a structured DestinationResult containing
+     * coordinates, administrative entity (district/state), and resolution status.
      */
-    public DestinationProfile resolve(String destinationInput) {
+    public DestinationResult resolveDestination(String destinationInput) {
         if (destinationInput == null || destinationInput.trim().isEmpty()) {
-            return DestinationKnowledgeBase.find("kochi");
+            DestinationProfile kochi = DestinationKnowledgeBase.find("kochi");
+            if (kochi != null) {
+                return new DestinationResult(
+                        "Fort Kochi", kochi.getDestinationName(), kochi.getDistrict(),
+                        kochi.getState(), kochi.getCountry(), kochi.getLatitude(), kochi.getLongitude(),
+                        kochi.getDestinationName() + ", " + kochi.getState(), true, "KNOWLEDGE_BASE"
+                );
+            }
+            return new DestinationResult("Fort Kochi", "Fort Kochi", "Ernakulam", "Kerala", "India",
+                    9.9658, 76.2421, "Fort Kochi, Kerala", true, "KNOWLEDGE_BASE");
         }
 
         String raw = destinationInput.trim();
         String normalizedKey = normalize(raw);
 
-        // 1. Check verified local knowledge base
+        // 1. Check in-memory resolution cache
+        if (RESULT_CACHE.containsKey(normalizedKey)) {
+            return RESULT_CACHE.get(normalizedKey);
+        }
+
+        // 2. Check verified local knowledge base
         DestinationProfile verified = DestinationKnowledgeBase.find(raw);
         if (verified != null) {
-            return verified;
+            DestinationResult result = new DestinationResult(
+                    raw,
+                    verified.getDestinationName(),
+                    verified.getDistrict(),
+                    verified.getState(),
+                    verified.getCountry(),
+                    verified.getLatitude(),
+                    verified.getLongitude(),
+                    verified.getDestinationName() + ", " + verified.getState(),
+                    true,
+                    "KNOWLEDGE_BASE"
+            );
+            RESULT_CACHE.put(normalizedKey, result);
+            return result;
         }
 
-        // 2. Check local discovery cache
-        if (DISCOVERY_CACHE.containsKey(normalizedKey)) {
-            return DISCOVERY_CACHE.get(normalizedKey);
-        }
-
-        // 3. Attempt public factual discovery if enabled
-        if (allowPublicDiscovery) {
+        // 3. Attempt geocoding via GeocodingProvider (e.g. OpenStreetMap Nominatim)
+        if (geocodingProvider != null && geocodingProvider.isAvailable()) {
             try {
-                DestinationProfile discovered = discoverFromPublicSources(raw);
-                if (discovered != null) {
-                    DISCOVERY_CACHE.put(normalizedKey, discovered);
-                    return discovered;
+                DestinationResult geoResult = geocodingProvider.geocode(raw);
+                if (geoResult != null && geoResult.isResolved()) {
+                    RESULT_CACHE.put(normalizedKey, geoResult);
+                    return geoResult;
                 }
             } catch (Exception e) {
-                LOGGER.log(Level.FINE, "Public destination discovery failed for {0}: {1}",
-                        new Object[]{raw, e.getMessage()});
+                LOGGER.log(Level.FINE, "Geocoding error for {0}: {1}", new Object[]{raw, e.getMessage()});
             }
         }
 
-        // 4. Fallback to limited framework (strictly without inventing facts)
-        DestinationProfile limited = DestinationProfile.createLimited(raw);
-        DISCOVERY_CACHE.put(normalizedKey, limited);
-        return limited;
+        // 4. Attempt public discovery via Wikipedia summary API
+        if (allowPublicDiscovery) {
+            try {
+                DestinationResult wikiResult = discoverResultFromWikipedia(raw);
+                if (wikiResult != null && wikiResult.isResolved()) {
+                    RESULT_CACHE.put(normalizedKey, wikiResult);
+                    return wikiResult;
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.FINE, "Wikipedia discovery failed for {0}: {1}", new Object[]{raw, e.getMessage()});
+            }
+        }
+
+        // 5. Unresolved: Never silently pick a random fallback destination!
+        DestinationResult unresolved = DestinationResult.unresolved(raw);
+        RESULT_CACHE.put(normalizedKey, unresolved);
+        return unresolved;
     }
 
     /**
-     * Fetches genuine destination facts from the public Wikipedia REST summary API.
+     * Resolves a destination into a DestinationProfile.
+     * If unresolved, returns DestinationProfile.createUnresolved(raw) with
+     * "Couldn't confidently locate this destination. Try adding the district or state."
      */
-    private DestinationProfile discoverFromPublicSources(String query) {
+    public DestinationProfile resolve(String destinationInput) {
+        DestinationResult result = resolveDestination(destinationInput);
+
+        if (!result.isResolved()) {
+            return DestinationProfile.createUnresolved(result.getQuery());
+        }
+
+        String normalizedKey = normalize(result.getNormalizedPlaceName());
+        if (PROFILE_CACHE.containsKey(normalizedKey)) {
+            return PROFILE_CACHE.get(normalizedKey);
+        }
+
+        // Check if verified profile exists in knowledge base
+        DestinationProfile verified = DestinationKnowledgeBase.find(result.getNormalizedPlaceName());
+        if (verified != null) {
+            PROFILE_CACHE.put(normalizedKey, verified);
+            return verified;
+        }
+
+        // Construct dynamically discovered profile from DestinationResult and Wikipedia facts
+        DestinationProfile profile = buildDiscoveredProfile(result);
+        PROFILE_CACHE.put(normalizedKey, profile);
+        return profile;
+    }
+
+    private DestinationResult discoverResultFromWikipedia(String query) {
         try {
             String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
             String url = "https://en.wikipedia.org/api/rest_v1/page/summary/" + encoded;
 
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create(url))
-                    .header("User-Agent", "ERRORCab-Travel-Copilot/2.0 (travel-discovery@errorcab.com)")
+                    .header("User-Agent", "ERRORCab-India-Travel-Copilot/3.0 (discovery@errorcab.com)")
                     .header("Accept", "application/json")
-                    .timeout(Duration.ofSeconds(3))
+                    .timeout(Duration.ofMillis(2500))
                     .GET()
                     .build();
 
@@ -112,42 +184,98 @@ public class DestinationResolver {
                 String extract = root.path("extract").asText("");
                 String description = root.path("description").asText("Geographical destination");
 
-                if (!extract.isBlank()) {
-                    DestinationProfile profile = new DestinationProfile();
-                    profile.setDestinationName(title);
-                    profile.setRegion("Regional");
-                    profile.setState("India");
-                    profile.setDestinationType(description);
-                    profile.setShortDescription(extract);
-                    profile.setBestKnownFor(description);
-                    profile.setKnowledgeStatus("DISCOVERED_PUBLIC_DATA");
-                    profile.setSourceInformation("Source: Wikipedia & OpenStreetMap Public Knowledge Base");
-                    profile.setTypicalTripDuration("Flexible / Half-day");
-                    profile.setFamilySuitability("Suitable for travel exploration.");
-                    profile.setTransportAdvice("Book ERRORCab direct cab transit with transparent regional pricing.");
-                    profile.setBudgetNotes("Standard regional travel budget.");
+                if (!extract.isBlank() && !root.path("type").asText("").equalsIgnoreCase("disambiguation")) {
+                    double lat = 0.0;
+                    double lon = 0.0;
+                    JsonNode coordinates = root.path("coordinates");
+                    if (!coordinates.isMissingNode()) {
+                        lat = coordinates.path("lat").asDouble(0.0);
+                        lon = coordinates.path("lon").asDouble(0.0);
+                    }
 
-                    // Extract safe factual highlights from Wikipedia text sentences
-                    List<String> highlights = extractSentences(extract, 3);
-                    profile.setMajorHighlights(highlights);
-                    profile.setAttractions(List.of(title + " Central Area", title + " Scenic Lookout", title + " Town Promenade"));
-                    profile.setSuggestedActivities(List.of("Exploration of " + title + " landmark sites", "Local neighborhood walking tour", "Tasting regional market specialties"));
-                    profile.setLocalTravelAdvice(List.of("Check local landmark operational hours before visiting.", "Carry cash for smaller regional stalls.", "Verify regional weather conditions before mountain or coastal transit."));
-
-                    // Strict safety rule: Do NOT invent warnings
-                    profile.getSafetyNotes().add(new SafetyAdvisory(
-                            "No verified destination-specific advisory is currently available.",
-                            "Verified Travel Advisory Database",
-                            "GENERAL"
-                    ));
-
-                    return profile;
+                    DestinationResult res = new DestinationResult(
+                            query,
+                            title,
+                            null,
+                            "India",
+                            "India",
+                            lat,
+                            lon,
+                            title + ", India",
+                            true,
+                            "PUBLIC_DISCOVERY"
+                    );
+                    res.getMetadata().put("extract", extract);
+                    res.getMetadata().put("description", description);
+                    return res;
                 }
             }
-        } catch (IOException | InterruptedException e) {
-            LOGGER.log(Level.FINE, "Wikipedia discovery error for {0}: {1}", new Object[]{query, e.getMessage()});
+        } catch (Exception e) {
+            LOGGER.log(Level.FINE, "Wikipedia request error: {0}", e.getMessage());
         }
         return null;
+    }
+
+    private DestinationProfile buildDiscoveredProfile(DestinationResult result) {
+        DestinationProfile profile = new DestinationProfile();
+        String place = result.getNormalizedPlaceName();
+        profile.setDestinationName(place);
+        profile.setDistrict(result.getDistrict());
+        profile.setState(result.getState() != null ? result.getState() : "India");
+        profile.setCountry(result.getCountry() != null ? result.getCountry() : "India");
+        profile.setLatitude(result.getLatitude());
+        profile.setLongitude(result.getLongitude());
+        profile.setRegion(result.getState());
+        profile.setDestinationType("Indian Destination");
+        profile.setKnowledgeStatus("DISCOVERED_PUBLIC_DATA");
+        profile.setSourceInformation("Source: " + result.getResolutionSource() + " & Open Knowledge Base");
+
+        String extract = (String) result.getMetadata().get("extract");
+        if (extract != null && !extract.isBlank()) {
+            profile.setShortDescription(extract);
+            List<String> sentences = extractSentences(extract, 3);
+            profile.setMajorHighlights(sentences);
+            profile.setBestKnownFor((String) result.getMetadata().getOrDefault("description", place + " Heritage & Sights"));
+        } else {
+            profile.setShortDescription("Authentic travel exploration of " + place + " in " + profile.getState() + ", India.");
+            profile.setMajorHighlights(List.of(
+                    place + " Central Historical Quarter",
+                    place + " Prominent Public Promenade",
+                    place + " Regional Cultural Landmarks"
+            ));
+            profile.setBestKnownFor("Regional landmarks and cultural attractions in " + place);
+        }
+
+        profile.setAttractions(List.of(place + " Main Square", place + " Heritage Landmark", place + " Scenic Promenade"));
+        profile.setSuggestedActivities(List.of(
+                "Exploring prominent landmarks of " + place,
+                "Cultural and historic walking exploration",
+                "Sampling authentic regional cuisine"
+        ));
+        profile.setCulinaryHighlights(List.of(
+                "Authentic regional specialties of " + profile.getState(),
+                "Traditional market street food stalls",
+                "Freshly brewed local tea and coffee"
+        ));
+        profile.setLocalSpecialities(List.of(
+                place + " Historic Architecture",
+                place + " Local Handicrafts & Textiles",
+                place + " Traditional Cuisine"
+        ));
+        profile.setLocalTravelAdvice(List.of(
+                "Check operational timings for prominent heritage monuments prior to arrival.",
+                "Carry modest attire suitable for local cultural and religious places.",
+                "Book direct ERRORCab transit for predictable, transparent travel."
+        ));
+        profile.setTransportAdvice("Book ERRORCab verified private cab transit with upfront zero-surge pricing.");
+        profile.setTypicalTripDuration("Half-day (4-5 hrs) to Full-day (8 hrs)");
+        profile.setFamilySuitability("Suitable for travel exploration.");
+        profile.setBudgetNotes("Standard regional travel budget.");
+
+        // Strict safety rule: NEVER invent fake warnings!
+        profile.getSafetyNotes().add(SafetyAdvisory.noVerifiedAdvisoryFound());
+
+        return profile;
     }
 
     private List<String> extractSentences(String text, int max) {
@@ -166,10 +294,12 @@ public class DestinationResolver {
     }
 
     public static void clearCache() {
-        DISCOVERY_CACHE.clear();
+        RESULT_CACHE.clear();
+        PROFILE_CACHE.clear();
     }
 
     private static String normalize(String s) {
+        if (s == null) return "";
         return s.toLowerCase(Locale.ROOT)
                 .replaceAll("[^a-z0-9]", "")
                 .trim();

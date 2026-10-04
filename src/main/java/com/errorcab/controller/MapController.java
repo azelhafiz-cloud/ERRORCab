@@ -21,6 +21,8 @@ import java.util.Map;
 public class MapController {
     private final MapService mapService = MapService.getInstance();
     private final FareService fareService = FareService.getInstance();
+    private final com.errorcab.copilot.destination.service.DestinationResolver destinationResolver =
+            new com.errorcab.copilot.destination.service.DestinationResolver();
 
     @GetMapping("/locations")
     public ResponseEntity<List<Location>> getLocations() {
@@ -75,6 +77,75 @@ public class MapController {
                 "distanceKm", distance,
                 "estimatedMinutes", minutes,
                 "waypoints", waypoints
+        ));
+    }
+
+    @GetMapping("/resolve")
+    public ResponseEntity<?> resolveLocation(@RequestParam String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("resolved", false, "message", "Query is required."));
+        }
+        var result = destinationResolver.resolveDestination(query.trim());
+        if (result != null && result.isResolved()) {
+            return ResponseEntity.ok(Map.of(
+                    "resolved", true,
+                    "name", result.getNormalizedPlaceName() != null ? result.getNormalizedPlaceName() : query.trim(),
+                    "displayName", result.getDisplayName() != null ? result.getDisplayName() : query.trim(),
+                    "district", result.getDistrict() != null ? result.getDistrict() : "",
+                    "state", result.getState() != null ? result.getState() : "India",
+                    "latitude", result.getLatitude(),
+                    "longitude", result.getLongitude()
+            ));
+        } else {
+            return ResponseEntity.ok(Map.of(
+                    "resolved", false,
+                    "query", query.trim(),
+                    "message", "Couldn't confidently locate this destination. Try adding the district or state."
+            ));
+        }
+    }
+
+    @GetMapping("/reverse-geocode")
+    public ResponseEntity<?> reverseGeocode(
+            @RequestParam double lat,
+            @RequestParam(required = false) Double lon,
+            @RequestParam(required = false) Double lng) {
+        double actualLon = lon != null ? lon : (lng != null ? lng : 0.0);
+        String bestName = "Current Location";
+        String bestState = "India";
+        double minDistance = Double.MAX_VALUE;
+
+        for (Location loc : mapService.getAllLocations()) {
+            if (loc.getLatitude() != 0 && loc.getLongitude() != 0) {
+                double d = mapService.calculateHaversineDistanceKm(lat, actualLon, loc.getLatitude(), loc.getLongitude());
+                if (d < minDistance) {
+                    minDistance = d;
+                    bestName = loc.getName();
+                    bestState = loc.getDistrict() != null ? loc.getDistrict() : "India";
+                }
+            }
+        }
+
+        for (var entry : com.errorcab.copilot.destination.service.DestinationKnowledgeBase.getAll().entrySet()) {
+            var prof = entry.getValue();
+            if (prof.getLatitude() != 0 && prof.getLongitude() != 0) {
+                double d = mapService.calculateHaversineDistanceKm(lat, actualLon, prof.getLatitude(), prof.getLongitude());
+                if (d < minDistance) {
+                    minDistance = d;
+                    bestName = prof.getDestinationName();
+                    bestState = prof.getState() != null ? prof.getState() : "India";
+                }
+            }
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "latitude", lat,
+                "longitude", actualLon,
+                "name", bestName,
+                "locationName", bestName,
+                "displayName", bestName + ", " + bestState,
+                "state", bestState,
+                "proximityKm", Math.round(minDistance * 10.0) / 10.0
         ));
     }
 }

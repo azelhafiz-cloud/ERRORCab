@@ -8,11 +8,10 @@
     <script>
         (function() {
             try {
-                const saved = localStorage.getItem('errorcab_theme') || 'system';
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const resolved = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+                const saved = localStorage.getItem('errorcab_theme') || 'dark';
+                const resolved = (saved === 'light') ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', resolved);
-                document.documentElement.setAttribute('data-theme-preference', saved);
+                document.documentElement.setAttribute('data-theme-preference', resolved);
             } catch (e) {}
         })();
     </script>
@@ -112,6 +111,13 @@
                 padding: 20px 14px !important;
             }
         }
+    
+        /* Strictly zero horizontal overflow */
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+
     </style>
 </head>
 <body>
@@ -127,10 +133,7 @@
                     <button type="button" class="theme-btn" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
                         <span>&#127769; Dark</span>
                     </button>
-                    <button type="button" class="theme-btn" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
-                        <span>&#9881; System</span>
-                    </button>
-                </div>
+                    </div>
             </div>
         </div>
 

@@ -387,7 +387,7 @@ class SimulatedMap {
                 ctx.stroke();
 
                 // Floating Drop-Shadow Pill Label
-                this.drawPillBadge(ctx, lx, ly - 18 * minScale, `📍 Pickup: ${loc.name}`, '#10B981', isDark, minScale);
+                this.drawPillBadge(ctx, lx, ly - 18 * minScale, `Pickup: ${loc.name}`, '#10B981', isDark, minScale);
 
             } else if (isDest) {
                 // Cyan Beacon Ring
@@ -415,7 +415,7 @@ class SimulatedMap {
                 ctx.stroke();
 
                 // Floating Pill Label
-                this.drawPillBadge(ctx, lx, ly - 18 * minScale, `🏁 Destination: ${loc.name}`, '#0284C7', isDark, minScale);
+                this.drawPillBadge(ctx, lx, ly - 18 * minScale, `Destination: ${loc.name}`, '#0284C7', isDark, minScale);
 
             } else {
                 // Background Junction Node

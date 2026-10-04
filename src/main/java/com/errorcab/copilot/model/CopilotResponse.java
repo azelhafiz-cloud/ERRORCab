@@ -44,6 +44,17 @@ public class CopilotResponse {
     private String weatherNote;
     private List<SafetyAdvisory> safetyAdvisories = new ArrayList<>();
 
+    // India-wide Destination Intelligence & Routing
+    private com.errorcab.copilot.destination.model.DestinationResult destinationResult;
+    private com.errorcab.copilot.routing.model.RouteResult routeResult;
+    private DriverRecommendation recommendedDriver;
+    private com.errorcab.copilot.weather.model.WeatherResult weather;
+    private double economyFare;
+    private double premiumFare;
+    private double suvFare;
+    private boolean destinationResolved = true;
+    private String resolutionErrorMessage;
+
     public CopilotResponse() {
         this.generatedAt = LocalDateTime.now();
         this.success = true;
@@ -247,5 +258,77 @@ public class CopilotResponse {
 
     public void setSafetyAdvisories(List<SafetyAdvisory> safetyAdvisories) {
         this.safetyAdvisories = safetyAdvisories != null ? safetyAdvisories : new ArrayList<>();
+    }
+
+    public com.errorcab.copilot.destination.model.DestinationResult getDestinationResult() {
+        return destinationResult;
+    }
+
+    public void setDestinationResult(com.errorcab.copilot.destination.model.DestinationResult destinationResult) {
+        this.destinationResult = destinationResult;
+    }
+
+    public com.errorcab.copilot.routing.model.RouteResult getRouteResult() {
+        return routeResult;
+    }
+
+    public void setRouteResult(com.errorcab.copilot.routing.model.RouteResult routeResult) {
+        this.routeResult = routeResult;
+    }
+
+    public DriverRecommendation getRecommendedDriver() {
+        return recommendedDriver;
+    }
+
+    public void setRecommendedDriver(DriverRecommendation recommendedDriver) {
+        this.recommendedDriver = recommendedDriver;
+    }
+
+    public com.errorcab.copilot.weather.model.WeatherResult getWeather() {
+        return weather;
+    }
+
+    public void setWeather(com.errorcab.copilot.weather.model.WeatherResult weather) {
+        this.weather = weather;
+    }
+
+    public double getEconomyFare() {
+        return economyFare;
+    }
+
+    public void setEconomyFare(double economyFare) {
+        this.economyFare = economyFare;
+    }
+
+    public double getPremiumFare() {
+        return premiumFare;
+    }
+
+    public void setPremiumFare(double premiumFare) {
+        this.premiumFare = premiumFare;
+    }
+
+    public double getSuvFare() {
+        return suvFare;
+    }
+
+    public void setSuvFare(double suvFare) {
+        this.suvFare = suvFare;
+    }
+
+    public boolean isDestinationResolved() {
+        return destinationResolved;
+    }
+
+    public void setDestinationResolved(boolean destinationResolved) {
+        this.destinationResolved = destinationResolved;
+    }
+
+    public String getResolutionErrorMessage() {
+        return resolutionErrorMessage;
+    }
+
+    public void setResolutionErrorMessage(String resolutionErrorMessage) {
+        this.resolutionErrorMessage = resolutionErrorMessage;
     }
 }

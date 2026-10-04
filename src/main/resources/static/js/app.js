@@ -6,37 +6,38 @@
 
 const App = {
     // =========================================================================
-    // 1. THEME CONTROLLER (LIGHT / DARK / SYSTEM)
+    // 1. THEME CONTROLLER (STRICTLY LIGHT / DARK ONLY - NO SYSTEM)
     // =========================================================================
     getTheme() {
-        return localStorage.getItem('errorcab_theme') || 'system';
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const qTheme = params.get('theme');
+            if (qTheme === 'light' || qTheme === 'dark') return qTheme;
+        } catch (e) {}
+        const saved = localStorage.getItem('errorcab_theme');
+        return (saved === 'light' || saved === 'dark') ? saved : 'dark';
     },
 
     setTheme(theme) {
-        if (!['light', 'dark', 'system'].includes(theme)) {
-            theme = 'system';
+        if (theme !== 'light' && theme !== 'dark') {
+            theme = 'dark';
         }
         localStorage.setItem('errorcab_theme', theme);
         this.applyTheme(theme);
-        this.showToast('Theme Updated', `Switched to ${theme.toUpperCase()} mode.`, theme === 'dark' ? 'moon' : (theme === 'light' ? 'sun' : 'gear'));
+        this.showToast('Theme Updated', `Switched to ${theme.toUpperCase()} mode.`, theme === 'dark' ? 'moon' : 'sun');
     },
 
     applyTheme(theme) {
         const root = document.documentElement;
-        let resolvedTheme = theme;
-
-        if (theme === 'system') {
-            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            resolvedTheme = prefersDark ? 'dark' : 'light';
-        }
+        const resolvedTheme = (theme === 'light') ? 'light' : 'dark';
 
         root.setAttribute('data-theme', resolvedTheme);
-        root.setAttribute('data-theme-preference', theme);
+        root.setAttribute('data-theme-preference', resolvedTheme);
 
         // Update active states on any theme switcher buttons on the page
         document.querySelectorAll('[data-theme-choice]').forEach(btn => {
             const choice = btn.getAttribute('data-theme-choice');
-            if (choice === theme) {
+            if (choice === resolvedTheme) {
                 btn.classList.add('active');
                 btn.setAttribute('aria-pressed', 'true');
             } else {
@@ -46,7 +47,7 @@ const App = {
         });
 
         // Dispatch event for components that need theme awareness (e.g. Canvas)
-        window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme, resolvedTheme } }));
+        window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: resolvedTheme, resolvedTheme } }));
     },
 
     initTheme() {
@@ -69,33 +70,26 @@ const App = {
                 el.innerHTML = this.renderThemeSelectorHTML();
             });
         });
-
-        // Listen for OS/browser theme preference changes
-        if (window.matchMedia) {
-            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-            mediaQuery.addEventListener('change', (e) => {
-                if (this.getTheme() === 'system') {
-                    this.applyTheme('system');
-                }
-            });
-        }
     },
 
-    // HTML Generator for Accessible 3-Button Theme Switcher
+    mIcon(name, size = 18, cls = '') {
+        return `<span class="material-symbols-rounded ${cls}" style="font-size: ${size}px; vertical-align: middle;">${name}</span>`;
+    },
+
+    // HTML Generator for Accessible 2-Button (Light / Dark) Theme Switcher
     renderThemeSelectorHTML(showLabel = true) {
         const current = this.getTheme();
         return `
             <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
                 ${showLabel ? `<span class="theme-control-label">Appearance:</span>` : ''}
                 <div class="theme-switcher">
-                    <button type="button" class="theme-btn ${current === 'light' ? 'active' : ''}" data-theme-choice="light" onclick="App.setTheme('light')" title="Light theme" aria-label="Select Light theme">
-                        <span>&#9728; Light</span>
+                    <button type="button" class="theme-btn ${current === 'light' ? 'active' : ''}" data-theme-choice="light" onclick="App.setTheme('light')" title="Light mode" aria-label="Select Light mode">
+                        <span class="material-symbols-rounded">light_mode</span>
+                        <span>Light</span>
                     </button>
-                    <button type="button" class="theme-btn ${current === 'dark' ? 'active' : ''}" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
-                        <span>&#127769; Dark</span>
-                    </button>
-                    <button type="button" class="theme-btn ${current === 'system' ? 'active' : ''}" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
-                        <span>&#9881; System</span>
+                    <button type="button" class="theme-btn ${current === 'dark' ? 'active' : ''}" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark mode" aria-label="Select Dark mode">
+                        <span class="material-symbols-rounded">dark_mode</span>
+                        <span>Dark</span>
                     </button>
                 </div>
             </div>
@@ -108,7 +102,24 @@ const App = {
     getUser() {
         try {
             const data = localStorage.getItem('errorcab_user');
-            return data ? JSON.parse(data) : null;
+            if (!data) return null;
+            let user = JSON.parse(data);
+            // Auto-heal legacy demo sessions if mismatched with database seeder
+            // DB: ID 2 = Rahul Nair (Passenger), ID 5 = Akhil Raj (Driver), ID 1 = Admin Operations
+            if (user && user.role === 'PASSENGER' && (user.userId === 1 || user.id === 1)) {
+                user.userId = 2;
+                user.id = 2;
+                if (!user.name || user.name === 'Priya Sharma') user.name = 'Rahul Nair';
+                user.email = user.email || 'passenger@example.com';
+                this.setUser(user);
+            } else if (user && user.role === 'DRIVER' && (user.userId === 2 || user.id === 2)) {
+                user.userId = 5;
+                user.id = 5;
+                user.name = user.name || 'Akhil Raj';
+                user.email = user.email || 'driver@example.com';
+                this.setUser(user);
+            }
+            return user;
         } catch (e) {
             return null;
         }
@@ -133,24 +144,24 @@ const App = {
     requireAuth(allowedRoles) {
         let user = this.getUser();
         if (!user) {
-            // Provide automatic demo credentials so direct URL inspection works without forced redirect
+            // Provide automatic demo credentials matching database seeder reality
             if (allowedRoles && allowedRoles.includes('DRIVER')) {
-                user = { userId: 2, name: 'Akhil Raj', email: 'driver@example.com', role: 'DRIVER', phone: '+91 98765 43211' };
+                user = { userId: 5, id: 5, name: 'Akhil Raj', email: 'driver@example.com', role: 'DRIVER', phone: '+91 94471 12345' };
             } else if (allowedRoles && allowedRoles.includes('ADMIN')) {
-                user = { userId: 3, name: 'Operations Hub', email: 'admin@example.com', role: 'ADMIN', phone: '+91 98765 43212' };
+                user = { userId: 1, id: 1, name: 'Operations Hub', email: 'admin@example.com', role: 'ADMIN', phone: '+91 98470 00000' };
             } else {
-                user = { userId: 1, name: 'Priya Sharma', email: 'passenger@example.com', role: 'PASSENGER', phone: '+91 98765 43210' };
+                user = { userId: 2, id: 2, name: 'Rahul Nair', email: 'passenger@example.com', role: 'PASSENGER', phone: '+91 98471 23456' };
             }
             this.setUser(user);
             return user;
         }
         if (allowedRoles && !allowedRoles.includes(user.role)) {
             if (allowedRoles.includes('DRIVER')) {
-                user = { userId: 2, name: 'Akhil Raj', email: 'driver@example.com', role: 'DRIVER', phone: '+91 98765 43211' };
+                user = { userId: 5, id: 5, name: 'Akhil Raj', email: 'driver@example.com', role: 'DRIVER', phone: '+91 94471 12345' };
             } else if (allowedRoles.includes('ADMIN')) {
-                user = { userId: 3, name: 'Operations Hub', email: 'admin@example.com', role: 'ADMIN', phone: '+91 98765 43212' };
+                user = { userId: 1, id: 1, name: 'Operations Hub', email: 'admin@example.com', role: 'ADMIN', phone: '+91 98470 00000' };
             } else if (allowedRoles.includes('PASSENGER')) {
-                user = { userId: 1, name: 'Priya Sharma', email: 'passenger@example.com', role: 'PASSENGER', phone: '+91 98765 43210' };
+                user = { userId: 2, id: 2, name: 'Rahul Nair', email: 'passenger@example.com', role: 'PASSENGER', phone: '+91 98471 23456' };
             }
             this.setUser(user);
             return user;
@@ -225,14 +236,41 @@ const App = {
     },
 
     formatDate(dateStr) {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('en-IN', {
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        if (!dateStr) return '--';
+        try {
+            const cleanStr = typeof dateStr === 'string' ? dateStr.replace(/(\.\d{3})\d+/, '$1') : dateStr;
+            const d = new Date(cleanStr);
+            if (isNaN(d.getTime())) return String(dateStr);
+            return d.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        } catch (e) {
+            return String(dateStr);
+        }
+    },
+
+    formatDateTime(dateStr) {
+        if (!dateStr) return '--';
+        try {
+            const cleanStr = typeof dateStr === 'string' ? dateStr.replace(/(\.\d{3})\d+/, '$1') : dateStr;
+            const d = new Date(cleanStr);
+            if (isNaN(d.getTime())) return String(dateStr);
+            const datePart = d.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+            const timePart = d.toLocaleTimeString('en-IN', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+            return `${datePart} • ${timePart}`;
+        } catch (e) {
+            return String(dateStr);
+        }
     },
 
     // =========================================================================
@@ -263,7 +301,7 @@ const App = {
             search: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
             printer: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`,
             trash: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
-            receipt: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M16 8h-8"/><path d="M16 12h-8"/><path d="M10 16h-2"/></svg>`,
+            receipt: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M16 8h-8"/><path d="M16 12h-8"/><path d="M10 16h-2"/></svg>`,
             power: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>`,
             alertTriangle: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
             dashboard: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>`,
@@ -276,11 +314,44 @@ const App = {
             rupee: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="18" y2="3"/><line x1="6" y1="8" x2="18" y2="8"/><path d="M6 13l8.5 8"/><path d="M6 13h3a4 4 0 0 0 0-8"/></svg>`,
             sun: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
             moon: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
-            monitor: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
             gear: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-            zap: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`
+            zap: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+            sparkles: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>`,
+            map: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>`,
+            steeringWheel: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="3.5" y1="17" x2="9.5" y2="13.5"/><line x1="20.5" y1="17" x2="14.5" y2="13.5"/></svg>`,
+            chevronDown: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
+            chevronUp: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>`,
+            chevronRight: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+            info: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+            compass: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`,
+            wallet: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>`,
+            filter: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`,
+            briefcase: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`
         };
         return icons[name] || '';
+    },
+
+    // =========================================================================
+    // ACCORDION CONTROLLER FOR COMPACT MOBILE & COLLAPSIBLE CARDS
+    // =========================================================================
+    toggleAccordion(elem) {
+        const item = elem.closest('.accordion-item') || elem.parentElement;
+        if (!item) return;
+        const isOpen = item.classList.contains('open');
+        item.classList.toggle('open');
+        const icon = item.querySelector('.accordion-chevron');
+        if (icon) {
+            icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+    },
+
+    toggleMobileDrawer() {
+        const drawer = document.getElementById('appSidebar') || document.getElementById('mobileSidebarDrawer');
+        const backdrop = document.getElementById('mobileDrawerBackdrop');
+        if (drawer) {
+            drawer.classList.toggle('open');
+            if (backdrop) backdrop.classList.toggle('open');
+        }
     },
 
     // =========================================================================
@@ -374,7 +445,7 @@ const App = {
     },
 
     triggerSOS() {
-        alert("⚠️ EMERGENCY ASSISTANCE DISPATCHED (DEMO)\n\n" +
+        alert("EMERGENCY ASSISTANCE DISPATCHED (DEMO)\n\n" +
               "Your live GPS telemetry and vehicle coordinates have been transmitted to:\n" +
               "• Kerala Police Command (112)\n" +
               "• Women Safety Helpline (1091)\n" +
@@ -478,7 +549,9 @@ const App = {
             if (!notifs || notifs.length === 0) {
                 listEl.innerHTML = `
                     <div style="text-align: center; color: var(--text-muted); padding: 36px 16px;">
-                        <div style="font-size: 36px; margin-bottom: 8px;">🔕</div>
+                        <div style="display: flex; justify-content: center; margin-bottom: 8px;">
+                            <span class="material-symbols-rounded" style="font-size: 40px; color: var(--text-muted);">notifications_off</span>
+                        </div>
                         <div style="font-weight: 700; color: var(--text-primary);">No notifications yet</div>
                         <div style="font-size: 12px; margin-top: 4px;">Ride updates, driver dispatches, and alerts will appear here.</div>
                     </div>

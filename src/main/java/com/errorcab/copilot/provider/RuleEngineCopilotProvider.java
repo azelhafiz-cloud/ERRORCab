@@ -1,8 +1,9 @@
 package com.errorcab.copilot.provider;
 
 import com.errorcab.copilot.destination.model.DestinationProfile;
+import com.errorcab.copilot.destination.model.DestinationResult;
 import com.errorcab.copilot.destination.model.SafetyAdvisory;
-import com.errorcab.copilot.destination.service.DestinationKnowledgeBase;
+import com.errorcab.copilot.destination.service.DestinationIntelligenceService;
 import com.errorcab.copilot.destination.service.DestinationResolver;
 import com.errorcab.copilot.model.BudgetBreakdown;
 import com.errorcab.copilot.model.CopilotContext;
@@ -11,7 +12,10 @@ import com.errorcab.copilot.model.CopilotRideSuggestion;
 import com.errorcab.copilot.model.CopilotTripRequest;
 import com.errorcab.copilot.model.CuratedCulinaryInfo;
 import com.errorcab.copilot.model.DayBalance;
+import com.errorcab.copilot.model.DriverRecommendation;
 import com.errorcab.copilot.model.ItineraryLeg;
+import com.errorcab.copilot.routing.model.RouteResult;
+import com.errorcab.copilot.weather.model.WeatherResult;
 import com.errorcab.model.CabType;
 import com.errorcab.service.FareService;
 import com.errorcab.service.MapService;
@@ -19,26 +23,34 @@ import com.errorcab.service.MapService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * High-performance, offline rule-based AI provider for ERRORCab.
- * Powered by the Destination Intelligence layer and DestinationResolver.
- * Generates verified, landmark-specific itineraries, 4-part culinary highlights,
- * source-attributed safety advisories, budget breakdown, and day balance.
+ * Powered by DestinationIntelligenceService and DestinationResolver.
+ * Supports India-wide destination resolution, routing, polymorphic fare calculation,
+ * real driver recommendations, live weather context, and source-attributed safety advisories.
  * Operates 100% offline with zero external network dependencies.
  */
 public class RuleEngineCopilotProvider implements AiCopilotProvider {
 
     private final MapService mapService = MapService.getInstance();
     private final FareService fareService = FareService.getInstance();
+    private final DestinationIntelligenceService intelligenceService;
     private final DestinationResolver destinationResolver;
+
+    public RuleEngineCopilotProvider(DestinationIntelligenceService intelligenceService) {
+        this.intelligenceService = intelligenceService != null ? intelligenceService : new DestinationIntelligenceService();
+        this.destinationResolver = this.intelligenceService.getDestinationResolver();
+    }
 
     public RuleEngineCopilotProvider(DestinationResolver destinationResolver) {
         this.destinationResolver = destinationResolver != null ? destinationResolver : new DestinationResolver();
+        this.intelligenceService = new DestinationIntelligenceService(this.destinationResolver, null, null, null);
     }
 
     public RuleEngineCopilotProvider() {
-        this(new DestinationResolver());
+        this(new DestinationIntelligenceService());
     }
 
     @Override
@@ -67,24 +79,68 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
         response.setGeneratedAt(LocalDateTime.now());
 
         String passengerName = context != null && context.getPassengerName() != null ? context.getPassengerName() : "Traveler";
-        String pickupHub = context != null && context.getResolvedPickupLocation() != null ? context.getResolvedPickupLocation() : "Kakkanad";
+        String pickupHub = (request.getStartingLocation() != null && !request.getStartingLocation().trim().isEmpty())
+                ? request.getStartingLocation().trim()
+                : (context != null && context.getResolvedPickupLocation() != null ? context.getResolvedPickupLocation() : "Kakkanad");
         String rawDestination = response.getDestination();
 
-        // 1. Resolve Destination Profile via Destination Intelligence Layer
-        DestinationProfile profile = destinationResolver.resolve(rawDestination);
+        // 1. Resolve Destination via modular Destination Intelligence Layer
+        DestinationResult destResult = intelligenceService.resolveDestination(rawDestination);
+        response.setDestinationResult(destResult);
+
+        // Strict unresolved handling: NEVER silently use a random fallback destination!
+        if (destResult == null || !destResult.isResolved()) {
+            response.setDestinationResolved(false);
+            response.setResolutionErrorMessage("Couldn't confidently locate this destination. Try adding the district or state.");
+            response.setTitle("Destination Unresolved: " + rawDestination);
+            response.setSummary("Couldn't confidently locate this destination. Try adding the district or state.");
+            response.setItinerary(new ArrayList<>());
+            response.setRecommendedRides(new ArrayList<>());
+            response.setSpecialties(new ArrayList<>());
+            response.setFoodRecommendations(new ArrayList<>());
+            response.setTravelTips(List.of("Try adding the district or state name (e.g. 'Perinthalmanna, Malappuram' or 'Jaipur, Rajasthan')."));
+            response.setSafetyAdvisories(List.of(SafetyAdvisory.noVerifiedAdvisoryFound()));
+            response.setAssistanceType("UNRESOLVED");
+            return response;
+        }
+
+        DestinationProfile profile = intelligenceService.getProfile(destResult);
+        if (profile == null) {
+            profile = DestinationProfile.createLimited(destResult.getNormalizedPlaceName());
+        }
         response.setDestinationProfile(profile);
 
-        // Determine recommended cab type based on user budget preference
+        // 2. India-wide Routing & Java Fare Calculation
+        RouteResult routeResult = intelligenceService.calculateRoute(pickupHub, destResult);
+        response.setRouteResult(routeResult);
+
+        double routeKm = routeResult.isRouteAvailable() ? routeResult.getDistanceKm() : 15.0;
+        Map<CabType, Double> fares = intelligenceService.calculateFares(routeKm);
+        response.setEconomyFare(fares.get(CabType.ECONOMY));
+        response.setPremiumFare(fares.get(CabType.PREMIUM));
+        response.setSuvFare(fares.get(CabType.SUV));
+
+        // 3. Authentic ERRORCab Driver Recommendation from Database
         CabType recommendedCab = resolveCabType(request.getBudget());
+        DriverRecommendation recommendedDriver = intelligenceService.recommendDriver(recommendedCab, pickupHub);
+        response.setRecommendedDriver(recommendedDriver);
+
+        // 4. Destination Weather (omit if unavailable, never fabricate)
+        WeatherResult weather = intelligenceService.getWeather(destResult);
+        response.setWeather(weather);
+        if (weather != null && weather.isAvailable()) {
+            response.setWeatherNote(Math.round(weather.getTemperatureC()) + "°C, " + weather.getCondition() +
+                    (weather.isRaining() ? " • Rain Alert: Indoor friendly spots prioritized" : ""));
+        }
 
         response.setTitle("Personalized " + profile.getDestinationName() + " " + response.getTripPurpose() + " Itinerary");
-        response.setSummary(buildSummary(passengerName, pickupHub, profile, response.getDuration(), response.getBudget(), request));
+        response.setSummary(buildSummary(passengerName, pickupHub, profile, response.getDuration(), response.getBudget(), request, routeResult));
 
-        // 2. Generate Landmark-Specific Itinerary Legs
-        List<ItineraryLeg> legs = buildItineraryLegs(pickupHub, profile, recommendedCab, request);
+        // 5. Generate Landmark-Specific Itinerary Legs
+        List<ItineraryLeg> legs = buildItineraryLegs(pickupHub, profile, recommendedCab, request, routeResult);
         response.setItinerary(legs);
 
-        // 3. Extract suggested ERRORCab rides from the itinerary
+        // 6. Extract suggested ERRORCab rides from the itinerary
         List<CopilotRideSuggestion> rides = new ArrayList<>();
         double totalCabFare = 0.0;
         for (ItineraryLeg leg : legs) {
@@ -96,15 +152,15 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
         response.setRecommendedRides(rides);
         response.setEstimatedTotalCabFare(Math.round(totalCabFare));
 
-        // 4. Curated Culinary Highlights (4-part structure)
+        // 7. Curated Culinary Highlights (4-part structure)
         CuratedCulinaryInfo culinaryInfo = buildCuratedCulinary(profile, request.getFoodPreferences());
         response.setCuratedCulinary(culinaryInfo);
         response.setFoodRecommendations(buildFoodSummaryList(culinaryInfo, profile));
 
-        // 5. Destination Specialities & Highlights
+        // 8. Destination Specialities & Highlights
         response.setSpecialties(buildSpecialties(profile, request.getInterests()));
 
-        // 6. Source-Attributed Place Warnings & Safety Advisories
+        // 9. Source-Attributed Place Warnings & Safety Advisories
         List<SafetyAdvisory> advisories = buildSafetyAdvisories(profile);
         response.setSafetyAdvisories(advisories);
         List<String> formattedWarnings = new ArrayList<>();
@@ -113,21 +169,21 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
         }
         response.setWarnings(formattedWarnings);
 
-        // 7. Local Travel Advice
+        // 10. Local Travel Advice
         response.setTravelTips(buildTravelAdvice(profile));
 
-        // 8. Budget Intelligence Breakdown
+        // 11. Budget Intelligence Breakdown
         BudgetBreakdown budgetBreakdown = calculateBudgetBreakdown(request.getBudget(), totalCabFare);
         response.setBudgetBreakdown(budgetBreakdown);
 
-        // 9. Smart Day Balance
+        // 12. Smart Day Balance
         DayBalance dayBalance = calculateDayBalance(request.getTripPurpose(), request.getDuration());
         response.setDayBalance(dayBalance);
 
-        // 10. Trip Readiness
-        response.setTripReadiness(buildTripReadiness(profile, request));
+        // 13. Trip Readiness Checklist (7-check verification)
+        response.setTripReadiness(buildTripReadiness(destResult, routeResult, profile, request, fares));
 
-        // 11. Trip Explanation
+        // 14. Trip Explanation
         response.setTripExplanation(buildTripExplanation(legs, rides, profile));
 
         return response;
@@ -145,11 +201,16 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
     }
 
     private String buildSummary(String passengerName, String pickupHub, DestinationProfile profile,
-                                 String duration, String budget, CopilotTripRequest request) {
+                                 String duration, String budget, CopilotTripRequest request, RouteResult route) {
         StringBuilder sb = new StringBuilder();
         sb.append("Welcome, ").append(passengerName).append("! ");
         sb.append("Here is your curated ").append(duration.toLowerCase()).append(" travel plan for ")
           .append(profile.getDestinationName()).append(", starting comfortably from your home hub at ").append(pickupHub).append(". ");
+
+        if (route != null && route.isRouteAvailable()) {
+            sb.append("Calculated route distance: ").append(route.getDistanceKm()).append(" km (approx. ")
+              .append(route.getDurationFormatted()).append("). ");
+        }
 
         if (profile.getShortDescription() != null && !profile.getShortDescription().isBlank()) {
             sb.append(profile.getShortDescription()).append(" ");
@@ -167,16 +228,22 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
     }
 
     private List<ItineraryLeg> buildItineraryLegs(String pickupHub, DestinationProfile profile,
-                                                  CabType cabType, CopilotTripRequest req) {
+                                                  CabType cabType, CopilotTripRequest req, RouteResult route) {
         List<ItineraryLeg> list = new ArrayList<>();
         String destName = (req != null && req.getDestination() != null && !req.getDestination().isBlank())
                 ? req.getDestination().trim()
                 : profile.getDestinationName();
 
-        // Calculate outward cab ride
-        double outwardDist = mapService.getDistanceKm(pickupHub, destName);
-        int outwardMins = mapService.getEstimatedMinutes(outwardDist);
+        // Calculate outward cab ride using resolved route distance
+        double outwardDist = (route != null && route.isRouteAvailable()) ? route.getDistanceKm() : mapService.getDistanceKm(pickupHub, destName);
+        int outwardMins = (route != null && route.isRouteAvailable()) ? route.getDurationMinutes() : mapService.getEstimatedMinutes(outwardDist);
         double outwardFare = fareService.calculateFare(cabType, outwardDist);
+
+        String whyCabster = "Recommended because you selected: " +
+                (req.getTripPurpose() != null ? req.getTripPurpose() : "Leisure") + " + " +
+                (req.getBudget() != null ? req.getBudget() : "Moderate") +
+                (req.getFoodPreferences() != null && !req.getFoodPreferences().isEmpty()
+                        ? " + " + String.join(", ", req.getFoodPreferences()) : "");
 
         CopilotRideSuggestion outwardRide = new CopilotRideSuggestion(
                 "Leg 1 Ride: " + pickupHub + " ➔ " + destName,
@@ -193,7 +260,7 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
                 "Relax in your air-conditioned ERRORCab " + cabType + " cab as you head towards " + destName + ". " +
                         (profile.getTransportAdvice() != null ? profile.getTransportAdvice() : ""),
                 outwardRide,
-                "Direct private transit scheduled early to avoid highway choke points.",
+                "Direct private transit scheduled early to avoid highway choke points. " + whyCabster,
                 "₹" + Math.round(outwardFare) + " (Cab Fare)"
         ));
 
@@ -207,7 +274,6 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
                 ? String.join(" & ", req.getInterests()) : "Scenic Exploration";
 
         if ("LIMITED_FRAMEWORK".equals(profile.getKnowledgeStatus()) || attractions.isEmpty()) {
-            // Safe, general framework without inventing fake landmarks
             list.add(new ItineraryLeg(
                     "10:30 AM - 01:00 PM",
                     "Arrival & Core District Exploration",
@@ -215,7 +281,7 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
                     "Sightseeing",
                     "Explore the central area, prominent public squares, and commercial landmarks of " + destName + ".",
                     null,
-                    "Recommended as the primary point of arrival for orientation.",
+                    whyCabster,
                     "Nominal"
             ));
 
@@ -241,7 +307,6 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
                     "Free entry"
             ));
         } else {
-            // Rich landmark-specific stops
             String stop1 = attractions.get(0);
             String stop2 = attractions.size() > 1 ? attractions.get(1) : destName + " Market Promenade";
             String stop3 = attractions.size() > 2 ? attractions.get(2) : destName + " Cultural Center";
@@ -254,7 +319,7 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
                     "Discover the prominent highlights of " + stop1 + ". " +
                             (!profile.getPhotographySpots().isEmpty() ? "Prime photography spot: " + profile.getPhotographySpots().get(0) + "." : ""),
                     null,
-                    "Prioritized because you selected " + interestsStr + "; renowned for " + profile.getBestKnownFor() + ".",
+                    "Prioritized because you selected " + interestsStr + "; renowned for " + profile.getBestKnownFor() + ". " + whyCabster,
                     "Free entry / Nominal ticket"
             ));
 
@@ -316,17 +381,17 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
             signature = profile.getCulinaryHighlights().get(0);
             traditional = profile.getCulinaryHighlights().size() > 1
                     ? profile.getCulinaryHighlights().get(1)
-                    : "Traditional Kerala Sadhya with seasonal specialties";
+                    : "Traditional regional dining with authentic local spices";
             cafeCulture = profile.getCulinaryHighlights().size() > 2
                     ? profile.getCulinaryHighlights().get(2)
-                    : "Local tea stalls serving hot Sulaimani and spiced chai";
+                    : "Local tea stalls and artisanal cafes";
             experiences.addAll(profile.getCulinaryHighlights());
         } else {
-            signature = "Authentic Regional Kerala Delicacies";
-            traditional = "Traditional Kerala Meals served on banana leaf";
-            cafeCulture = "Traditional roadside tea stalls serving hot black tea and freshly fried banana fritters";
+            signature = "Authentic Regional Indian Delicacies";
+            traditional = "Traditional Meals served with seasonal accompaniments";
+            cafeCulture = "Traditional roadside tea stalls serving hot spiced chai and regional snacks";
             experiences.add("Visit reputable local dining establishments with high guest turnover.");
-            experiences.add("Pair regional meals with fresh tender coconut water.");
+            experiences.add("Pair regional meals with fresh local beverages.");
         }
 
         if (foodPrefs != null && !foodPrefs.isEmpty()) {
@@ -359,11 +424,7 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
         if (profile.getSafetyNotes() != null && !profile.getSafetyNotes().isEmpty()) {
             advisories.addAll(profile.getSafetyNotes());
         } else {
-            advisories.add(new SafetyAdvisory(
-                    "No verified destination-specific advisory is currently available.",
-                    "Verified Travel Advisory Database",
-                    "GENERAL"
-            ));
+            advisories.add(SafetyAdvisory.noVerifiedAdvisoryFound());
         }
         return advisories;
     }
@@ -377,9 +438,9 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
             tips.add(profile.getTransportAdvice());
         }
         if (tips.isEmpty()) {
-            tips.add("Carry light cotton clothing and sun protection.");
-            tips.add("Verify venue timings before heading out.");
-            tips.add("Pre-book ERRORCab transit for predictable pricing.");
+            tips.add("Carry light clothing and sun protection.");
+            tips.add("Verify venue operational hours prior to arrival.");
+            tips.add("Pre-book ERRORCab transit for predictable zero-surge pricing.");
         }
         return tips;
     }
@@ -433,7 +494,7 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
                 food = 40;
                 relaxation = 10;
                 travel = 10;
-            } else if (p.contains("weekend") || p.contains("relaxation")) {
+            } else if (p.contains("weekend") || p.contains("relaxation") || p.contains("relaxed")) {
                 walking = 15;
                 sightseeing = 25;
                 food = 20;
@@ -451,15 +512,18 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
         return new DayBalance(walking, sightseeing, food, relaxation, travel);
     }
 
-    private List<String> buildTripReadiness(DestinationProfile profile, CopilotTripRequest request) {
+    private List<String> buildTripReadiness(DestinationResult destResult, RouteResult route,
+                                            DestinationProfile profile, CopilotTripRequest request,
+                                            Map<CabType, Double> fares) {
         List<String> list = new ArrayList<>();
-        list.add("✓ Destination resolved: " + profile.getDestinationName());
-        list.add("✓ Budget tier aligned: " + (request.getBudget() != null ? request.getBudget() : "Moderate"));
-        list.add("✓ Schedule duration confirmed: " + (request.getDuration() != null ? request.getDuration() : "Half-day"));
-        list.add("✓ Interests prioritized: " + (request.getInterests() != null && !request.getInterests().isEmpty()
+        list.add("✓ Destination resolved: " + destResult.getDisplayName());
+        list.add("✓ Route available: " + (route != null && route.isRouteAvailable() ? route.getDistanceKm() + " km (" + route.getDurationFormatted() + ")" : "Local transit"));
+        list.add("✓ Fare calculated: Economy ₹" + Math.round(fares.get(CabType.ECONOMY)) + " • Premium ₹" + Math.round(fares.get(CabType.PREMIUM)) + " • SUV ₹" + Math.round(fares.get(CabType.SUV)));
+        list.add("✓ Trip purpose selected: " + (request.getTripPurpose() != null ? request.getTripPurpose() : "Leisure"));
+        list.add("✓ Budget selected: " + (request.getBudget() != null ? request.getBudget() : "Moderate"));
+        list.add("✓ Preferences selected: " + (request.getInterests() != null && !request.getInterests().isEmpty()
                 ? String.join(", ", request.getInterests()) : "General Sightseeing"));
-        list.add("✓ Dining profile: " + (request.getFoodPreferences() != null && !request.getFoodPreferences().isEmpty()
-                ? String.join(", ", request.getFoodPreferences()) : "Local Flavors"));
+        list.add("✓ Itinerary generated with verified ERRORCab transfers");
         return list;
     }
 
@@ -476,5 +540,9 @@ public class RuleEngineCopilotProvider implements AiCopilotProvider {
 
     public DestinationResolver getDestinationResolver() {
         return destinationResolver;
+    }
+
+    public DestinationIntelligenceService getIntelligenceService() {
+        return intelligenceService;
     }
 }

@@ -99,20 +99,58 @@ public class MapService {
             return distanceMatrix.get(key);
         }
 
-        // Geographic coordinate calculation (Haversine formula + urban road circuity factor)
+        // Geographic coordinate calculation (Haversine formula + urban/highway road circuity factor)
         Location locFrom = locations.get(from);
         Location locTo = locations.get(to);
-        if (locFrom != null && locTo != null) {
-            if (locFrom.getLatitude() != 0 && locTo.getLatitude() != 0) {
-                double directKm = calculateHaversineDistanceKm(
-                        locFrom.getLatitude(), locFrom.getLongitude(),
-                        locTo.getLatitude(), locTo.getLongitude()
-                );
-                // Realistic urban road circuity factor of 1.30x
-                double roadDistanceKm = Math.round((directKm * 1.30) * 10.0) / 10.0;
-                return Math.max(2.5, roadDistanceKm);
-            }
 
+        double lat1 = 0.0, lon1 = 0.0, lat2 = 0.0, lon2 = 0.0;
+
+        if (locFrom != null && locFrom.getLatitude() != 0) {
+            lat1 = locFrom.getLatitude();
+            lon1 = locFrom.getLongitude();
+        } else {
+            var p1 = com.errorcab.copilot.destination.service.DestinationKnowledgeBase.find(from);
+            if (p1 != null && p1.getLatitude() != 0) {
+                lat1 = p1.getLatitude();
+                lon1 = p1.getLongitude();
+            } else {
+                try {
+                    var r1 = new com.errorcab.copilot.destination.service.DestinationResolver().resolveDestination(from);
+                    if (r1 != null && r1.isResolved() && r1.getLatitude() != 0) {
+                        lat1 = r1.getLatitude();
+                        lon1 = r1.getLongitude();
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        if (locTo != null && locTo.getLatitude() != 0) {
+            lat2 = locTo.getLatitude();
+            lon2 = locTo.getLongitude();
+        } else {
+            var p2 = com.errorcab.copilot.destination.service.DestinationKnowledgeBase.find(to);
+            if (p2 != null && p2.getLatitude() != 0) {
+                lat2 = p2.getLatitude();
+                lon2 = p2.getLongitude();
+            } else {
+                try {
+                    var r2 = new com.errorcab.copilot.destination.service.DestinationResolver().resolveDestination(to);
+                    if (r2 != null && r2.isResolved() && r2.getLatitude() != 0) {
+                        lat2 = r2.getLatitude();
+                        lon2 = r2.getLongitude();
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        if (lat1 != 0 && lon1 != 0 && lat2 != 0 && lon2 != 0) {
+            double directKm = calculateHaversineDistanceKm(lat1, lon1, lat2, lon2);
+            // Realistic Indian road circuity factor of 1.30x
+            double roadDistanceKm = Math.round((directKm * 1.30) * 10.0) / 10.0;
+            return Math.max(2.5, roadDistanceKm);
+        }
+
+        if (locFrom != null && locTo != null) {
             // Fallback to canvas map coordinates
             double dx = locTo.getMapX() - locFrom.getMapX();
             double dy = locTo.getMapY() - locFrom.getMapY();
@@ -124,7 +162,7 @@ public class MapService {
         return 8.0;
     }
 
-    private double calculateHaversineDistanceKm(double lat1, double lon1, double lat2, double lon2) {
+    public double calculateHaversineDistanceKm(double lat1, double lon1, double lat2, double lon2) {
         final double R = 6371.0; // Earth radius in km
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(lon2 - lon1);
@@ -136,8 +174,13 @@ public class MapService {
     }
 
     public int getEstimatedMinutes(double distanceKm) {
-        // Average Indian urban transit speed ~ 23 km/h
-        int minutes = (int) Math.round((distanceKm / 23.0) * 60.0);
+        // Average Indian transit: ~23 km/h urban, ~55 km/h intercity highway
+        int minutes;
+        if (distanceKm > 50.0) {
+            minutes = (int) Math.round((distanceKm / 55.0) * 60.0);
+        } else {
+            minutes = (int) Math.round((distanceKm / 23.0) * 60.0);
+        }
         return Math.max(5, minutes);
     }
 

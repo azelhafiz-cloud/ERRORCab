@@ -6,16 +6,14 @@
     <title>Admin Operations Center - ERRORCab</title>
     <!-- Early theme resolution prevents dark/light flash -->
     <script>
-        (function() {
-            try {
-                const saved = localStorage.getItem('errorcab_theme') || 'system';
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const resolved = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
-                document.documentElement.setAttribute('data-theme', resolved);
-                document.documentElement.setAttribute('data-theme-preference', saved);
-            } catch (e) {}
-        })();
+        try {
+            const saved = localStorage.getItem('errorcab_theme') || 'dark';
+            const resolved = (saved === 'light') ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', resolved);
+            document.documentElement.setAttribute('data-theme-preference', resolved);
+        } catch (e) {}
     </script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="stylesheet" href="/css/style.css">
     <style>
         :root {
@@ -472,6 +470,30 @@
                 padding: 16px 14px;
             }
         }
+    
+        @media (max-width: 480px) {
+            .stat-grid-6 {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+            .admin-kpi-card {
+                padding: 14px !important;
+            }
+            .kpi-number {
+                font-size: 22px !important;
+            }
+            .admin-content-body {
+                padding: 12px 10px !important;
+            }
+            .filter-pills-row {
+                gap: 6px;
+            }
+            .filter-pill {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -552,29 +574,14 @@
                         Dashboard Overview
                     </div>
                     <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;" id="topbarViewSubtitle">
-                        ERRORCab Kerala Fleet • Central Operations Grid
+                        ERRORCab India Fleet • Central Operations Grid
                     </div>
                 </div>
             </div>
 
             <div style="display: flex; align-items: center; gap: 12px;">
                 <!-- Theme Switcher (Visible on All Screen Sizes) -->
-                <div id="adminThemeSlot">
-                    <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
-                        <span class="theme-control-label">Appearance:</span>
-                        <div class="theme-switcher">
-                            <button type="button" class="theme-btn" data-theme-choice="light" onclick="App.setTheme('light')" title="Light theme" aria-label="Select Light theme">
-                                <span>&#9728; Light</span>
-                            </button>
-                            <button type="button" class="theme-btn" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
-                                <span>&#127769; Dark</span>
-                            </button>
-                            <button type="button" class="theme-btn" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
-                                <span>&#9881; System</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <div id="adminThemeSlot"></div>
 
                 <!-- Live Platform Status Badge -->
                 <span class="badge badge-success hide-on-mobile" style="padding: 6px 12px; font-weight: 800;">
@@ -617,7 +624,7 @@
                                 <span style="font-size: 12px; color: #94A3B8;" id="currentDateStr">--</span>
                             </div>
                             <h1 style="font-size: 22px; font-weight: 900; margin: 0; letter-spacing: -0.5px; word-break: break-word; overflow-wrap: break-word;">Welcome back, Operations Admin</h1>
-                            <p style="color: #94A3B8; font-size: 13px; margin: 4px 0 0; word-break: break-word; overflow-wrap: break-word;">Here's what's happening with ERRORCab today across the Kochi urban zone.</p>
+                            <p style="color: #94A3B8; font-size: 13px; margin: 4px 0 0; word-break: break-word; overflow-wrap: break-word;">Here's what's happening with ERRORCab today across the India network.</p>
                         </div>
 
                         <div style="display: flex; gap: 8px; flex-shrink: 0;">
@@ -723,10 +730,11 @@
                         <div style="padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                             <div>
                                 <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0;">Recent Ride Activity</h3>
-                                <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Latest bookings across Kochi City</p>
+                                <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Latest bookings across the India network</p>
                             </div>
-                            <button type="button" onclick="switchView('rides')" class="btn btn-secondary btn-sm" style="font-size: 12px; font-weight: 700;">
-                                View All Rides ➔
+                            <button type="button" onclick="switchView('rides')" class="btn btn-secondary btn-sm" style="font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                                <span>View All Rides</span>
+                                <span class="material-symbols-rounded" style="font-size: 16px;">arrow_forward</span>
                             </button>
                         </div>
 
@@ -780,7 +788,7 @@
                         </div>
 
                         <div style="margin-top: 20px; background: var(--bg-card-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; font-size: 11px; color: var(--text-muted); text-align: center;">
-                            Kochi City Fleet Monitored • All algorithms running locally.
+                            India Fleet Monitored • All algorithms running locally.
                         </div>
                     </div>
 
@@ -879,7 +887,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
                     <div>
                         <h2 style="font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.3px;">Real-Time Rides Log</h2>
-                        <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Complete chronological dispatch audit across all Kochi urban routes.</p>
+                        <p style="color: var(--text-muted); font-size: 13px; margin: 2px 0 0;">Complete chronological dispatch audit across all Indian routes.</p>
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -902,7 +910,7 @@
                                     <th>Date & Time</th>
                                     <th>Passenger</th>
                                     <th>Driver</th>
-                                    <th>Route (Pickup ➔ Dropoff)</th>
+                                    <th>Route (Pickup &rarr; Dropoff)</th>
                                     <th>Cab Type</th>
                                     <th>Fare</th>
                                     <th>Status</th>
@@ -1034,15 +1042,20 @@
                     </div>
                     <div>
                         <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0;">Register New Driver Partner</h3>
-                        <div style="font-size: 12px; color: var(--text-muted);">Enroll driver & commercial vehicle into Kerala fleet</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Enroll driver & commercial vehicle into India fleet</div>
                     </div>
                 </div>
-                <button type="button" onclick="App.closeModal('addDriverModal')" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">✕</button>
+                <button type="button" onclick="App.closeModal('addDriverModal')" class="btn btn-secondary btn-sm" style="border-radius: 50%; width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+                    <span class="material-symbols-rounded" style="font-size: 18px;">close</span>
+                </button>
             </div>
 
             <!-- 1-Click Viva Demo Quick-Fill -->
             <div style="background: var(--bg-card-subtle); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">⚡ Fast Demo Preset:</span>
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px;">
+                    <span class="material-symbols-rounded" style="font-size: 16px; color: var(--accent);">bolt</span>
+                    Fast Demo Preset:
+                </span>
                 <button type="button" onclick="quickFillDriverDemo()" class="btn btn-secondary btn-sm" style="font-size: 11px; font-weight: 800;">
                     Fill Viva Demo Driver
                 </button>
@@ -1199,10 +1212,10 @@
 
             // Update topbar title
             const titles = {
-                'dashboard': { title: 'Dashboard Overview', sub: 'ERRORCab Kerala Fleet • Central Operations Grid' },
+                'dashboard': { title: 'Dashboard Overview', sub: 'ERRORCab India Fleet • Central Operations Grid' },
                 'passengers': { title: 'Passenger Management', sub: 'Customer profiles and account access' },
                 'drivers': { title: 'Driver Fleet Management', sub: 'Driver partner credentials and vehicle verification' },
-                'rides': { title: 'Real-Time Rides Log', sub: 'Chronological trip audit across Kochi' },
+                'rides': { title: 'Real-Time Rides Log', sub: 'Chronological trip audit across India network' },
                 'statistics': { title: 'Platform Revenue & Statistics', sub: 'Turnover KPIs and cab category performance' }
             };
 
@@ -1342,7 +1355,9 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 36px;">
-                            <div style="font-size: 28px; margin-bottom: 4px;">📭</div>
+                            <div style="display: flex; justify-content: center; margin-bottom: 6px;">
+                                <span class="material-symbols-rounded" style="font-size: 32px; color: var(--text-muted);">inbox</span>
+                            </div>
                             <div style="font-weight: 700; color: var(--text-primary);">No ride activity yet</div>
                             <div style="font-size: 12px;">Bookings made by passengers will appear here.</div>
                         </td>
@@ -1402,7 +1417,9 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 48px;">
-                            <div style="font-size: 32px; margin-bottom: 6px;">👥</div>
+                            <div style="display: flex; justify-content: center; margin-bottom: 6px;">
+                                <span class="material-symbols-rounded" style="font-size: 36px; color: var(--text-muted);">group</span>
+                            </div>
                             <div style="font-weight: 700; color: var(--text-primary);">No passengers registered yet</div>
                             <div style="font-size: 12px;">Registered users will appear in this directory.</div>
                         </td>
@@ -1478,7 +1495,9 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 48px;">
-                            <div style="font-size: 32px; margin-bottom: 6px;">🚕</div>
+                            <div style="display: flex; justify-content: center; margin-bottom: 6px;">
+                                <span class="material-symbols-rounded" style="font-size: 36px; color: var(--text-muted);">local_taxi</span>
+                            </div>
                             <div style="font-weight: 700; color: var(--text-primary);">No driver partners registered</div>
                             <div style="font-size: 12px;">Fleet drivers will appear here once registered.</div>
                         </td>
@@ -1523,7 +1542,10 @@
                             <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">${d.licenseNumber || 'KL-LIC-9988'}</div>
                         </td>
                         <td data-label="Rating" style="color: var(--warning); font-weight: 800; font-size: 13px;">
-                            ★ ${rating}
+                            <span style="display: inline-flex; align-items: center; gap: 3px;">
+                                <span class="material-symbols-rounded" style="font-size: 15px; color: #F59E0B;">star</span>
+                                <span>${rating}</span>
+                            </span>
                         </td>
                         <td data-label="Duty">
                             <span class="badge badge-${isOnline ? 'success' : 'neutral'}" style="display: inline-flex; align-items: center; gap: 5px;">
@@ -1658,7 +1680,9 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 48px;">
-                            <div style="font-size: 32px; margin-bottom: 6px;">🚗</div>
+                            <div style="display: flex; justify-content: center; margin-bottom: 6px;">
+                                <span class="material-symbols-rounded" style="font-size: 36px; color: var(--text-muted);">directions_car</span>
+                            </div>
                             <div style="font-weight: 700; color: var(--text-primary);">No matching rides found</div>
                             <div style="font-size: 12px;">Trip records will appear here as bookings occur.</div>
                         </td>

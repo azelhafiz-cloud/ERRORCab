@@ -9,6 +9,7 @@ import java.util.List;
  */
 public class CopilotTripRequest {
     private int passengerId;
+    private String startingLocation;  // e.g. "Kochi", "Delhi", "Bengaluru", "Mumbai", or current GPS location
     private String tripPurpose;       // e.g. "Leisure & Tourism", "Business & Work", "Weekend Getaway", "Culinary Exploration", "Family Outing"
     private String destination;       // e.g. "Fort Kochi", "Kakkanad", "Edappally", "Munnar", "Alappuzha", "Vyttila"
     private String duration;          // e.g. "Half-day (4-5 hrs)", "Full-day (8-10 hrs)", "Weekend (2 days)", "3+ days"
@@ -19,12 +20,17 @@ public class CopilotTripRequest {
 
     public CopilotTripRequest() {}
 
-    public CopilotTripRequest(int passengerId, String tripPurpose, String destination, String duration, String budget) {
+    public CopilotTripRequest(int passengerId, String startingLocation, String tripPurpose, String destination, String duration, String budget) {
         this.passengerId = passengerId;
+        this.startingLocation = startingLocation;
         this.tripPurpose = tripPurpose;
         this.destination = destination;
         this.duration = duration;
         this.budget = budget;
+    }
+
+    public CopilotTripRequest(int passengerId, String tripPurpose, String destination, String duration, String budget) {
+        this(passengerId, null, tripPurpose, destination, duration, budget);
     }
 
     public int getPassengerId() {
@@ -89,5 +95,13 @@ public class CopilotTripRequest {
 
     public void setActivityPreferences(List<String> activityPreferences) {
         this.activityPreferences = activityPreferences != null ? activityPreferences : new ArrayList<>();
+    }
+
+    public String getStartingLocation() {
+        return startingLocation;
+    }
+
+    public void setStartingLocation(String startingLocation) {
+        this.startingLocation = startingLocation;
     }
 }

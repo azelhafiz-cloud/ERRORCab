@@ -12,8 +12,12 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DestinationProfile {
     private String destinationName;
+    private String district;
     private String region;
     private String state;
+    private String country = "India";
+    private double latitude;
+    private double longitude;
     private String destinationType;
     private String shortDescription;
     private List<String> majorHighlights = new ArrayList<>();
@@ -62,12 +66,62 @@ public class DestinationProfile {
         return p;
     }
 
+    public static DestinationProfile createUnresolved(String name) {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName(name != null ? name : "Unknown Destination");
+        p.setRegion("Unknown");
+        p.setState("India");
+        p.setDestinationType("Unresolved Location");
+        p.setShortDescription("Couldn't confidently locate this destination. Try adding the district or state.");
+        p.setKnowledgeStatus("UNRESOLVED");
+        p.setSourceInformation("Destination Resolver (Unresolved)");
+        p.getSafetyNotes().add(SafetyAdvisory.noVerifiedAdvisoryFound());
+        p.setTypicalTripDuration("Unspecified");
+        p.setTransportAdvice("Please specify a recognized town or city in India to calculate precise routes.");
+        p.setFamilySuitability("Unknown");
+        p.setBudgetNotes("Estimated");
+        p.setBestKnownFor("Unresolved");
+        return p;
+    }
+
     public String getDestinationName() {
         return destinationName;
     }
 
     public void setDestinationName(String destinationName) {
         this.destinationName = destinationName;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     public String getRegion() {

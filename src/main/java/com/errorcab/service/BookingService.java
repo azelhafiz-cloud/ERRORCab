@@ -20,6 +20,8 @@ public class BookingService {
     private final RideService rideService = RideService.getInstance();
     private final FareService fareService = FareService.getInstance();
     private final PromoService promoService = new PromoService();
+    private final com.errorcab.copilot.destination.service.DestinationResolver destinationResolver =
+            new com.errorcab.copilot.destination.service.DestinationResolver();
 
     public record FareEstimate(
             double distanceKm,
@@ -32,10 +34,45 @@ public class BookingService {
             double subtotal,
             double discount,
             double finalFare,
-            String promoMessage
-    ) {}
+            String promoMessage,
+            boolean routeResolved,
+            String warningMessage
+    ) {
+        public FareEstimate(
+                double distanceKm,
+                int estimatedMinutes,
+                double economyFare,
+                double premiumFare,
+                double suvFare,
+                double baseFare,
+                double perKmRate,
+                double subtotal,
+                double discount,
+                double finalFare,
+                String promoMessage
+        ) {
+            this(distanceKm, estimatedMinutes, economyFare, premiumFare, suvFare, baseFare, perKmRate, subtotal, discount, finalFare, promoMessage, true, "");
+        }
+    }
 
     public FareEstimate estimateFare(String pickup, String dest, CabType cabType, String promoCode) {
+        boolean resolved = true;
+        String warningMsg = "";
+        if (dest != null && !dest.trim().isEmpty()) {
+            var destRes = destinationResolver.resolveDestination(dest.trim());
+            if (destRes != null && !destRes.isResolved()) {
+                resolved = false;
+                warningMsg = "Couldn't confidently locate this destination. Try adding the district or state.";
+            }
+        }
+        if (resolved && pickup != null && !pickup.trim().isEmpty()) {
+            var pickupRes = destinationResolver.resolveDestination(pickup.trim());
+            if (pickupRes != null && !pickupRes.isResolved()) {
+                resolved = false;
+                warningMsg = "Couldn't confidently locate pickup location. Try adding the district or city.";
+            }
+        }
+
         double distance = MapService.getInstance().getDistanceKm(pickup, dest);
         int mins = MapService.getInstance().getEstimatedMinutes(distance);
 
@@ -72,7 +109,9 @@ public class BookingService {
                 subtotal,
                 discount,
                 finalFare,
-                promoMsg
+                promoMsg,
+                resolved,
+                warningMsg
         );
     }
 

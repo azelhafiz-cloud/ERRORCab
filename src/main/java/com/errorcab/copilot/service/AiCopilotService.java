@@ -332,25 +332,28 @@ public class AiCopilotService {
         ));
 
         schema.put("popularDestinations", List.of(
+                "Perinthalmanna",
+                "Delhi",
+                "Mumbai",
+                "Jaipur",
+                "Agra",
+                "Hyderabad",
+                "Bengaluru",
+                "Chennai",
+                "Kolkata",
+                "Goa",
+                "Pune",
+                "Amritsar",
+                "Varanasi",
+                "Mysuru",
+                "Coimbatore",
                 "Fort Kochi",
-                "Kozhikode",
-                "Wayanad",
-                "Vagamon",
                 "Munnar",
+                "Wayanad",
+                "Kozhikode",
                 "Alappuzha",
                 "Varkala",
-                "Kovalam",
-                "Bekal",
-                "Kannur",
-                "Thrissur",
-                "Kumarakom",
-                "Thekkady",
-                "Idukki",
-                "Kollam",
-                "Thiruvananthapuram",
-                "Edappally",
-                "Kakkanad",
-                "Goa"
+                "Thekkady"
         ));
 
         schema.put("durations", List.of(
@@ -368,28 +371,31 @@ public class AiCopilotService {
 
         schema.put("interests", List.of(
                 "Heritage & History",
-                "Scenic Nature & Waterways",
-                "Beaches & Sunset",
-                "Shopping & Retail",
+                "Scenic Nature & Hills",
+                "Beaches & Waterways",
+                "Shopping & Bazaars",
                 "Tech Hubs & Workspaces",
-                "Architecture & Photography"
+                "Architecture & Photography",
+                "Spiritual & Cultural Sites"
         ));
 
         schema.put("foodPreferences", List.of(
-                "Kerala Traditional & Sadhya",
-                "Fresh Coastal Seafood",
-                "Malabar Biryani & Halwa",
-                "Artisanal Cafes & Bakeries",
+                "Regional Specialties & Thali",
+                "Famous Street Food & Chaat",
+                "Authentic Biryani & Kebabs",
                 "Pure Vegetarian Delights",
-                "Late-night Street Food & Dosas"
+                "Artisanal Cafes & Bakeries",
+                "Coastal Seafood & Curries",
+                "Traditional Sweets & Desserts"
         ));
 
         schema.put("activityPreferences", List.of(
                 "Sightseeing & Landmarks",
                 "Relaxed & Leisurely Pace",
-                "Walking & Promenade Tour",
+                "Walking & Bazaars Exploration",
                 "Photography & Viewpoints",
-                "Water Metro & Boating"
+                "Heritage Monuments Tour",
+                "Nature Trails & Boating"
         ));
 
         return schema;

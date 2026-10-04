@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book a Ride - ERRORCab Kochi</title>
+    <title>Book a Ride - ERRORCab</title>
     <!-- Early theme resolution prevents dark/light flash -->
     <script>
         (function() {
             try {
-                const saved = localStorage.getItem('errorcab_theme') || 'system';
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const resolved = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+                const saved = localStorage.getItem('errorcab_theme') || 'dark';
+                const resolved = (saved === 'light') ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', resolved);
-                document.documentElement.setAttribute('data-theme-preference', saved);
+                document.documentElement.setAttribute('data-theme-preference', resolved);
             } catch (e) {}
         })();
     </script>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <style>
         .booking-grid {
             display: grid;
@@ -119,6 +119,13 @@
             from { opacity: 0; transform: scale(0.92); }
             to { opacity: 1; transform: scale(1); }
         }
+    
+        /* Strictly zero horizontal overflow */
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+
     </style>
 </head>
 <body>
@@ -131,29 +138,15 @@
             </a>
             <div>
                 <div class="topbar-title">Book a Cab</div>
-                <div class="topbar-subtitle">Kochi Mobility Fleet</div>
+                <div class="topbar-subtitle">India Mobility Fleet</div>
             </div>
         </div>
 
         <div class="topbar-actions">
-            <div id="themeSelectorSlot">
-                <div class="theme-control-wrapper" role="radiogroup" aria-label="Appearance Theme">
-                    <span class="theme-control-label">Appearance:</span>
-                    <div class="theme-switcher">
-                        <button type="button" class="theme-btn" data-theme-choice="light" onclick="App.setTheme('light')" title="Light theme" aria-label="Select Light theme">
-                            <span>&#9728; Light</span>
-                        </button>
-                        <button type="button" class="theme-btn" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
-                            <span>&#127769; Dark</span>
-                        </button>
-                        <button type="button" class="theme-btn" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
-                            <span>&#9881; System</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="desktop-only" style="font-size: 12px; font-weight: 800; color: var(--success);">
-                ✓ Zero Surge Pricing
+            <div id="themeSelectorSlot"></div>
+            <div class="desktop-only" style="font-size: 12px; font-weight: 800; color: var(--success); display: inline-flex; align-items: center; gap: 4px;">
+                <span class="material-symbols-rounded" style="font-size: 15px;">verified</span>
+                <span>Zero Surge Pricing</span>
             </div>
         </div>
     </header>
@@ -165,19 +158,21 @@
             <div>
                 <!-- Ride Mode Toggle: Now vs Schedule -->
                 <div class="tab-nav" style="margin-bottom: 18px;">
-                    <button type="button" class="tab-nav-item active" id="tabRideNow" onclick="setRideMode('now')">
-                        ⚡ Ride Now
+                    <button type="button" class="tab-nav-item active" id="tabRideNow" onclick="setRideMode('now')" style="display: inline-flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-rounded" style="font-size: 16px;">bolt</span>
+                        <span>Ride Now</span>
                     </button>
-                    <button type="button" class="tab-nav-item" id="tabSchedule" onclick="setRideMode('schedule')">
-                        📅 Schedule for Later
+                    <button type="button" class="tab-nav-item" id="tabSchedule" onclick="setRideMode('schedule')" style="display: inline-flex; align-items: center; gap: 6px;">
+                        <span class="material-symbols-rounded" style="font-size: 16px;">calendar_month</span>
+                        <span>Schedule for Later</span>
                     </button>
                 </div>
 
                 <!-- Schedule Date & Time Picker (Visible only in schedule mode) -->
                 <div id="scheduleTimeGroup" style="display: none; margin-bottom: 20px; background: var(--bg-card); border: 1.5px solid var(--primary-border); padding: 18px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
                     <label class="form-label" style="font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        Pickup Date & Time
+                        <span class="material-symbols-rounded" style="font-size: 18px; color: var(--primary);">schedule</span>
+                        <span>Pickup Date & Time</span>
                     </label>
                     <input type="datetime-local" id="scheduleDateTime" class="form-control" style="font-size: 14px; max-width: 320px;">
                     <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
@@ -188,36 +183,126 @@
                 <!-- 1. Route Selector Card -->
                 <div class="card" style="margin-bottom: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <h2 style="font-size: 16px; font-weight: 800; color: var(--text-primary);">1. Select Itinerary</h2>
-                        <button type="button" onclick="swapLocations()" class="btn btn-outline btn-sm" style="padding: 4px 10px;" aria-label="Swap pickup and dropoff">
-                            ⇅ Swap
-                        </button>
+                        <div>
+                            <h2 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0;">1. Select Itinerary</h2>
+                            <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0 0;">Pan-India smart routing • Transparent fares</p>
+                        </div>
+                        <span class="badge badge-primary">Direct Dispatch</span>
                     </div>
 
-                    <!-- Vertical Connected Route Indicator -->
-                    <div class="route-indicator-container">
-                        <div class="route-stem">
+                    <!-- Modern India-Wide Route Selector -->
+                    <div class="route-indicator-container" style="align-items: flex-start;">
+                        <div class="route-stem" style="padding-top: 14px;">
                             <div class="route-dot-pickup"></div>
-                            <div class="route-line-dashed"></div>
+                            <div class="route-line-dashed" style="height: 100px;"></div>
                             <div class="route-dot-dropoff"></div>
                         </div>
 
-                        <div class="route-inputs">
-                            <div class="route-input-group">
-                                <span class="route-input-label">Pickup Hub</span>
-                                <select id="pickupSelect" class="route-input-select" onchange="onRouteChanged()">
-                                    <!-- Injected dynamically -->
-                                </select>
+                        <div class="route-inputs" style="width: 100%;">
+                            <!-- Pickup Location Group -->
+                            <div>
+                                <div class="route-input-group">
+                                    <span class="route-input-label">Pickup Location</span>
+                                    <input type="text" id="pickupInput" class="route-text-input" placeholder="Type pickup city or hub (e.g. Kakkanad, Delhi, Kochi)..." value="Kakkanad" list="pickupSuggestions" onchange="onRouteChanged()" oninput="debouncedRouteChanged()">
+                                    <button type="button" class="route-gps-btn" onclick="useCurrentLocation('pickup')" title="Use Current GPS Location" aria-label="Use Current GPS Location">
+                                        <span class="material-symbols-rounded" style="font-size: 18px;">my_location</span>
+                                    </button>
+                                </div>
+                                <div class="loc-chips-row">
+                                    <span class="loc-chip accent" onclick="useCurrentLocation('pickup')" title="Auto-detect via HTML5 Geolocation">
+                                        <span class="material-symbols-rounded" style="font-size: 13px;">my_location</span> GPS Location
+                                    </span>
+                                    <span class="loc-chip" onclick="setPickupLocation('Kakkanad')">Kakkanad</span>
+                                    <span class="loc-chip" onclick="setPickupLocation('Edappally')">Edappally</span>
+                                    <span class="loc-chip" onclick="setPickupLocation('Fort Kochi')">Fort Kochi</span>
+                                    <span class="loc-chip" onclick="setPickupLocation('Delhi')">Delhi</span>
+                                    <span class="loc-chip" onclick="setPickupLocation('Bengaluru')">Bengaluru</span>
+                                    <span class="loc-chip" onclick="setPickupLocation('Mumbai')">Mumbai</span>
+                                </div>
                             </div>
 
-                            <div class="route-input-group">
-                                <span class="route-input-label">Destination</span>
-                                <select id="dropoffSelect" class="route-input-select" onchange="onRouteChanged()">
-                                    <!-- Injected dynamically -->
-                                </select>
+                            <!-- Swap Button -->
+                            <div style="display: flex; justify-content: center; margin: 4px 0;">
+                                <button type="button" class="btn btn-outline btn-sm" onclick="swapLocations()" style="padding: 4px 14px; gap: 4px; border-radius: var(--radius-full); font-size: 12px; font-weight: 700;" title="Swap Pickup & Destination">
+                                    <span class="material-symbols-rounded" style="font-size: 16px;">swap_vert</span>
+                                    <span>Swap Route</span>
+                                </button>
+                            </div>
+
+                            <!-- Drop-off Destination Group -->
+                            <div>
+                                <div class="route-input-group">
+                                    <span class="route-input-label">Drop-off Destination</span>
+                                    <input type="text" id="dropoffInput" class="route-text-input" placeholder="Type destination city or landmark (e.g. Vyttila, Munnar, Agra, Jaipur)..." value="Vyttila" list="dropoffSuggestions" onchange="onRouteChanged()" oninput="debouncedRouteChanged()">
+                                </div>
+                                <div class="loc-chips-row">
+                                    <span class="loc-chip accent" onclick="setDropoffLocation('Cochin International Airport')">
+                                        <span class="material-symbols-rounded" style="font-size: 13px;">flight</span> Airport
+                                    </span>
+                                    <span class="loc-chip" onclick="setDropoffLocation('Ernakulam South Railway Station')">
+                                        <span class="material-symbols-rounded" style="font-size: 13px;">train</span> Railway
+                                    </span>
+                                    <span class="loc-chip" onclick="setDropoffLocation('Vyttila')">Vyttila</span>
+                                    <span class="loc-chip" onclick="setDropoffLocation('Munnar')">Munnar</span>
+                                    <span class="loc-chip" onclick="setDropoffLocation('Jaipur')">Jaipur</span>
+                                    <span class="loc-chip" onclick="setDropoffLocation('Agra')">Agra</span>
+                                    <span class="loc-chip" onclick="setDropoffLocation('Goa')">Goa</span>
+                                    <span class="loc-chip" onclick="setDropoffLocation('Bengaluru')">Bengaluru</span>
+                                </div>
+                            </div>
+
+                            <!-- Unresolved Destination Warning Banner -->
+                            <div id="routeWarningBanner" style="display: none; background: #FEF2F2; border: 1.5px solid #FCA5A5; color: #991B1B; border-radius: var(--radius-md); padding: 10px 14px; font-size: 12px; font-weight: 700; margin-top: 6px; align-items: center; gap: 8px;">
+                                <span class="material-symbols-rounded" style="font-size: 18px; color: #DC2626; flex-shrink: 0;">warning</span>
+                                <span id="routeWarningText">Couldn't confidently locate this destination. Try adding the district or state.</span>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Autocomplete Suggestions Datalists -->
+                    <datalist id="pickupSuggestions">
+                        <option value="Kakkanad">
+                        <option value="Edappally">
+                        <option value="Fort Kochi">
+                        <option value="Vyttila">
+                        <option value="MG Road">
+                        <option value="Aluva">
+                        <option value="Kozhikode">
+                        <option value="Thiruvananthapuram">
+                        <option value="Delhi">
+                        <option value="Bengaluru">
+                        <option value="Mumbai">
+                        <option value="Chennai">
+                        <option value="Hyderabad">
+                        <option value="Jaipur">
+                        <option value="Agra">
+                        <option value="Goa">
+                        <option value="Munnar">
+                        <option value="Wayanad">
+                        <option value="Perinthalmanna">
+                    </datalist>
+                    <datalist id="dropoffSuggestions">
+                        <option value="Vyttila">
+                        <option value="Kakkanad">
+                        <option value="Edappally">
+                        <option value="Fort Kochi">
+                        <option value="Munnar">
+                        <option value="Wayanad">
+                        <option value="Alappuzha">
+                        <option value="Vagamon">
+                        <option value="Thekkady">
+                        <option value="Kozhikode">
+                        <option value="Thiruvananthapuram">
+                        <option value="Delhi">
+                        <option value="Agra">
+                        <option value="Jaipur">
+                        <option value="Mumbai">
+                        <option value="Bengaluru">
+                        <option value="Goa">
+                        <option value="Chennai">
+                        <option value="Hyderabad">
+                        <option value="Perinthalmanna">
+                    </datalist>
 
                     <!-- Modern Compact Route Summary & Telemetry -->
                     <div class="route-summary-card">
@@ -431,7 +516,7 @@
                 <div class="driver-found-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <span class="badge badge-success">Driver Found!</span>
-                        <span style="font-size: 13px; font-weight: 800; color: var(--warning);">★ 4.8</span>
+                        <span style="font-size: 13px; font-weight: 800; color: var(--warning); display: inline-flex; align-items: center; gap: 3px;"><span class="material-symbols-rounded" style="font-size: 15px; color: #F59E0B;">star</span> 4.8</span>
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 14px;">
@@ -460,19 +545,23 @@
     <!-- Mobile Bottom Navigation Bar -->
     <nav class="bottom-nav">
         <a href="/passenger-dashboard.html" class="bottom-nav-item">
-            <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span class="material-symbols-rounded">home</span>
             <span>Home</span>
         </a>
         <a href="/booking.html" class="bottom-nav-item active">
-            <svg viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+            <span class="material-symbols-rounded">directions_car</span>
             <span>Book</span>
         </a>
+        <a href="/copilot.html" class="bottom-nav-item">
+            <span class="material-symbols-rounded">smart_toy</span>
+            <span>AI Copilot</span>
+        </a>
         <a href="/history.html" class="bottom-nav-item">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="material-symbols-rounded">history</span>
             <span>History</span>
         </a>
         <a href="/profile.html" class="bottom-nav-item">
-            <svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span class="material-symbols-rounded">person</span>
             <span>Profile</span>
         </a>
     </nav>
@@ -490,16 +579,79 @@
         let currentPromoCode = '';
         let currentRideMode = 'now'; // 'now' or 'schedule'
 
-        function setSelectValueSafely(selectElem, val) {
-            if (!selectElem || !val) return;
-            for (let i = 0; i < selectElem.options.length; i++) {
-                if (selectElem.options[i].value.toLowerCase() === val.toLowerCase()) {
-                    selectElem.selectedIndex = i;
-                    return;
-                }
+        function getPickupVal() {
+            const el = document.getElementById('pickupInput');
+            return el ? el.value.trim() : 'Kakkanad';
+        }
+
+        function getDropoffVal() {
+            const el = document.getElementById('dropoffInput');
+            return el ? el.value.trim() : 'Vyttila';
+        }
+
+        function setPickupLocation(val) {
+            const el = document.getElementById('pickupInput');
+            if (el) el.value = val;
+            onRouteChanged();
+        }
+
+        function setDropoffLocation(val) {
+            const el = document.getElementById('dropoffInput');
+            if (el) el.value = val;
+            onRouteChanged();
+        }
+
+        function swapLocations() {
+            const pEl = document.getElementById('pickupInput');
+            const dEl = document.getElementById('dropoffInput');
+            if (pEl && dEl) {
+                const tmp = pEl.value;
+                pEl.value = dEl.value;
+                dEl.value = tmp;
+                onRouteChanged();
             }
-            selectElem.add(new Option(val, val));
-            selectElem.value = val;
+        }
+
+        let routeDebounceTimer = null;
+        function debouncedRouteChanged() {
+            clearTimeout(routeDebounceTimer);
+            routeDebounceTimer = setTimeout(() => {
+                onRouteChanged();
+            }, 400);
+        }
+
+        async function useCurrentLocation(target = 'pickup') {
+            if (!navigator.geolocation) {
+                App.showToast('Location', "Couldn't access your current location. Search for a pickup place instead.", 'alertTriangle');
+                return;
+            }
+            App.showToast('Detecting GPS', 'Accessing browser geolocation coordinates...', 'navigation');
+            navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    try {
+                        const res = await App.get(`/api/map/reverse-geocode?lat=${lat}&lng=${lng}`);
+                        const name = (res && res.locationName) ? res.locationName : `GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+                        if (target === 'pickup') {
+                            setPickupLocation(name);
+                        } else {
+                            setDropoffLocation(name);
+                        }
+                        App.showToast('Location Set', `Resolved to ${name}`, 'check');
+                    } catch (e) {
+                        const fallback = `GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+                        if (target === 'pickup') setPickupLocation(fallback);
+                        else setDropoffLocation(fallback);
+                        App.showToast('Location Set', 'Using coordinates', 'check');
+                    }
+                },
+                (err) => {
+                    console.warn('Geolocation error:', err);
+                    App.showToast('Location Notice', "Couldn't access your current location. Search for a pickup place instead.", 'alertTriangle');
+                },
+                { timeout: 10000, enableHighAccuracy: true }
+            );
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
@@ -518,8 +670,8 @@
             const pr = params.get('promo');
             const mode = params.get('mode');
 
-            if (p) setSelectValueSafely(document.getElementById('pickupSelect'), p);
-            if (d) setSelectValueSafely(document.getElementById('dropoffSelect'), d);
+            if (p) document.getElementById('pickupInput').value = p;
+            if (d) document.getElementById('dropoffInput').value = d;
             if (c) selectCab(c);
             if (pr) {
                 document.getElementById('promoInput').value = pr;
@@ -529,83 +681,110 @@
                 setRideMode('schedule');
             }
 
-            onRouteChanged();
+            await onRouteChanged();
         });
 
         let locationsLookup = {};
 
         async function loadLocations() {
             try {
-                const locations = await App.get('/api/map/locations');
-                const pickup = document.getElementById('pickupSelect');
-                const dropoff = document.getElementById('dropoffSelect');
-
-                pickup.innerHTML = '';
-                dropoff.innerHTML = '';
-
+                const locations = await App.get('/api/locations');
                 locationsLookup = {};
-                locations.forEach(loc => {
-                    locationsLookup[loc.name] = loc;
-                    pickup.add(new Option(`${loc.name} (${loc.landmark || 'Kochi'})`, loc.name));
-                    dropoff.add(new Option(`${loc.name} (${loc.landmark || 'Kochi'})`, loc.name));
-                });
-
-                pickup.value = 'Kakkanad';
-                dropoff.value = 'Vyttila';
+                if (Array.isArray(locations)) {
+                    const pickDatalist = document.getElementById('pickupSuggestions');
+                    const dropDatalist = document.getElementById('dropoffSuggestions');
+                    locations.forEach(loc => {
+                        locationsLookup[loc.name] = loc;
+                        if (pickDatalist && !pickDatalist.querySelector(`option[value="${loc.name}"]`)) {
+                            const opt = document.createElement('option');
+                            opt.value = loc.name;
+                            pickDatalist.appendChild(opt);
+                        }
+                        if (dropDatalist && !dropDatalist.querySelector(`option[value="${loc.name}"]`)) {
+                            const opt = document.createElement('option');
+                            opt.value = loc.name;
+                            dropDatalist.appendChild(opt);
+                        }
+                    });
+                }
             } catch (err) {
                 console.error('Failed to load locations:', err);
             }
         }
 
-        function swapLocations() {
-            const pickup = document.getElementById('pickupSelect');
-            const dropoff = document.getElementById('dropoffSelect');
-            const temp = pickup.value;
-            pickup.value = dropoff.value;
-            dropoff.value = temp;
-            onRouteChanged();
-        }
-
+        let isRouteValid = true;
         async function onRouteChanged() {
-            const pickup = document.getElementById('pickupSelect').value;
-            const dropoff = document.getElementById('dropoffSelect').value;
+            const pickup = getPickupVal();
+            const dropoff = getDropoffVal();
 
-            if (pickup === dropoff) {
-                App.showToast('Notice', 'Pickup and Dropoff cannot be the same place.', 'pin');
+            const pText = document.getElementById('summaryPickupText');
+            const dText = document.getElementById('summaryDropoffText');
+            if (pText) pText.textContent = pickup || 'Select Pickup';
+            if (dText) dText.textContent = dropoff || 'Select Dropoff';
+
+            const pLandmark = document.getElementById('summaryPickupLandmark');
+            const dLandmark = document.getElementById('summaryDropoffLandmark');
+            const pLoc = locationsLookup[pickup];
+            const dLoc = locationsLookup[dropoff];
+            if (pLandmark) pLandmark.textContent = pLoc ? (pLoc.landmark || pLoc.city || 'Verified Departure') : 'Verified Departure Point';
+            if (dLandmark) dLandmark.textContent = dLoc ? (dLoc.landmark || dLoc.city || 'Verified Destination') : 'Verified Destination Point';
+
+            const warningBanner = document.getElementById('routeWarningBanner');
+            const warningText = document.getElementById('routeWarningText');
+            const bookBtn = document.getElementById('confirmBookBtn');
+
+            if (!pickup || !dropoff) {
+                if (warningBanner) warningBanner.style.display = 'none';
+                return;
+            }
+
+            if (pickup.toLowerCase() === dropoff.toLowerCase()) {
+                if (warningBanner) {
+                    warningBanner.style.display = 'flex';
+                    if (warningText) warningText.textContent = 'Pickup and Drop-off destination cannot be the same.';
+                }
+                isRouteValid = false;
+                if (bookBtn) {
+                    bookBtn.disabled = true;
+                    bookBtn.textContent = 'Invalid Route Selected';
+                }
                 return;
             }
 
             try {
-                const routeInfo = await App.get(`/api/map/distance?pickup=${encodeURIComponent(pickup)}&dropoff=${encodeURIComponent(dropoff)}`);
-                currentDistance = routeInfo.distance;
-                document.getElementById('distanceDisplay').textContent = App.formatDistance(currentDistance);
-                document.getElementById('durationDisplay').textContent = App.formatDuration(routeInfo.durationMinutes);
+                const estUrl = `/api/bookings/estimate?pickup=${encodeURIComponent(pickup)}&destination=${encodeURIComponent(dropoff)}&cabType=${encodeURIComponent(selectedCabType)}${currentPromoCode ? '&promoCode=' + encodeURIComponent(currentPromoCode) : ''}`;
+                const res = await App.get(estUrl);
 
-                const pText = document.getElementById('summaryPickupText');
-                const dText = document.getElementById('summaryDropoffText');
-                if (pText) pText.textContent = pickup;
-                if (dText) dText.textContent = dropoff;
-
-                const pLandmark = document.getElementById('summaryPickupLandmark');
-                const dLandmark = document.getElementById('summaryDropoffLandmark');
-                const pLoc = locationsLookup[pickup];
-                const dLoc = locationsLookup[dropoff];
-                if (pLandmark) pLandmark.textContent = pLoc ? (pLoc.landmark || pLoc.city || 'Kochi') : 'Kochi Hub';
-                if (dLandmark) dLandmark.textContent = dLoc ? (dLoc.landmark || dLoc.city || 'Kochi') : 'Kochi Hub';
-
-                if (simMap) {
-                    simMap.setRoute(pickup, dropoff, currentDistance, routeInfo.durationMinutes);
+                if (res.routeResolved === false) {
+                    if (warningBanner) {
+                        warningBanner.style.display = 'flex';
+                        if (warningText) warningText.textContent = res.warningMessage || "Couldn't confidently locate this destination. Try adding the district or state.";
+                    }
+                    isRouteValid = false;
+                    if (bookBtn) {
+                        bookBtn.disabled = true;
+                        bookBtn.textContent = 'Unknown Destination • Refine Search';
+                    }
+                    return;
                 }
 
-                const [ecoRes, premRes, suvRes] = await Promise.all([
-                    App.get(`/api/map/estimate-fare?distance=${currentDistance}&cabType=ECONOMY`),
-                    App.get(`/api/map/estimate-fare?distance=${currentDistance}&cabType=PREMIUM`),
-                    App.get(`/api/map/estimate-fare?distance=${currentDistance}&cabType=SUV`)
-                ]);
+                if (warningBanner) warningBanner.style.display = 'none';
+                isRouteValid = true;
+                if (bookBtn) bookBtn.disabled = false;
 
-                calculatedFares.ECONOMY = ecoRes.fare;
-                calculatedFares.PREMIUM = premRes.fare;
-                calculatedFares.SUV = suvRes.fare;
+                currentDistance = res.distanceKm || 9.2;
+                document.getElementById('distanceDisplay').textContent = App.formatDistance(currentDistance);
+                document.getElementById('durationDisplay').textContent = App.formatDuration(res.estimatedMinutes || (currentDistance * 2));
+
+                if (simMap) {
+                    try {
+                        simMap.setRoute(pickup, dropoff, currentDistance, res.estimatedMinutes);
+                    } catch (e) {}
+                }
+
+                calculatedFares.ECONOMY = Math.round(res.economyFare || 0);
+                calculatedFares.PREMIUM = Math.round(res.premiumFare || 0);
+                calculatedFares.SUV = Math.round(res.suvFare || 0);
 
                 updateFareDisplays();
             } catch (err) {
@@ -671,7 +850,7 @@
                     currentPromoCode = code;
                     msgEl.style.display = 'block';
                     msgEl.style.color = 'var(--success)';
-                    msgEl.innerHTML = `✓ Promo <b>${code}</b> applied! Saved ${App.formatCurrency(res.discount)}.`;
+                    msgEl.innerHTML = `<span class="material-symbols-rounded" style="font-size: 15px; vertical-align: text-bottom;">check_circle</span> Promo <b>${code}</b> applied! Saved ${App.formatCurrency(res.discount)}.`;
                     App.showToast('Offer Applied', `Saved ${App.formatCurrency(res.discount)} with ${code}`, 'tag');
                 } else {
                     appliedDiscount = 0;
@@ -691,10 +870,14 @@
         }
 
         async function confirmBooking() {
-            const pickup = document.getElementById('pickupSelect').value;
-            const dropoff = document.getElementById('dropoffSelect').value;
+            if (!isRouteValid) {
+                App.showToast('Invalid Route', 'Please enter a valid, resolvable Indian pickup and destination.', 'alertTriangle');
+                return;
+            }
+            const pickup = getPickupVal();
+            const dropoff = getDropoffVal();
 
-            if (pickup === dropoff) {
+            if (pickup.toLowerCase() === dropoff.toLowerCase()) {
                 App.showToast('Invalid Route', 'Pickup and Dropoff cannot be identical.', 'pin');
                 return;
             }
@@ -800,10 +983,14 @@
         }
 
         async function confirmScheduleBooking() {
-            const pickup = document.getElementById('pickupSelect').value;
-            const dropoff = document.getElementById('dropoffSelect').value;
+            if (!isRouteValid) {
+                App.showToast('Invalid Route', 'Please enter a valid, resolvable Indian pickup and destination.', 'alertTriangle');
+                return;
+            }
+            const pickup = getPickupVal();
+            const dropoff = getDropoffVal();
 
-            if (pickup === dropoff) {
+            if (pickup.toLowerCase() === dropoff.toLowerCase()) {
                 App.showToast('Invalid Route', 'Pickup and Dropoff cannot be identical.', 'pin');
                 return;
             }

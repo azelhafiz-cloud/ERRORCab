@@ -37,6 +37,20 @@ public class DestinationKnowledgeBase {
         registerKakkanad();
         registerVyttila();
         registerGoa();
+        registerDelhi();
+        registerMumbai();
+        registerJaipur();
+        registerAgra();
+        registerHyderabad();
+        registerBengaluru();
+        registerChennai();
+        registerKolkata();
+        registerPune();
+        registerAmritsar();
+        registerVaranasi();
+        registerMysuru();
+        registerCoimbatore();
+        registerPerinthalmanna();
     }
 
     public static DestinationProfile find(String destinationName) {
@@ -77,6 +91,9 @@ public class DestinationKnowledgeBase {
     private static void registerKochi() {
         DestinationProfile p = new DestinationProfile();
         p.setDestinationName("Fort Kochi & Mattancherry");
+        p.setLatitude(9.9658);
+        p.setLongitude(76.2421);
+        p.setDistrict("Ernakulam");
         p.setRegion("Central Kerala");
         p.setState("Kerala");
         p.setDestinationType("Coastal Heritage & Port District");
@@ -672,6 +689,9 @@ public class DestinationKnowledgeBase {
     private static void registerGoa() {
         DestinationProfile p = new DestinationProfile();
         p.setDestinationName("Goa (Coastal Promenade & Old Heritage)");
+        p.setLatitude(15.2993);
+        p.setLongitude(74.1240);
+        p.setDistrict("North Goa");
         p.setRegion("Konkan Coast");
         p.setState("Goa");
         p.setDestinationType("Tropical Beach & Portuguese Heritage Capital");
@@ -699,4 +719,485 @@ public class DestinationKnowledgeBase {
         PROFILES.put("goa", p);
         PROFILES.put("panaji", p);
     }
+
+    private static void registerDelhi() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Delhi (New Delhi & Old Delhi)");
+        p.setDistrict("Central Delhi");
+        p.setRegion("National Capital Region");
+        p.setState("Delhi");
+        p.setCountry("India");
+        p.setLatitude(28.6139);
+        p.setLongitude(77.2090);
+        p.setDestinationType("National Capital & Historic Heritage Metropolis");
+        p.setShortDescription("India's capital territory blending majestic Mughal architecture, colonial Lutyens avenues, and lively historic bazaars.");
+        p.setBestKnownFor("Red Fort, Qutub Minar, India Gate, and Chandni Chowk");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Superb. Spacious monument gardens, world-class museums, and broad avenues.");
+        p.setBudgetNotes("Moderate. Incredible street food to premium fine dining.");
+        p.setTransportAdvice("Pre-book ERRORCab for seamless transit between Old Delhi monuments and South Delhi heritage parks.");
+
+        p.setMajorHighlights(List.of("Red Fort Mughal Bastions", "Qutub Minar UNESCO Complex", "India Gate War Memorial", "Humayun's Tomb Sandstone Mausoleum", "Chandni Chowk Heritage Bazaars"));
+        p.setAttractions(List.of("Red Fort", "Qutub Minar", "India Gate", "Humayun's Tomb", "Jama Masjid", "Lotus Temple", "Akshardham Temple"));
+        p.setHeritageHighlights(List.of("12th-century Qutub Minar intricate calligraphy", "Humayun's Tomb precursor to the Taj Mahal", "Jama Masjid grand Mughal courtyard"));
+        p.setNatureHighlights(List.of("Lodhi Gardens heritage tree canopy", "Sunder Nursery biodiversity park"));
+        p.setPhotographySpots(List.of("India Gate evening floodlit grandeur", "Qutub Minar minaret against sunset sky", "Humayun's Tomb water channels"));
+        p.setShoppingHighlights(List.of("Dilli Haat regional handicrafts and textiles", "Chandni Chowk bridal wear and silver jewelry", "Janpath market souvenirs"));
+        p.setCulinaryHighlights(List.of("Paranthe Wali Gali multi-layered stuffed paranthas", "Legendary Karim's Old Delhi Mutton Korma and Seekh Kebabs", "Crispy Chole Bhature with tangy spiced onions"));
+        p.setLocalSpecialities(List.of("Mughal Red Fort Complex", "Qutub Minar UNESCO Minaret", "Old Delhi Culinary Heritage", "Lutyens Delhi Architectural Boulevards"));
+        p.setSuggestedActivities(List.of("Exploring the ramparts of Red Fort", "Strolling along Kartavya Path to India Gate", "Photography walk through Chandni Chowk", "Evening serenity at Gurudwara Bangla Sahib"));
+        p.setLocalTravelAdvice(List.of("Red Fort is closed on Mondays; plan visits accordingly.", "Dress modestly with head covering at religious shrines.", "Carry metro card or pre-book ERRORCab to bypass peak highway congestion."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Official Delhi Traffic Police Pre-Paid Taxi Booths Protocol", "Avoid unverified street touts; use official pre-paid taxi counters operated by Delhi Traffic Police at terminals and stations.", "Delhi Traffic Police", "https://traffic.delhipolice.gov.in", "October 2026", "VERIFIED", "TRANSPORT"));
+        p.getSafetyNotes().add(new SafetyAdvisory("Authorized Monument Entry Tickets Protocol", "Book entry tickets strictly via the official ASI online QR portal to avoid unauthorized ticket scalpers outside monuments.", "Archaeological Survey of India (ASI)", "https://asi.nic.in", "October 2026", "VERIFIED", "GENERAL"));
+
+        PROFILES.put("delhi", p);
+        PROFILES.put("newdelhi", p);
+    }
+
+    private static void registerMumbai() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Mumbai (South Mumbai & Bandra)");
+        p.setDistrict("Mumbai City");
+        p.setRegion("Konkan Coast");
+        p.setState("Maharashtra");
+        p.setCountry("India");
+        p.setLatitude(18.9220);
+        p.setLongitude(72.8347);
+        p.setDestinationType("Coastal Financial Capital & Victorian Gothic Metropolis");
+        p.setShortDescription("India's vibrant coastal commercial and cinematic capital; celebrated for Victorian Gothic UNESCO architecture, Marine Drive, and legendary coastal street food.");
+        p.setBestKnownFor("Gateway of India, Marine Drive (Queen's Necklace), and CSMT Terminus");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Excellent. Seafront promenades, museums, and seaside parks.");
+        p.setBudgetNotes("Moderate to Premium.");
+        p.setTransportAdvice("Traffic can be heavy on western express highway; book ERRORCab Sea Link route for comfortable air-conditioned transit.");
+
+        p.setMajorHighlights(List.of("Gateway of India Basalt Arch", "Marine Drive Promenade (Queen's Necklace)", "CSMT Victorian Gothic Terminus (UNESCO)", "Elephanta Caves Island", "Bandra-Worli Sea Link"));
+        p.setAttractions(List.of("Gateway of India", "Marine Drive", "Chhatrapati Shivaji Maharaj Terminus", "Colaba Causeway", "Bandra Bandstand", "Elephanta Caves"));
+        p.setHeritageHighlights(List.of("Victorian Gothic and Art Deco Ensembles of Mumbai (UNESCO)", "Rock-cut Shiva shrines at Elephanta Caves"));
+        p.setNatureHighlights(List.of("Arabian Sea breeze along Marine Drive promenade", "Sanjay Gandhi National Park green enclave"));
+        p.setPhotographySpots(List.of("Sunset over the Arabian Sea from Marine Drive promenade", "Illuminated CSMT facade at dusk", "Gateway of India with iconic Taj Mahal Palace Hotel backdrop"));
+        p.setShoppingHighlights(List.of("Colaba Causeway bohemian fashion and vintage brassware", "Linking Road Bandra boutique retail"));
+        p.setCulinaryHighlights(List.of("Iconic Mumbai Vada Pav with spicy red garlic chutney", "Rich buttery Pav Bhaji at Cannon / Sardar", "Irani Bun Maska & Chai at Britannia / Kyani cafes"));
+        p.setLocalSpecialities(List.of("Gateway of India Waterfront Arch", "Marine Drive Queen's Necklace Promenade", "Victorian Gothic Heritage Ensembles", "Authentic Mumbai Street Food"));
+        p.setSuggestedActivities(List.of("Early morning or sunset Marine Drive promenade walk", "Ferry ride to Elephanta Caves", "Exploring Kala Ghoda art precinct", "Bandra coastal heritage bungalow trail"));
+        p.setLocalTravelAdvice(List.of("Elephanta Caves are closed on Mondays.", "Avoid suburban trains during peak office hours (08:30-10:30 AM and 05:30-08:00 PM); pre-book ERRORCab."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Marine Drive Monsoon Swell Alert", "High tide sea swell warning along Marine Drive and Worli Seaface during monsoon periods; stay behind barrier rails.", "Brihanmumbai Municipal Corporation (BMC) Disaster Management", "https://dm.mcgm.gov.in", "October 2026", "VERIFIED", "TERRAIN"));
+        p.getSafetyNotes().add(new SafetyAdvisory("Regulated Metered Taxis & Suburban Transit Advisory", "Only board metered taxis displaying electronic meters or pre-booked ERRORCab rides.", "Mumbai Traffic Police", "https://trafficpolicemumbai.maharashtra.gov.in", "October 2026", "VERIFIED", "TRANSPORT"));
+
+        PROFILES.put("mumbai", p);
+        PROFILES.put("bombay", p);
+    }
+
+    private static void registerJaipur() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Jaipur (The Pink City)");
+        p.setDistrict("Jaipur");
+        p.setRegion("Mewar & Dhundhar");
+        p.setState("Rajasthan");
+        p.setCountry("India");
+        p.setLatitude(26.9124);
+        p.setLongitude(75.7873);
+        p.setDestinationType("Royal Desert Capital & UNESCO World Heritage City");
+        p.setShortDescription("The historic Pink City of Rajasthan; world-renowned for sandstone hill forts, geometric royal palaces, UNESCO astronomical observatories, and rich handicrafts.");
+        p.setBestKnownFor("Amber Fort, Hawa Mahal (Palace of Winds), and Dal Baati Churma");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Superb. Royal palaces, elephant heritage areas, and vibrant bazaars.");
+        p.setBudgetNotes("Moderate. Generous royal heritage sights and dining options.");
+        p.setTransportAdvice("Amber Fort sits 11 km north of the walled city; pre-book ERRORCab for seamless transit between forts and city bazaars.");
+
+        p.setMajorHighlights(List.of("Amber Fort Sandstone Ramparts", "Hawa Mahal (Palace of Winds)", "City Palace Royal Museum", "Jantar Mantar UNESCO Astronomical Observatory", "Nahargarh Fort Sunset Perch"));
+        p.setAttractions(List.of("Amber Fort", "Hawa Mahal", "City Palace", "Jantar Mantar", "Nahargarh Fort", "Jal Mahal Water Palace", "Albert Hall Museum"));
+        p.setHeritageHighlights(List.of("Sheesh Mahal (Mirror Palace) in Amber Fort", "World's largest stone sundial at Jantar Mantar"));
+        p.setNatureHighlights(List.of("Aravalli hill ridges surrounding Nahargarh Fort", "Man Sagar Lake surrounding Jal Mahal"));
+        p.setPhotographySpots(List.of("Hawa Mahal honeycomb facade in morning golden light", "Panoramic Jaipur pink city view from Nahargarh Fort", "Amber Fort reflection in Maota Lake"));
+        p.setShoppingHighlights(List.of("Johari Bazaar authentic gemstone jewelry", "Bapu Bazaar block-printed Sanganeri bedspreads", "Jaipur Blue Pottery"));
+        p.setCulinaryHighlights(List.of("Authentic Rajasthani Dal Baati Churma with pure desi ghee", "Crispy Pyaaz Kachori at Rawat Mishtan Bhandar", "Traditional saffron Ghevar sweet"));
+        p.setLocalSpecialities(List.of("Amber Fort Hilltop Bastion", "Hawa Mahal Honeycomb Architecture", "Sanganeri Hand Block Printing", "Royal Rajasthani Thali"));
+        p.setSuggestedActivities(List.of("Exploring the grand courtyards of Amber Fort", "Photography outside Hawa Mahal", "Audio-guided tour of Jantar Mantar observatory", "Sunset viewing at Nahargarh Fort"));
+        p.setLocalTravelAdvice(List.of("Purchase composite entry ticket for major monuments at Amber Fort or Albert Hall to avoid queues.", "Carry sun protection (sunglasses, hat, sunscreen) during afternoon sightseeing."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Authorized RTDC Emporium Verification Alert", "Purchase authentic gemstone jewelry and Blue Pottery only from certified RTDC authorized emporiums to prevent imitation wares.", "Rajasthan Tourism Development Corporation (RTDC)", "https://rtdc.tourism.rajasthan.gov.in", "October 2026", "VERIFIED", "GENERAL"));
+        p.getSafetyNotes().add(new SafetyAdvisory("Amber Fort Ascent Safety Protocol", "Pre-book approved transport or authorized battery vehicles for ascending Amber Fort ramparts.", "Rajasthan Archaeology & Museums Department", null, "October 2026", "VERIFIED", "TRANSPORT"));
+
+        PROFILES.put("jaipur", p);
+    }
+
+    private static void registerAgra() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Agra (City of the Taj)");
+        p.setDistrict("Agra");
+        p.setRegion("Braj & Yamuna Valley");
+        p.setState("Uttar Pradesh");
+        p.setCountry("India");
+        p.setLatitude(27.1751);
+        p.setLongitude(78.0421);
+        p.setDestinationType("Imperial Mughal Capital & World Wonder");
+        p.setShortDescription("Ancient Mughal imperial capital on the banks of Yamuna; home to the breathtaking Taj Mahal, majestic Agra Fort, and nearby Fatehpur Sikri.");
+        p.setBestKnownFor("Taj Mahal (UNESCO World Wonder), Agra Fort, and Petha Sweets");
+        p.setTypicalTripDuration("Full-day (6-8 hrs)");
+        p.setFamilySuitability("Superb. Spacious monument plazas and marble architecture.");
+        p.setBudgetNotes("Moderate. Pre-book ERRORCab for seamless Agra-Delhi express transit.");
+        p.setTransportAdvice("Taj Mahal East and West gates are strictly non-motorized zones; ERRORCab drops off at authorized parking terminal with battery shuttles.");
+
+        p.setMajorHighlights(List.of("Taj Mahal White Marble Mausoleum (UNESCO)", "Agra Fort Imperial Red Sandstone Citadel (UNESCO)", "Fatehpur Sikri Deserted Imperial City (UNESCO)", "Mehtab Bagh Sunset Gardens"));
+        p.setAttractions(List.of("Taj Mahal", "Agra Fort", "Fatehpur Sikri", "Mehtab Bagh", "Itmad-ud-Daulah (Baby Taj)", "Akbar's Tomb at Sikandra"));
+        p.setHeritageHighlights(List.of("Pietra dura marble inlay work in Taj Mahal", "Diwan-i-Khas and Sheesh Mahal inside Agra Fort"));
+        p.setNatureHighlights(List.of("Yamuna riverbank views from Mehtab Bagh reflection park"));
+        p.setPhotographySpots(List.of("Taj Mahal sunrise reflection in central pool", "View of Taj Mahal framed by Agra Fort marble pavilions", "Sunset silhouette from Mehtab Bagh across the river"));
+        p.setShoppingHighlights(List.of("Authentic Panchi Petha confectionary", "Handcrafted marble inlay souvenirs", "Agra leather goods and footwear"));
+        p.setCulinaryHighlights(List.of("Authentic Angoori & Kesar Petha from Panchi Petha", "Spicy Bedmi Puri with hing aloo sabzi for breakfast", "Royal Mughlai Korma and tandoori rotis"));
+        p.setLocalSpecialities(List.of("Taj Mahal UNESCO World Wonder", "Agra Fort Mughal Citadel", "Pietra Dura Marble Inlay Crafts", "Famous Agra Petha Confection"));
+        p.setSuggestedActivities(List.of("Early morning sunrise Taj Mahal viewing", "Exploring the red sandstone halls of Agra Fort", "Visiting Mehtab Bagh for twilight river views", "Sampling authentic varieties of Agra Petha"));
+        p.setLocalTravelAdvice(List.of("Taj Mahal is strictly closed to tourists on Fridays for prayer services.", "Only buy tickets online through the official ASI portal.", "Tripods, drones, and cigarette lighters are strictly prohibited inside Taj Mahal."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Taj Mahal Friday Closure & Authorized Entry Protocol", "Taj Mahal is strictly closed to tourists on Fridays for prayer services. Only purchase tickets via the official ASI portal.", "Archaeological Survey of India (ASI)", "https://asi.nic.in", "October 2026", "VERIFIED", "GENERAL"));
+        p.getSafetyNotes().add(new SafetyAdvisory("Licensed Tourist Guide Verification at Monument Gates", "Hire only guides carrying official photo identity cards issued by the Ministry of Tourism or Uttar Pradesh Tourism.", "Uttar Pradesh Tourism Police", "https://uptourism.gov.in", "October 2026", "VERIFIED", "GENERAL"));
+
+        PROFILES.put("agra", p);
+    }
+
+    private static void registerHyderabad() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Hyderabad (City of Pearls & Nizams)");
+        p.setDistrict("Hyderabad");
+        p.setRegion("Deccan Plateau");
+        p.setState("Telangana");
+        p.setCountry("India");
+        p.setLatitude(17.3850);
+        p.setLongitude(78.4867);
+        p.setDestinationType("Nizami Heritage Capital & Modern Tech Hub");
+        p.setShortDescription("Historical capital of the Nizams celebrated for centuries of pearl trading, colossal medieval forts, royal palaces, and world-famous Hyderabadi Dum Biryani.");
+        p.setBestKnownFor("Charminar, Golconda Fort, and Authentic Hyderabadi Dum Biryani");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Superb. Historic forts, palace museums, and Hussain Sagar lakefront.");
+        p.setBudgetNotes("Moderate.");
+        p.setTransportAdvice("Pre-book ERRORCab for convenient travel between historic Old City and modern HITEC City.");
+
+        p.setMajorHighlights(List.of("Charminar 16th-Century Four-Minaret Monument", "Golconda Fort Acoustic Ramparts", "Chowmahalla Palace Royal Nizam Courts", "Salar Jung Museum Artifacts", "Hussain Sagar Monolithic Buddha"));
+        p.setAttractions(List.of("Charminar", "Golconda Fort", "Chowmahalla Palace", "Salar Jung Museum", "Qutb Shahi Tombs", "Hussain Sagar Lake", "Ramoji Film City"));
+        p.setHeritageHighlights(List.of("Acoustic clapping portico at Golconda Fort outer gate", "Nizam's vintage Rolls-Royce collection at Chowmahalla Palace"));
+        p.setNatureHighlights(List.of("Hussain Sagar lake breeze and Lumbini Park gardens"));
+        p.setPhotographySpots(List.of("Charminar illuminated arches at twilight", "Panoramic Hyderabad skyline from Golconda upper ramparts", "Qutb Shahi Tombs stone dome arches"));
+        p.setShoppingHighlights(List.of("Laad Bazaar lacquer bangles and pearls", "Traditional Bidriware metallic inlay crafts", "Pochampally ikat handloom silks"));
+        p.setCulinaryHighlights(List.of("Authentic Hyderabadi Mutton Dum Biryani with mirchi ka salan", "Irani Chai paired with sweet Osmania biscuits", "Seasonal slow-cooked Hyderabadi Haleem"));
+        p.setLocalSpecialities(List.of("16th-Century Charminar Monument", "Golconda Acoustic Hill Fort", "Hyderabadi Dum Biryani Culinary Tradition", "Basra Natural Pearl Craftsmanship"));
+        p.setSuggestedActivities(List.of("Walking through Charminar and Laad Bazaar", "Exploring the royal courtyards of Chowmahalla Palace", "Listening to the acoustic echoes at Golconda Fort", "Boat cruise to the Buddha statue on Hussain Sagar"));
+        p.setLocalTravelAdvice(List.of("Salar Jung Museum is closed on Fridays.", "Wear comfortable walking shoes for Golconda Fort ascent."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Golconda Fort Acoustic Ramparts & Night Descent", "Carry non-slip footwear for ascending steep stone stairs at Golconda Fort; evening sound and light show tickets should be reserved in advance.", "Telangana State Tourism Development Corporation", "https://tourism.telangana.gov.in", "October 2026", "VERIFIED", "TERRAIN"));
+
+        PROFILES.put("hyderabad", p);
+        PROFILES.put("secunderabad", p);
+    }
+
+    private static void registerBengaluru() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Bengaluru (Silicon Plateau & Garden City)");
+        p.setDistrict("Bengaluru Urban");
+        p.setRegion("Mysore Plateau");
+        p.setState("Karnataka");
+        p.setCountry("India");
+        p.setLatitude(12.9716);
+        p.setLongitude(77.5946);
+        p.setDestinationType("Garden Metropolis & Innovation Capital");
+        p.setShortDescription("India's vibrant tech capital blessed with year-round temperate climate, sprawling historic botanical gardens, colonial heritage, and bustling cafe culture.");
+        p.setBestKnownFor("Lalbagh Botanical Garden, Cubbon Park, and Benne Masala Dosa");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Superb. Verdant parks, science museums, and pedestrian avenues.");
+        p.setBudgetNotes("Moderate to Premium.");
+        p.setTransportAdvice("Bengaluru traffic is notorious along arterial corridors; book ERRORCab for predictable, comfortable AC city travel.");
+
+        p.setMajorHighlights(List.of("Lalbagh Botanical Garden & Glass House", "Cubbon Park Bamboo Groves", "Bangalore Palace Tudor Revival Architecture", "Vidhana Soudha Neo-Dravidian Seat", "Tipu Sultan's Summer Palace"));
+        p.setAttractions(List.of("Lalbagh Botanical Garden", "Cubbon Park", "Bangalore Palace", "Vidhana Soudha", "Visvesvaraya Industrial & Technological Museum", "ISKCON Temple Bangalore"));
+        p.setHeritageHighlights(List.of("19th-century Glass House inspired by London's Crystal Palace at Lalbagh", "Teakwood pillars of Tipu Sultan's Summer Palace"));
+        p.setNatureHighlights(List.of("Century-old rain trees and bamboo groves in Cubbon Park", "Lalbagh lake lotus ponds"));
+        p.setPhotographySpots(List.of("Lalbagh Glass House illuminated at dusk", "Bangalore Palace stone turrets", "Grand facade of Vidhana Soudha on Sunday evening"));
+        p.setShoppingHighlights(List.of("Commercial Street apparel", "Mysore Silk sarees on MG Road", "Cauvery Arts & Crafts Emporium sandalwood carvings"));
+        p.setCulinaryHighlights(List.of("Crispy Davanagere Benne Masala Dosa with pure butter at Vidyarthi Bhavan", "Traditional South Indian Filter Coffee at MTR", "Fragrant Bisi Bele Bath"));
+        p.setLocalSpecialities(List.of("Lalbagh Historic Glass House", "Cubbon Park Green Sanctuary", "Karnataka Filter Coffee Heritage", "Bangalore Palace Royal Architecture"));
+        p.setSuggestedActivities(List.of("Morning heritage walk through Lalbagh gardens", "Visiting the royal halls of Bangalore Palace", "Breakfast at historic Mavalli Tiffin Room (MTR)", "Exploring Indiranagar boutiques and dining"));
+        p.setLocalTravelAdvice(List.of("Cubbon Park is closed to motorized traffic on Sundays.", "Plan highway transit outside peak commute windows (08:30-10:30 AM and 05:30-08:00 PM)."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Peak Traffic Transit Corridor Advisory", "Outer Ring Road and Silk Board junctions experience peak transit congestion during 08:30-11:00 AM and 05:30-08:30 PM; plan ERRORCab pickups accordingly.", "Bengaluru City Traffic Police", "https://btp.gov.in", "October 2026", "VERIFIED", "TRANSPORT"));
+
+        PROFILES.put("bengaluru", p);
+        PROFILES.put("bangalore", p);
+    }
+
+    private static void registerChennai() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Chennai (Capital of South Indian Heritage)");
+        p.setDistrict("Chennai");
+        p.setRegion("Coromandel Coast");
+        p.setState("Tamil Nadu");
+        p.setCountry("India");
+        p.setLatitude(13.0827);
+        p.setLongitude(80.2707);
+        p.setDestinationType("Coastal Cultural Capital & Dravidian Temple Gateway");
+        p.setShortDescription("Gateway to South Indian culture on the Coromandel Coast; famous for centuries-old Dravidian temples, colonial British fortresses, and Marina Beach.");
+        p.setBestKnownFor("Kapaleeshwarar Temple, Marina Beach Promenade, and Filter Coffee");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Superb. Wide sandy beaches, temples, and cultural heritage centers.");
+        p.setBudgetNotes("Moderate.");
+        p.setTransportAdvice("Pre-book ERRORCab for comfortable air-conditioned transit across coastal Chennai.");
+
+        p.setMajorHighlights(List.of("Marina Beach Urban Promenade", "Kapaleeshwarar Temple Dravidian Gopuram in Mylapore", "Fort St. George & St. Mary's Church", "San Thome Cathedral Basilica", "DakshinaChitra Living Heritage Museum"));
+        p.setAttractions(List.of("Marina Beach", "Kapaleeshwarar Temple", "Fort St. George", "San Thome Basilica", "Government Museum Egmore", "Besant Nagar Beach (Edward Elliot's)"));
+        p.setHeritageHighlights(List.of("7th-century Kapaleeshwarar temple gopuram sculpted with mythological deities", "Oldest Anglican church east of Suez at Fort St. George (1680)"));
+        p.setNatureHighlights(List.of("Bay of Bengal ocean breezes along Marina Beach"));
+        p.setPhotographySpots(List.of("Kapaleeshwarar temple tank reflecting sunset colors", "Marina Beach lighthouse panoramic coast view", "Gothic spires of San Thome Basilica"));
+        p.setShoppingHighlights(List.of("Kanchipuram pure silk sarees in T. Nagar", "Poompuhar Tamil Nadu government handicraft emporium"));
+        p.setCulinaryHighlights(List.of("Traditional Tamil Banana Leaf Meals with piping hot rasam and kootu", "Golden Ghee Roast Dosa with fresh coconut and tomato chutneys", "Kumbakonam Degree Filter Coffee served in brass dabarah"));
+        p.setLocalSpecialities(List.of("Mylapore Kapaleeshwarar Temple Gopuram", "Marina Beach Coastal Promenade", "Authentic Kumbakonam Filter Coffee", "Kanchipuram Silk Weaving Heritage"));
+        p.setSuggestedActivities(List.of("Early morning temple walk in Mylapore", "Sunset breeze at Marina Beach lighthouse", "Touring colonial relics at Fort St. George Museum", "Enjoying traditional filter coffee"));
+        p.setLocalTravelAdvice(List.of("Kapaleeshwarar Temple enforces traditional dress code (dhoti/pants; sarees/churidar).", "Monuments and temples close between 12:30 PM and 04:00 PM; plan outdoor visits morning or late afternoon."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Marina Beach Sea Current Warning", "Strong rip currents along Marina and Besant Nagar beaches; ocean bathing is strictly prohibited by coastal patrol.", "Greater Chennai Coastal Police", null, "October 2026", "VERIFIED", "TERRAIN"));
+
+        PROFILES.put("chennai", p);
+        PROFILES.put("madras", p);
+    }
+
+    private static void registerKolkata() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Kolkata (City of Joy & Cultural Capital)");
+        p.setDistrict("Kolkata");
+        p.setRegion("Bengal Delta");
+        p.setState("West Bengal");
+        p.setCountry("India");
+        p.setLatitude(22.5726);
+        p.setLongitude(88.3639);
+        p.setDestinationType("Colonial Heritage Metropolis & Intellectual Capital");
+        p.setShortDescription("India's grand cultural and literary capital along the Hooghly River; renowned for monumental British Raj architecture, artistic heritage, and iconic Bengali sweets.");
+        p.setBestKnownFor("Victoria Memorial, Howrah Bridge, and Kolkata Biryani");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Superb. Sprawling museum gardens, riverfront ghats, and heritage tram rides.");
+        p.setBudgetNotes("Moderate. Exceptionally high value cultural exploration and dining.");
+        p.setTransportAdvice("Pre-book ERRORCab for smooth cross-river and heritage district transit.");
+
+        p.setMajorHighlights(List.of("Victoria Memorial White Makrana Marble Hall", "Howrah Bridge Cantilever Engineering Marvel", "Dakshineswar Kali Temple along the Hooghly", "Indian Museum (Oldest in Asia)", "Princep Ghat Colonial Riverfront"));
+        p.setAttractions(List.of("Victoria Memorial", "Howrah Bridge", "Dakshineswar Kali Temple", "Indian Museum", "Princep Ghat", "Park Street", "St. Paul's Cathedral", "College Street Boi Para"));
+        p.setHeritageHighlights(List.of("Victoria Memorial royal museum and sprawling gardens", "Gothic revival St. Paul's Cathedral"));
+        p.setNatureHighlights(List.of("Hooghly river breezes at Princep Ghat", "Botanical Garden Great Banyan Tree"));
+        p.setPhotographySpots(List.of("Sunset boat view of Howrah Bridge", "Victoria Memorial mirrored in central lake", "Princep Ghat Greek-style pavilion at twilight"));
+        p.setShoppingHighlights(List.of("New Market leather bags and winter woolens", "College Street antiquarian bookstalls", "Bengal handloom Tant sarees"));
+        p.setCulinaryHighlights(List.of("Authentic Kolkata Biryani cooked with fragrant saffron, tender meat, and signature potato", "Nizam's original Kathi Kebab Rolls on Park Street", "Spongy warm Rosogolla and Baked Mishti Doi from historic sweet shops"));
+        p.setLocalSpecialities(List.of("Victoria Memorial Royal Hall", "Howrah Bridge Cantilever Icon", "Signature Kolkata Biryani with Potato", "Bengali Confectionary Tradition"));
+        p.setSuggestedActivities(List.of("Morning stroll through Victoria Memorial gardens", "Wooden boat ride on the Hooghly from Princep Ghat", "Browsing historic bookstalls on College Street", "Tasting authentic street rolls on Park Street"));
+        p.setLocalTravelAdvice(List.of("Victoria Memorial gallery is closed on Mondays; gardens remain open daily.", "Indian Museum is closed on Mondays."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Regulated River Ferry & Station Transit Protocol", "Utilize official pre-paid taxi booths at Howrah Railway Station and authorized Inland Waterway ferry counters at Princep Ghat.", "Kolkata Traffic Police", null, "October 2026", "VERIFIED", "TRANSPORT"));
+
+        PROFILES.put("kolkata", p);
+        PROFILES.put("calcutta", p);
+    }
+
+    private static void registerPune() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Pune (Cultural Capital of Maharashtra)");
+        p.setDistrict("Pune");
+        p.setRegion("Western Ghats & Deccan");
+        p.setState("Maharashtra");
+        p.setCountry("India");
+        p.setLatitude(18.5204);
+        p.setLongitude(73.8567);
+        p.setDestinationType("Historic Maratha Capital & University City");
+        p.setShortDescription("Historical capital of the Maratha Empire surrounded by Sahyadri hill fortresses; famous for Shaniwar Wada, Aga Khan Palace, and vibrant culinary scene.");
+        p.setBestKnownFor("Shaniwar Wada, Sinhagad Fort, and Puneri Misal Pav");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Superb. Hill forts, museum palaces, and heritage temples.");
+        p.setBudgetNotes("Moderate.");
+        p.setTransportAdvice("Pre-book ERRORCab for seamless transit to Sinhagad Fort and city cultural landmarks.");
+
+        p.setMajorHighlights(List.of("Shaniwar Wada Peshwa Fort Ramparts", "Aga Khan Palace Mahatma Gandhi Memorial", "Sinhagad Fort Mountain Fortress", "Dagdusheth Halwai Ganpati Temple", "Raja Dinkar Kelkar Museum"));
+        p.setAttractions(List.of("Shaniwar Wada", "Aga Khan Palace", "Sinhagad Fort", "Dagdusheth Halwai Temple", "Raja Dinkar Kelkar Museum", "Parvati Hill"));
+        p.setHeritageHighlights(List.of("Massive teakwood Delhi Gate spikes of Shaniwar Wada", "Italian arches of Aga Khan Palace holding ashes of Kasturba Gandhi"));
+        p.setNatureHighlights(List.of("Mist-shrouded Sahyadri valley views from Sinhagad Fort crest"));
+        p.setPhotographySpots(List.of("Shaniwar Wada fortified stone gate facade", "Panoramic view of Pune city from Parvati Hill at sunrise", "Aga Khan Palace Italianate colonnades"));
+        p.setShoppingHighlights(List.of("Chitale Bandhu famous Bakarwadi and sweets", "Laxmi Road traditional Paithani silk sarees"));
+        p.setCulinaryHighlights(List.of("Spicy Puneri Misal Pav topped with crunchy farsan and lemon", "Chitale Bandhu crispy spiced Bakarwadi", "Traditional Maharashtrian Puran Poli with warm ghee"));
+        p.setLocalSpecialities(List.of("Peshwa Shaniwar Wada Fortress", "Aga Khan Memorial Palace", "Sinhagad Sahyadri Mountain Bastion", "Authentic Puneri Misal Pav"));
+        p.setSuggestedActivities(List.of("Exploring the historic grounds of Shaniwar Wada", "Quiet reflection at Aga Khan Palace memorial", "Morning excursion to Sinhagad Fort with hot kanda bhaji", "Paying respects at Dagdusheth Ganpati Temple"));
+        p.setLocalTravelAdvice(List.of("Sinhagad Fort road has winding ghat curves; travel during daylight hours with experienced ERRORCab drivers.", "Carry cash for rural hilltop food stalls."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Sinhagad Fort Ghat Road Weather Notice", "Ghat section to Sinhagad Fort can be slippery and fog-covered during monsoon months; drive carefully or book an experienced ERRORCab driver.", "Pune Rural Police", null, "October 2026", "VERIFIED", "TERRAIN"));
+
+        PROFILES.put("pune", p);
+    }
+
+    private static void registerAmritsar() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Amritsar (Holy City of the Golden Temple)");
+        p.setDistrict("Amritsar");
+        p.setRegion("Majha Region");
+        p.setState("Punjab");
+        p.setCountry("India");
+        p.setLatitude(31.6340);
+        p.setLongitude(74.8723);
+        p.setDestinationType("Spiritual Sikh Capital & Historic Border Gateway");
+        p.setShortDescription("Spiritual and cultural capital of Sikhism; home to the breathtaking Sri Harmandir Sahib (Golden Temple), Jallianwala Bagh, and the Wagah Border ceremony.");
+        p.setBestKnownFor("Sri Harmandir Sahib (Golden Temple), Amritsari Kulcha, and Wagah Border");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Superb. Deeply spiritual, welcoming community, and historic museums.");
+        p.setBudgetNotes("Budget to Moderate. Free 24/7 community dining (Langar) at Golden Temple.");
+        p.setTransportAdvice("Pre-book ERRORCab for afternoon transit to the Wagah Border (32 km west) and evening return.");
+
+        p.setMajorHighlights(List.of("Sri Harmandir Sahib (Golden Temple & Amrit Sarovar)", "Jallianwala Bagh Historic Memorial", "Wagah Border Beating Retreat Ceremony", "Partition Museum at Town Hall", "Gobindgarh Fort"));
+        p.setAttractions(List.of("Golden Temple (Harmandir Sahib)", "Jallianwala Bagh", "Wagah Border", "Partition Museum", "Gobindgarh Fort", "Durgiana Temple"));
+        p.setHeritageHighlights(List.of("Pure gold-leaf gilded domes of Sri Harmandir Sahib", "Historic bullet marks on brick walls of Jallianwala Bagh"));
+        p.setNatureHighlights(List.of("Reflective sacred water pool (Amrit Sarovar) surrounding Golden Temple"));
+        p.setPhotographySpots(List.of("Golden Temple illuminated at night reflecting in the sacred sarovar", "Wagah Border flag lowering parade", "Heritage Street grand marble promenade"));
+        p.setShoppingHighlights(List.of("Hall Bazaar traditional embroidered Phulkari dupattas", "Handmade Punjabi Juttis footwear", "Amritsari Papads and Warian"));
+        p.setCulinaryHighlights(List.of("Crispy Amritsari Aloo Pyaaz Kulcha with spicy chole and tamarind chutney", "Tall brass glass of rich creamy Sweet Malai Lassi", "Sacred Karah Parshad and community Langar meal"));
+        p.setLocalSpecialities(List.of("Sri Harmandir Sahib Golden Sanctum", "Wagah Border Beating Retreat Protocol", "Amritsari Tandoori Kulcha Heritage", "Traditional Phulkari Embroidery"));
+        p.setSuggestedActivities(List.of("Early morning Palki Sahib ceremony at Golden Temple", "Participating in Langar community service (seva)", "Visiting the poignant Partition Museum", "Witnessing the patriotic Wagah Border ceremony"));
+        p.setLocalTravelAdvice(List.of("Head covering is mandatory for all visitors inside the Golden Temple complex.", "Bags and food packets are strictly prohibited inside the Wagah Border viewing arena; leave them safely in your ERRORCab."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Golden Temple Sanctum Reverence Protocol", "Head coverings are mandatory within the entire temple complex; shoes must be deposited at free cloakrooms and feet cleansed at the water channel before entry.", "Shiromani Gurdwara Parbandhak Committee (SGPC)", "https://sgpc.net", "October 2026", "VERIFIED", "GENERAL"));
+        p.getSafetyNotes().add(new SafetyAdvisory("Wagah Border Security Regulations", "Bags, food packets, and electronic devices (except mobile phones) are prohibited inside the Wagah Border viewing amphitheater.", "Border Security Force (BSF)", null, "October 2026", "VERIFIED", "GENERAL"));
+
+        PROFILES.put("amritsar", p);
+    }
+
+    private static void registerVaranasi() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Varanasi (Kashi - The Eternal City)");
+        p.setDistrict("Varanasi");
+        p.setRegion("Purvanchal & Middle Ganga Valley");
+        p.setState("Uttar Pradesh");
+        p.setCountry("India");
+        p.setLatitude(25.3176);
+        p.setLongitude(82.9739);
+        p.setDestinationType("Sacred Spiritual Capital & Ancient Riverfront");
+        p.setShortDescription("One of the world's oldest continually inhabited cities; sacred pilgrimage capital along the holy Ganga famed for 84 historic stone ghats, temples, and mystical rituals.");
+        p.setBestKnownFor("Kashi Vishwanath Temple, Dashashwamedh Ganga Aarti, and Banarasi Silk");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Superb. Spectacular riverfront rituals, boat rides, and heritage corridors.");
+        p.setBudgetNotes("Moderate. High value spiritual and cultural exploration.");
+        p.setTransportAdvice("Old city ghat lanes are pedestrian-only; book ERRORCab dropoff at Godowlia or Assi Ghat crossing and walk to the riverfront.");
+
+        p.setMajorHighlights(List.of("Dashashwamedh Ghat Evening Ganga Aarti", "Kashi Vishwanath Golden Temple Corridor", "Dawn Boat Ride along Historic Ganga Ghats", "Assi Ghat Morning Yoga & Music", "Sarnath Buddhist Deer Park"));
+        p.setAttractions(List.of("Kashi Vishwanath Temple", "Dashashwamedh Ghat", "Assi Ghat", "Manikarnika Ghat", "Sarnath", "Banaras Hindu University (BHU)", "Ramnagar Fort"));
+        p.setHeritageHighlights(List.of("Golden spire of Kashi Vishwanath Temple", "Dhamek Stupa at Sarnath where Lord Buddha gave his first sermon (528 BCE)"));
+        p.setNatureHighlights(List.of("Morning sunrise reflections across the sacred Ganga river"));
+        p.setPhotographySpots(List.of("Evening Ganga Aarti priests holding brass multi-tiered fire lamps", "Dawn wooden boat silhouette against ghat steps", "Sarnath ancient stone stupa carvings"));
+        p.setShoppingHighlights(List.of("Genuine handwoven Banarasi pure silk sarees with gold zari", "Handcrafted wooden lacquer toys and brass bells"));
+        p.setCulinaryHighlights(List.of("Banarasi Crispy Kachori with hing aloo sabzi and jalebi", "Famous Banarasi Tamatar Chaat at Kashi Chaat Bhandar", "Iconic Banarasi Paan topped with silver varq", "Winter foaming sweet Malaiyo"));
+        p.setLocalSpecialities(List.of("Kashi Vishwanath Holy Corridor", "Grand Dashashwamedh Ganga Aarti", "Pure Handwoven Banarasi Zari Silk", "Historic Riverfront Stone Ghats"));
+        p.setSuggestedActivities(List.of("Dawn rowboat cruise along the crescent-shaped ghats", "Attending the majestic evening Ganga Aarti at Dashashwamedh Ghat", "Visiting Sarnath stupa and archaeological museum", "Sampling Banarasi chaat and paan"));
+        p.setLocalTravelAdvice(List.of("Mobiles and electronic devices are prohibited inside Kashi Vishwanath inner sanctum; deposit in official lockers.", "Insist on wearing life jackets during boat rides."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Regulated River Boat Rates & Mandatory Life Vest Protocol", "Boat hire rates on Ganga ghats are regulated by Varanasi administration; always insist on mandatory life jackets before boarding.", "Varanasi District Administration & Tourism Police", "https://varanasi.nic.in", "October 2026", "VERIFIED", "GENERAL"));
+
+        PROFILES.put("varanasi", p);
+        PROFILES.put("kashi", p);
+        PROFILES.put("banaras", p);
+    }
+
+    private static void registerMysuru() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Mysuru (Heritage City of Palaces)");
+        p.setDistrict("Mysuru");
+        p.setRegion("South Karnataka");
+        p.setState("Karnataka");
+        p.setCountry("India");
+        p.setLatitude(12.2958);
+        p.setLongitude(76.6394);
+        p.setDestinationType("Royal Heritage Capital & Sandalwood City");
+        p.setShortDescription("Historical capital of the Kingdom of Mysore celebrated for the magnificent illuminated Mysore Palace, Chamundi Hill, silk weaving, and royal confectionery.");
+        p.setBestKnownFor("Mysore Palace (Amba Vilas), Chamundi Hill, and Mysore Pak");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Superb. Regal palaces, illuminated gardens, and clean wide heritage streets.");
+        p.setBudgetNotes("Moderate. High comfort royal city travel.");
+        p.setTransportAdvice("Pre-book ERRORCab for seamless transit between Mysore Palace, Chamundi Hill, and Brindavan Gardens (21 km northwest).");
+
+        p.setMajorHighlights(List.of("Mysore Palace (Amba Vilas Palace)", "Chamundi Hill & Sri Chamundeshwari Temple", "Brindavan Gardens Musical Fountains", "St. Philomena's Neo-Gothic Cathedral", "Devaraja Heritage Market"));
+        p.setAttractions(List.of("Mysore Palace", "Chamundi Hill", "Brindavan Gardens", "St. Philomena's Cathedral", "Devaraja Market", "Jaganmohan Palace Art Gallery", "Karanji Lake"));
+        p.setHeritageHighlights(List.of("Indo-Saracenic royal durbar hall with stained-glass peacock ceiling at Mysore Palace", "Monolithic Nandi bull statue on Chamundi Hill (1659)"));
+        p.setNatureHighlights(List.of("Chamundi Hill summit panorama", "Karanji lake butterfly park"));
+        p.setPhotographySpots(List.of("Mysore Palace illuminated by 100,000 bulbs on Sunday evenings", "Gothic spires of St. Philomena's Church", "Colorful conical mounds of kumkum in Devaraja Market"));
+        p.setShoppingHighlights(List.of("Government Silk Factory authentic Mysore Silk sarees with gold zari", "Pure Mysore Sandalwood soap and essential oils", "Devaraja Market spices and incense"));
+        p.setCulinaryHighlights(List.of("Original melt-in-mouth Mysore Pak from Guru Sweet Mart", "Mylari soft butter Masala Dosa at Hotel Vinayaka Mylari", "Traditional Mysore Filter Coffee"));
+        p.setLocalSpecialities(List.of("Illuminated Amba Vilas Mysore Palace", "Traditional Mysore Pak Confectionery", "Mysore Pure Mulberry Silk Handlooms", "Natural Sandalwood Carving Heritage"));
+        p.setSuggestedActivities(List.of("Guided palace tour through royal durbar halls", "Ascending Chamundi Hill to view panoramic Mysore city", "Evening musical fountain show at Brindavan Gardens", "Tasting original Mysore Pak at Guru Sweets"));
+        p.setLocalTravelAdvice(List.of("Mysore Palace illumination takes place on Sundays and public holidays (07:00-07:45 PM); arrive early for prime viewing.", "Footwear must be deposited at free palace cloakrooms."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Mysore Palace Footwear & Camera Screening", "Footwear must be deposited at the south gate counters; cameras are restricted inside the inner royal durbar hall.", "Mysore Palace Board", "https://mysorepalace.karnataka.gov.in", "October 2026", "VERIFIED", "GENERAL"));
+
+        PROFILES.put("mysuru", p);
+        PROFILES.put("mysore", p);
+    }
+
+    private static void registerCoimbatore() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Coimbatore (Manchester of South India & Foothills Gateway)");
+        p.setDistrict("Coimbatore");
+        p.setRegion("Kongu Nadu");
+        p.setState("Tamil Nadu");
+        p.setCountry("India");
+        p.setLatitude(11.0168);
+        p.setLongitude(76.9558);
+        p.setDestinationType("Western Ghats Gateway & Heritage City");
+        p.setShortDescription("Dynamic industrial and spiritual hub in the rain-shadow foothills of the Western Ghats; home to the colossal Adiyogi statue, hill temples, and distinct Kongunadu cuisine.");
+        p.setBestKnownFor("112-ft Adiyogi Shiva Statue, Marudhamalai Temple, and Siruvani Water");
+        p.setTypicalTripDuration("Full-day (8-10 hrs) or Weekend (2 days)");
+        p.setFamilySuitability("Superb. Spiritual centers, automotive museums, and serene Western Ghats foothills.");
+        p.setBudgetNotes("Moderate.");
+        p.setTransportAdvice("Adiyogi / Isha center is 30 km west of city center; pre-book ERRORCab for smooth roundtrip transit.");
+
+        p.setMajorHighlights(List.of("112-Foot Adiyogi Shiva Statue (Guinness Record)", "Marudhamalai Hill Temple", "GD Naidu Vintage Car Museum", "Siruvani Waterfalls Foothills", "Eachanari Vinayagar Temple"));
+        p.setAttractions(List.of("Adiyogi Shiva (Isha Yoga)", "Marudhamalai Temple", "Gass Forest Museum", "GD Naidu Car Museum", "Siruvani Waterfalls", "Perur Pateeswarar Temple"));
+        p.setHeritageHighlights(List.of("7th-century Perur Pateeswarar temple Kanaka Sabha stone carvings", "Marudhamalai 12th-century hill shrine"));
+        p.setNatureHighlights(List.of("Western Ghats Velliangiri mountain backdrop at Adiyogi", "Siruvani mineral-rich stream waters"));
+        p.setPhotographySpots(List.of("Adiyogi statue monumental bust against Velliangiri hills at sunset", "Illuminated Marudhamalai temple on hill crest", "Vintage Rolls-Royce and Mercedes models at GD Museum"));
+        p.setShoppingHighlights(List.of("Coimbatore soft cotton sarees", "Pure cold-pressed sesame and groundnut oils"));
+        p.setCulinaryHighlights(List.of("Traditional Kongunadu Chicken & Mutton Curry with coconut masala", "Sweet coffee brewed with renowned Siruvani water", "Crispy Medu Vadai and hot Ven Pongal"));
+        p.setLocalSpecialities(List.of("112-Foot Adiyogi Shiva Landmark", "Renowned Siruvani Sweet Water", "Historic Perur Temple Stone Carvings", "Authentic Kongunadu Cuisine"));
+        p.setSuggestedActivities(List.of("Evening laser show at Adiyogi Shiva statue", "Climbing Marudhamalai temple steps for scenic valley views", "Exploring the rare exhibits at GD Naidu car museum", "Enjoying hot Kongunadu banana leaf meal"));
+        p.setLocalTravelAdvice(List.of("Adiyogi laser light show begins around 07:00 PM; arrive by 05:30 PM for parking and comfortable seating.", "Siruvani waterfalls require prior check on forest clearance."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Siruvani Forest Checkpoint & Entry Permit Notice", "Entry to Siruvani falls is regulated by the Forest Department and closes by 03:00 PM; check pass availability beforehand.", "Tamil Nadu Forest Department", null, "October 2026", "VERIFIED", "TERRAIN"));
+        p.getSafetyNotes().add(new SafetyAdvisory("Western Ghats Foothills Wildlife Advisory", "Elephant movement occurs along Marudhamalai and Thondamuthur foothills roads after sunset; avoid night two-wheeler transit.", "Coimbatore District Forest Office", null, "October 2026", "VERIFIED", "TERRAIN"));
+
+        PROFILES.put("coimbatore", p);
+        PROFILES.put("kovai", p);
+    }
+
+    private static void registerPerinthalmanna() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Perinthalmanna");
+        p.setDistrict("Malappuram");
+        p.setRegion("Valluvanad");
+        p.setState("Kerala");
+        p.setCountry("India");
+        p.setLatitude(10.9760);
+        p.setLongitude(76.2254);
+        p.setDestinationType("Valluvanad Cultural & Heritage Foothill Town");
+        p.setShortDescription("Historical cultural capital of the ancient Valluvanad kingdom; known for the hilltop Thirumandhamkunnu temple, panoramic Kodikuthimala viewpoints, and rich Malabar culinary tradition.");
+        p.setBestKnownFor("Angadippuram Thirumandhamkunnu Temple, Kodikuthimala, and Malabar Neychor");
+        p.setTypicalTripDuration("Half-day (4-5 hrs) to Full-day (8 hrs)");
+        p.setFamilySuitability("Superb. Scenic hill viewpoints, sacred heritage shrines, and family-friendly dining.");
+        p.setBudgetNotes("Budget to Moderate. Exceptional value travel.");
+        p.setTransportAdvice("State Highway 72 connects Perinthalmanna with Kozhikode and Palakkad; book ERRORCab for scenic smooth travel.");
+
+        p.setMajorHighlights(List.of("Angadippuram Thirumandhamkunnu Bhagavathy Temple", "Kodikuthimala Hilltop Viewpoint (Ooty of Malappuram)", "Poonthanam Illam Cultural Shrine", "Valluvanad Heritage Landscapes"));
+        p.setAttractions(List.of("Thirumandhamkunnu Temple", "Kodikuthimala", "Poonthanam Illam", "Angadippuram Railway Station (Nilambur Teak Line)", "Mankada Kovilakam"));
+        p.setHeritageHighlights(List.of("Ancient 11th-century Thirumandhamkunnu temple rituals and grand pooram festival grounds", "16th-century poet-saint Poonthanam Namboothiri ancestral home"));
+        p.setNatureHighlights(List.of("Mist-kissed pine and grass knolls of Kodikuthimala overlooking the Palakkad gap"));
+        p.setPhotographySpots(List.of("Panoramic view from Kodikuthimala watchtower", "Historic temple gopuram and stone lamp posts of Angadippuram", "Lush green paddy fields along SH-72"));
+        p.setShoppingHighlights(List.of("Traditional Malabar handloom cottons", "Fresh spices and homemade banana chips", "Authentic Kerala brass uruli cookpots"));
+        p.setCulinaryHighlights(List.of("Authentic Malabar Neychor (ghee rice) with Kozhi Varutharacha Curry", "Piping hot Sulaimani tea paired with Kozhi Ada & Unnakaya", "Fragrant slow-cooked Kuzhi Mandi with spiced tomato dip"));
+        p.setLocalSpecialities(List.of("Angadippuram Thirumandhamkunnu Temple Heritage", "Kodikuthimala Panoramic Viewpoint", "Valluvanad Cultural Traditions", "Authentic Malabar Culinary Delicacies"));
+        p.setSuggestedActivities(List.of("Morning darshan at Thirumandhamkunnu Bhagavathy temple", "Hike to the watchtower at Kodikuthimala", "Scenic heritage drive through Valluvanad villages", "Tasting authentic Malabar neychor and snacks"));
+        p.setLocalTravelAdvice(List.of("Temple enforces traditional attire (dhoti for men, traditional wear for women).", "Kodikuthimala hilltop road is steep; drive cautiously during rain."));
+
+        p.getSafetyNotes().add(new SafetyAdvisory("Thirumandhamkunnu Temple Festival Transit Advisory", "During annual temple pooram festival seasons (March/April), traffic on SH-72 Kozhikode-Palakkad corridor is diverted; follow police advisory boards.", "Malappuram District Police", "https://malappuram.keralapolice.gov.in", "October 2026", "VERIFIED", "TRANSPORT"));
+        p.getSafetyNotes().add(new SafetyAdvisory("Kodikuthimala Viewpoint Road Caution", "The uphill road to Kodikuthimala watchtower has steep gradients; drive with caution during monsoon showers.", "Malappuram District Tourism Promotion Council", null, "October 2026", "VERIFIED", "TERRAIN"));
+
+        PROFILES.put("perinthalmanna", p);
+        PROFILES.put("angadippuram", p);
+    }
+
 }

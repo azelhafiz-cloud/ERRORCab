@@ -8,11 +8,10 @@
     <script>
         (function() {
             try {
-                const saved = localStorage.getItem('errorcab_theme') || 'system';
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const resolved = saved === 'system' ? (prefersDark ? 'dark' : 'light') : saved;
+                const saved = localStorage.getItem('errorcab_theme') || 'dark';
+                const resolved = (saved === 'light') ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', resolved);
-                document.documentElement.setAttribute('data-theme-preference', saved);
+                document.documentElement.setAttribute('data-theme-preference', resolved);
             } catch (e) {}
         })();
     </script>
@@ -142,6 +141,25 @@
                 padding: 60px 16px 40px 16px;
             }
         }
+        @media (max-width: 900px) {
+            .role-access-grid {
+                grid-template-columns: 1fr !important;
+                margin-top: 10px !important;
+                padding: 0 16px !important;
+            }
+            .features-grid {
+                grid-template-columns: 1fr !important;
+                padding: 24px 16px 60px 16px !important;
+            }
+        }
+
+        /* Strictly zero horizontal overflow */
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+            margin: 0;
+            padding: 0;
+        }
     </style>
 </head>
 <body>
@@ -158,7 +176,7 @@
             </div>
             <div>
                 <div class="topbar-title">ERRORCab</div>
-                <div class="topbar-subtitle">Mobility Platform • Kochi</div>
+                <div class="topbar-subtitle">India-Wide Mobility Platform</div>
             </div>
         </a>
 
@@ -173,10 +191,7 @@
                         <button type="button" class="theme-btn" data-theme-choice="dark" onclick="App.setTheme('dark')" title="Dark theme" aria-label="Select Dark theme">
                             <span>&#127769; Dark</span>
                         </button>
-                        <button type="button" class="theme-btn" data-theme-choice="system" onclick="App.setTheme('system')" title="Follow System theme" aria-label="Select System theme">
-                            <span>&#9881; System</span>
-                        </button>
-                    </div>
+                        </div>
                 </div>
             </div>
             <a href="/login.html" class="btn btn-outline btn-sm">Sign In</a>
@@ -190,7 +205,7 @@
         <div>
             <div class="hero-badge">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>Live Demo • Kochi, Kerala Fleet</span>
+                <span>Live Demo • India Fleet</span>
             </div>
 
             <h1 class="hero-title">
@@ -220,7 +235,7 @@
                 <span class="badge badge-primary" style="margin-bottom: 12px;">PASSENGER ROLE</span>
                 <h2 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Passenger Portal</h2>
                 <p style="color: var(--text-muted); font-size: 13px; line-height: 1.5; margin-bottom: 16px;">
-                    Book Economy, Premium Sedan, or SUV cabs across Kochi landmarks with live GPS telemetry, GST invoices, and emergency SOS alerts.
+                    Book Economy, Premium Sedan, or SUV cabs across Indian cities and landmarks with live GPS telemetry, GST invoices, and emergency SOS alerts.
                 </p>
             </div>
             <a href="/login.html" class="btn btn-primary btn-block btn-sm">Enter as Passenger →</a>
@@ -274,7 +289,7 @@
             </div>
             <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Simulated GPS Telemetry</h3>
             <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6;">
-                Local HTML5 Canvas road visualizer with genuine Kochi landmarks (Kakkanad, Edappally, Vyttila) and animated cab movement.
+                Local HTML5 Canvas road visualizer with landmark-aware routing and animated cab movement.
             </p>
         </div>
 
