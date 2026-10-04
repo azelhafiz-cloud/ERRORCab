@@ -3208,7 +3208,8 @@ body {
         display: none !important;
     }
     .app-header-title {
-        font-size: 15px !important;
+        font-size: clamp(11px, 3vw, 13px) !important;
+        white-space: nowrap;
     }
     .app-header-right,
     .topbar-actions {
