@@ -485,7 +485,7 @@
                     </div>
 
                     <div style="margin-top: 14px; font-size: 12px; color: var(--text-muted); line-height: 1.5;">
-                        <b>Kochi Coordinates:</b> Simulates vector routes across Kakkanad, Edappally, Vyttila, MG Road, and Fort Kochi.
+                        <b>Dynamic Cartography:</b> Simulates vector routes across supported Indian destinations with real-time GPS telemetry.
                     </div>
                 </div>
             </div>
@@ -778,7 +778,9 @@
 
                 if (simMap) {
                     try {
-                        simMap.setRoute(pickup, dropoff, currentDistance, res.estimatedMinutes);
+                        const pCoords = (res.pickupLatitude && res.pickupLongitude) ? { lat: res.pickupLatitude, lon: res.pickupLongitude } : null;
+                        const dCoords = (res.destinationLatitude && res.destinationLongitude) ? { lat: res.destinationLatitude, lon: res.destinationLongitude } : null;
+                        simMap.setRoute(pickup, dropoff, currentDistance, res.estimatedMinutes, pCoords, dCoords);
                     } catch (e) {}
                 }
 

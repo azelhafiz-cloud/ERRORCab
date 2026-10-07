@@ -488,22 +488,38 @@
             const themeSlot = document.getElementById('themeSelectorSlot');
             if (themeSlot) themeSlot.innerHTML = App.renderThemeSelectorHTML();
 
-            // Render SVG icons
-            document.getElementById('searchIconSlot').innerHTML = App.icon('search', 16);
-            document.getElementById('invoiceHeaderIcon').innerHTML = App.icon('receipt', 18);
-            document.getElementById('printBtnSlot').innerHTML = `${App.icon('printer', 16)} Print Invoice`;
+            // Render SVG icons safely
+            const searchIcon = document.getElementById('searchIconSlot');
+            if (searchIcon) searchIcon.innerHTML = App.icon('search', 16);
+
+            const invoiceIcon = document.getElementById('invoiceHeaderIcon');
+            if (invoiceIcon) invoiceIcon.innerHTML = App.icon('receipt', 18);
+
+            const printBtn = document.getElementById('printBtnSlot');
+            if (printBtn) printBtn.innerHTML = `${App.icon('printer', 16)} Print Invoice`;
             
-            document.getElementById('navHomeIcon').innerHTML = App.icon('home', 20);
-            document.getElementById('navBookIcon').innerHTML = App.icon('car', 20);
-            document.getElementById('navHistoryIcon').innerHTML = App.icon('clock', 20);
-            document.getElementById('navProfileIcon').innerHTML = App.icon('user', 20);
+            const navHome = document.getElementById('navHomeIcon');
+            if (navHome) navHome.innerHTML = App.icon('home', 20);
+
+            const navBook = document.getElementById('navBookIcon');
+            if (navBook) navBook.innerHTML = App.icon('car', 20);
+
+            const navHist = document.getElementById('navHistoryIcon');
+            if (navHist) navHist.innerHTML = App.icon('clock', 20);
+
+            const navProf = document.getElementById('navProfileIcon');
+            if (navProf) navProf.innerHTML = App.icon('user', 20);
 
             if (user) {
-                document.getElementById('userNameDisplay').textContent = user.name || 'User';
-                if (user.role === 'DRIVER') {
-                    document.getElementById('backBtn').href = '/driver-dashboard.html';
-                } else if (user.role === 'ADMIN') {
-                    document.getElementById('backBtn').href = '/admin-dashboard.html';
+                const userDisplay = document.getElementById('userNameDisplay');
+                if (userDisplay) userDisplay.textContent = user.name || 'User';
+                const backBtn = document.getElementById('backBtn');
+                if (backBtn) {
+                    if (user.role === 'DRIVER') {
+                        backBtn.href = '/driver-dashboard.html';
+                    } else if (user.role === 'ADMIN') {
+                        backBtn.href = '/admin-dashboard.html';
+                    }
                 }
             }
 
@@ -526,7 +542,7 @@
         async function loadHistory() {
             try {
                 let url = '';
-                const uId = user.userId || user.id || 2;
+                const uId = user.userId || user.passengerId || user.id || 2;
                 if (user.role === 'PASSENGER') {
                     url = `/api/bookings/passenger/${uId}`;
                 } else if (user.role === 'DRIVER') {
@@ -536,6 +552,18 @@
                 }
 
                 allTrips = await App.get(url);
+                if (Array.isArray(allTrips)) {
+                    allTrips.sort((a, b) => {
+                        const dateA = new Date(a.bookingTime || a.createdAt || a.completedAt || 0);
+                        const dateB = new Date(b.bookingTime || b.createdAt || b.completedAt || 0);
+                        if (dateB.getTime() !== dateA.getTime()) {
+                            return dateB - dateA;
+                        }
+                        return (b.id || b.bookingId || 0) - (a.id || a.bookingId || 0);
+                    });
+                } else {
+                    allTrips = [];
+                }
                 updateCounts();
                 applyFilters();
             } catch (err) {
@@ -547,9 +575,15 @@
         }
 
         function updateCounts() {
-            const completed = allTrips.filter(t => t.status === 'RIDE_COMPLETED').length;
-            const cancelled = allTrips.filter(t => t.status === 'CANCELLED').length;
-            const active = allTrips.filter(t => t.status !== 'RIDE_COMPLETED' && t.status !== 'CANCELLED').length;
+            const completed = allTrips.filter(t => {
+                const s = (t.status || '').toUpperCase();
+                return s === 'RIDE_COMPLETED' || s === 'COMPLETED';
+            }).length;
+            const cancelled = allTrips.filter(t => (t.status || '').toUpperCase() === 'CANCELLED').length;
+            const active = allTrips.filter(t => {
+                const s = (t.status || '').toUpperCase();
+                return s !== 'RIDE_COMPLETED' && s !== 'COMPLETED' && s !== 'CANCELLED';
+            }).length;
 
             document.getElementById('countAll').textContent = allTrips.length;
             document.getElementById('countCompleted').textContent = completed;
@@ -572,10 +606,13 @@
                 const pickup = t.pickupLocation || t.pickup || '';
                 const dropoff = t.dropoffLocation || t.dropoff || '';
                 const cabType = t.cabType || '';
+                const s = (t.status || '').toUpperCase();
+                const isCompleted = s === 'RIDE_COMPLETED' || s === 'COMPLETED';
+                const isCancelled = s === 'CANCELLED';
 
-                if (currentFilter === 'COMPLETED' && t.status !== 'RIDE_COMPLETED') return false;
-                if (currentFilter === 'CANCELLED' && t.status !== 'CANCELLED') return false;
-                if (currentFilter === 'ACTIVE' && (t.status === 'RIDE_COMPLETED' || t.status === 'CANCELLED')) return false;
+                if (currentFilter === 'COMPLETED' && !isCompleted) return false;
+                if (currentFilter === 'CANCELLED' && !isCancelled) return false;
+                if (currentFilter === 'ACTIVE' && (isCompleted || isCancelled)) return false;
 
                 if (query) {
                     const matchId = String(bookingId).includes(query);

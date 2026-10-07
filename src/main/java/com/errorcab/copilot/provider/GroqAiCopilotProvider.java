@@ -37,6 +37,7 @@ public class GroqAiCopilotProvider implements AiCopilotProvider {
     private final AiCopilotProvider fallbackProvider;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
+    private final CopilotPlanMapper planMapper;
 
     public GroqAiCopilotProvider(String apiKey, String modelName, int timeoutSeconds,
                                  AiCopilotProvider fallbackProvider, HttpClient httpClient) {
@@ -49,6 +50,7 @@ public class GroqAiCopilotProvider implements AiCopilotProvider {
                 .build();
         this.objectMapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.planMapper = new CopilotPlanMapper();
     }
 
     public GroqAiCopilotProvider(String apiKey) {
@@ -132,9 +134,8 @@ public class GroqAiCopilotProvider implements AiCopilotProvider {
             GeminiPlanPayload planPayload = objectMapper.readValue(content, GeminiPlanPayload.class);
             planPayload.validate();
 
-            // Enrich using standard GeminiAiCopilotProvider mapper or rule engine enrichment
-            GeminiAiCopilotProvider mapper = new GeminiAiCopilotProvider("dummy", modelName);
-            CopilotResponse res = mapper.mapPayloadToCopilotResponse(planPayload, context, request);
+            // Enrich using standard provider-agnostic planMapper
+            CopilotResponse res = planMapper.mapPayloadToCopilotResponse(planPayload, context, request, getProviderName());
             res.setProviderName(getProviderName());
             res.setAssistanceType("AI_ASSISTED");
             return res;

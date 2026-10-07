@@ -36,8 +36,30 @@ public class BookingService {
             double finalFare,
             String promoMessage,
             boolean routeResolved,
-            String warningMessage
+            String warningMessage,
+            double pickupLatitude,
+            double pickupLongitude,
+            double destinationLatitude,
+            double destinationLongitude
     ) {
+        public FareEstimate(
+                double distanceKm,
+                int estimatedMinutes,
+                double economyFare,
+                double premiumFare,
+                double suvFare,
+                double baseFare,
+                double perKmRate,
+                double subtotal,
+                double discount,
+                double finalFare,
+                String promoMessage,
+                boolean routeResolved,
+                String warningMessage
+        ) {
+            this(distanceKm, estimatedMinutes, economyFare, premiumFare, suvFare, baseFare, perKmRate, subtotal, discount, finalFare, promoMessage, routeResolved, warningMessage, 0.0, 0.0, 0.0, 0.0);
+        }
+
         public FareEstimate(
                 double distanceKm,
                 int estimatedMinutes,
@@ -51,23 +73,31 @@ public class BookingService {
                 double finalFare,
                 String promoMessage
         ) {
-            this(distanceKm, estimatedMinutes, economyFare, premiumFare, suvFare, baseFare, perKmRate, subtotal, discount, finalFare, promoMessage, true, "");
+            this(distanceKm, estimatedMinutes, economyFare, premiumFare, suvFare, baseFare, perKmRate, subtotal, discount, finalFare, promoMessage, true, "", 0.0, 0.0, 0.0, 0.0);
         }
     }
 
     public FareEstimate estimateFare(String pickup, String dest, CabType cabType, String promoCode) {
         boolean resolved = true;
         String warningMsg = "";
+        double pLat = 0.0, pLon = 0.0, dLat = 0.0, dLon = 0.0;
+
         if (dest != null && !dest.trim().isEmpty()) {
             var destRes = destinationResolver.resolveDestination(dest.trim());
-            if (destRes != null && !destRes.isResolved()) {
+            if (destRes != null && destRes.isResolved()) {
+                dLat = destRes.getLatitude();
+                dLon = destRes.getLongitude();
+            } else {
                 resolved = false;
                 warningMsg = "Couldn't confidently locate this destination. Try adding the district or state.";
             }
         }
         if (resolved && pickup != null && !pickup.trim().isEmpty()) {
             var pickupRes = destinationResolver.resolveDestination(pickup.trim());
-            if (pickupRes != null && !pickupRes.isResolved()) {
+            if (pickupRes != null && pickupRes.isResolved()) {
+                pLat = pickupRes.getLatitude();
+                pLon = pickupRes.getLongitude();
+            } else {
                 resolved = false;
                 warningMsg = "Couldn't confidently locate pickup location. Try adding the district or city.";
             }
@@ -111,7 +141,11 @@ public class BookingService {
                 finalFare,
                 promoMsg,
                 resolved,
-                warningMsg
+                warningMsg,
+                pLat,
+                pLon,
+                dLat,
+                dLon
         );
     }
 

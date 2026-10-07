@@ -51,6 +51,11 @@ public class DestinationKnowledgeBase {
         registerMysuru();
         registerCoimbatore();
         registerPerinthalmanna();
+        registerDelhiAirport();
+        registerIndiaGate();
+        registerGatewayOfIndia();
+        registerMumbaiAirport();
+        registerTajMahal();
     }
 
     public static DestinationProfile find(String destinationName) {
@@ -1200,4 +1205,169 @@ public class DestinationKnowledgeBase {
         PROFILES.put("angadippuram", p);
     }
 
+    private static void registerDelhiAirport() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Delhi Airport (IGI Terminal 3)");
+        p.setDistrict("South West Delhi");
+        p.setRegion("National Capital Region");
+        p.setState("Delhi");
+        p.setCountry("India");
+        p.setLatitude(28.5562);
+        p.setLongitude(77.1000);
+        p.setDestinationType("International Airport Transit Hub");
+        p.setShortDescription("Indira Gandhi International Airport (DEL), India's premier international aviation hub connecting global and domestic routes.");
+        p.setBestKnownFor("Terminal 3, Airport Express Line, Aerocity");
+        p.setTypicalTripDuration("Transit / 1-3 hrs");
+        p.setFamilySuitability("Excellent. World-class facilities, lounges, accessible transit.");
+        p.setBudgetNotes("All budgets. Premium terminal services available.");
+        p.setTransportAdvice("Book ERRORCab airport pickup with flight delay tracking and designated terminal curbside bays.");
+        p.setMajorHighlights(List.of("Terminal 3 International Terminal", "Aerocity Hospitality District", "Delhi Airport Express Metro"));
+        p.setAttractions(List.of("Aerocity Worldmark", "IGI T3 Retail concourse"));
+        p.setHeritageHighlights(List.of("Contemporary Indian mudra installations at T3 immigration hall"));
+        p.setNatureHighlights(List.of("Aerocity landscaped boulevards"));
+        p.setPhotographySpots(List.of("Iconic Canyon Mudra art wall in T3"));
+        p.setShoppingHighlights(List.of("Duty Free international luxury brands"));
+        p.setCulinaryHighlights(List.of("Round-the-clock Aerocity bistros and multi-cuisine lounges"));
+        p.setLocalSpecialities(List.of("Delhi Airport Transit Hub", "Aerocity Business Center"));
+        p.setSuggestedActivities(List.of("Seamless transfer to New Delhi central via ERRORCab"));
+        p.setLocalTravelAdvice(List.of("Allow 3 hours before international departure; keep digital boarding pass ready."));
+
+        PROFILES.put("delhiairport", p);
+        p.getSafetyNotes().add(new SafetyAdvisory("Airport Commercial Cab Pickup Protocol", "Use designated ERRORCab passenger pickup lanes at Pillar 10-14 at Terminal 3.", "Delhi International Airport Ltd (DIAL)", "https://www.newdelhiairport.in", "October 2026", "VERIFIED", "TRANSPORT"));
+        PROFILES.put("delhiairportterminal3", p);
+        PROFILES.put("delhiairportt3", p);
+        PROFILES.put("igiat3", p);
+        PROFILES.put("igiairport", p);
+        PROFILES.put("delhiterminal3", p);
+    }
+
+    private static void registerIndiaGate() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("India Gate");
+        p.setDistrict("New Delhi");
+        p.setRegion("Central Vista");
+        p.setState("Delhi");
+        p.setCountry("India");
+        p.setLatitude(28.6129);
+        p.setLongitude(77.2295);
+        p.setDestinationType("National War Memorial & Historic Monument");
+        p.setShortDescription("Iconic 42-meter triumphal arch war memorial designed by Edwin Lutyens, anchoring the majestic Kartavya Path boulevard.");
+        p.setBestKnownFor("Kartavya Path, Amar Jawan Jyoti, National War Memorial");
+        p.setTypicalTripDuration("1-2 hours (Evening visits ideal)");
+        p.setFamilySuitability("Outstanding. Open public lawns, fountain light shows, and broad promenades.");
+        p.setBudgetNotes("Free public access; nominal parking.");
+        p.setTransportAdvice("Arrive via ERRORCab directly at the designated Kartavya Path drop-off lane.");
+        p.setMajorHighlights(List.of("42m India Gate Arch", "National War Memorial", "Kartavya Path Canal Walkways"));
+        p.setAttractions(List.of("India Gate", "National War Memorial", "Rashtrapati Bhavan Vista"));
+        p.setHeritageHighlights(List.of("Memorial inscriptions commemorating 84,000 Indian army soldiers"));
+        p.setNatureHighlights(List.of("Manicured lawns and water channels of Central Vista"));
+        p.setPhotographySpots(List.of("Floodlit India Gate at dusk", "Canopy framing the sunset"));
+        p.setShoppingHighlights(List.of("Regional handicraft stalls at nearby Dilli Haat and Janpath"));
+        p.setCulinaryHighlights(List.of("Evening street ice-cream carts and chaat along the perimeter"));
+        p.setLocalSpecialities(List.of("Historic National Monument", "Lutyens Architectural Marvel"));
+        p.setSuggestedActivities(List.of("Evening walk on Kartavya Path", "Paying homage at the National War Memorial"));
+        p.setLocalTravelAdvice(List.of("Best visited between 5 PM and 9 PM when the monument is illuminated."));
+
+        PROFILES.put("indiagate", p);
+        PROFILES.put("indiagatewarmemorial", p);
+        PROFILES.put("kartavyapath", p);
+    }
+
+    private static void registerGatewayOfIndia() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Gateway of India");
+        p.setDistrict("Mumbai City");
+        p.setRegion("South Mumbai");
+        p.setState("Maharashtra");
+        p.setCountry("India");
+        p.setLatitude(18.9220);
+        p.setLongitude(72.8347);
+        p.setDestinationType("Waterfront Monument & Harbor Landmark");
+        p.setShortDescription("Historic Indo-Saracenic arch monument overlooking Mumbai Harbour and the Arabian Sea, standing opposite the Taj Mahal Palace.");
+        p.setBestKnownFor("Indo-Saracenic Arch, Arabian Sea Ferries, Taj Mahal Palace Hotel");
+        p.setTypicalTripDuration("1-2 hours");
+        p.setFamilySuitability("Excellent. Sea breeze promenade and harbor ferry cruises to Elephanta.");
+        p.setBudgetNotes("Free monument access; ferry tickets nominal.");
+        p.setTransportAdvice("Traffic in Colaba is brisk; drop off at Gateway roundabout via ERRORCab.");
+        p.setMajorHighlights(List.of("Gateway of India Basalt Arch", "Taj Mahal Palace Heritage Wing", "Mumbai Harbour Ferries"));
+        p.setAttractions(List.of("Gateway of India", "Taj Mahal Palace Hotel", "Colaba Causeway"));
+        p.setHeritageHighlights(List.of("1924 basalt ceremonial arch commemorating the 1911 royal visit of King George V"));
+        p.setNatureHighlights(List.of("Mumbai Harbour Arabian Sea waters"));
+        p.setPhotographySpots(List.of("Sunrise over the harbor ferries", "Taj Mahal Palace backdrop"));
+        p.setShoppingHighlights(List.of("Colaba Causeway antique jewelry, brassware, and fashion"));
+        p.setCulinaryHighlights(List.of("Iconic Leopold Cafe and Cafe Mondegar on Colaba Causeway"));
+        p.setLocalSpecialities(List.of("Mumbai Waterfront Heritage", "Arabian Sea Gateway"));
+        p.setSuggestedActivities(List.of("Ferry ride across Mumbai Harbour", "Photography at the promenade"));
+        p.setLocalTravelAdvice(List.of("Security checks at the entrance; avoid carrying large baggage."));
+
+        PROFILES.put("gatewayofindia", p);
+        PROFILES.put("gatewayofindiamumbai", p);
+        PROFILES.put("colabagw", p);
+    }
+
+    private static void registerMumbaiAirport() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Mumbai Airport (CSMIA Terminal 2)");
+        p.setDistrict("Mumbai Suburban");
+        p.setRegion("Sahar / Andheri East");
+        p.setState("Maharashtra");
+        p.setCountry("India");
+        p.setLatitude(19.0896);
+        p.setLongitude(72.8656);
+        p.setDestinationType("International Airport Transit Hub");
+        p.setShortDescription("Chhatrapati Shivaji Maharaj International Airport (BOM) Terminal 2, renowned for the Jaya He GVK New Museum art wall.");
+        p.setBestKnownFor("Terminal 2, Jaya He Art Wall, Western Express Highway Access");
+        p.setTypicalTripDuration("Transit / 1-3 hrs");
+        p.setFamilySuitability("Excellent. Multi-level lounges, baby care rooms, world-class amenities.");
+        p.setBudgetNotes("All budgets.");
+        p.setTransportAdvice("Book ERRORCab with Western Express Highway or Eastern Freeway routing.");
+        p.setMajorHighlights(List.of("Jaya He 3km Art Wall", "Terminal 2 Curbside Departure Deck"));
+        p.setAttractions(List.of("CSMIA Jaya He Art Museum", "Sahar Hospitality Zone"));
+        p.setHeritageHighlights(List.of("Over 5,000 historic Indian artifacts integrated along the terminal concourses"));
+        p.setNatureHighlights(List.of("Landscaped peacock motif ceiling and indoor gardens"));
+        p.setPhotographySpots(List.of("Soaring mushroom-pillar coffered roof of T2"));
+        p.setShoppingHighlights(List.of("CSMIA duty free and premium luxury boutiques"));
+        p.setCulinaryHighlights(List.of("Authentic Mumbai snacks and multi-cuisine transit lounges"));
+        p.setLocalSpecialities(List.of("Mumbai International Gateway", "Jaya He Art Gallery"));
+        p.setSuggestedActivities(List.of("Viewing Indian art installations throughout T2"));
+        p.setLocalTravelAdvice(List.of("Check whether departing from T1 (Domestic) or T2 (Intl/Domestic) before dispatching cab."));
+
+        PROFILES.put("mumbaiairport", p);
+        PROFILES.put("mumbaiairportt2", p);
+        PROFILES.put("csmiat2", p);
+        PROFILES.put("saharairport", p);
+    }
+
+    private static void registerTajMahal() {
+        DestinationProfile p = new DestinationProfile();
+        p.setDestinationName("Taj Mahal");
+        p.setDistrict("Agra");
+        p.setRegion("Yamuna River Bank");
+        p.setState("Uttar Pradesh");
+        p.setCountry("India");
+        p.setLatitude(27.1751);
+        p.setLongitude(78.0421);
+        p.setDestinationType("UNESCO World Heritage Monument");
+        p.setShortDescription("Ivory-white marble mausoleum on the south bank of the Yamuna river, widely considered one of the universally admired masterpieces of the world's heritage.");
+        p.setBestKnownFor("Mughal White Marble Mausoleum, Charbagh Gardens, UNESCO Wonder of the World");
+        p.setTypicalTripDuration("2-4 hours");
+        p.setFamilySuitability("Superb. Sprawling gardens and paved walkways.");
+        p.setBudgetNotes("Moderate. ASI online entry tickets.");
+        p.setTransportAdvice("Vehicles must park at designated Shilpgram / East Gate stands; battery carts take visitors to gates. Book ERRORCab from Delhi/Noida via Yamuna Expressway.");
+        p.setMajorHighlights(List.of("Taj Mahal Central Dome", "Charbagh Persian Garden", "Yamuna Riverfront Terrace"));
+        p.setAttractions(List.of("Taj Mahal", "Agra Fort", "Mehtab Bagh"));
+        p.setHeritageHighlights(List.of("Built by Mughal Emperor Shah Jahan in memory of Mumtaz Mahal (1632-1653)"));
+        p.setNatureHighlights(List.of("Yamuna river panorama and serene Mughal water courses"));
+        p.setPhotographySpots(List.of("Classic reflecting pool alignment", "Sunset from Mehtab Bagh across the river"));
+        p.setShoppingHighlights(List.of("Agra marble inlay work (Pietra Dura), petha sweets"));
+        p.setCulinaryHighlights(List.of("Famous Agra Petha, Bedmi Puri with spicy aloo sabzi"));
+        p.setLocalSpecialities(List.of("Mughal Architecture Wonder", "Pietra Dura Marble Craftsmanship"));
+        p.setSuggestedActivities(List.of("Sunrise photography tour", "Exploring intricate marble carvings"));
+        p.setLocalTravelAdvice(List.of("Taj Mahal is closed on Fridays for prayers. Book tickets strictly via ASI portal."));
+
+        PROFILES.put("tajmahal", p);
+        PROFILES.put("tajmahalagra", p);
+    }
+
 }
+

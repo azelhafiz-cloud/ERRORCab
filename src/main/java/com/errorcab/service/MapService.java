@@ -50,6 +50,18 @@ public class MapService {
         addLocation(new Location("Kozhikode", "Kerala", "Beach / Mavoor Road", 180, 40, 11.2588, 75.7804));
         addLocation(new Location("Bengaluru", "Karnataka", "MG Road / Koramangala", 520, 50, 12.9716, 77.5946));
         addLocation(new Location("Chennai", "Tamil Nadu", "T. Nagar / Central", 550, 110, 13.0827, 80.2707));
+        addLocation(new Location("Delhi", "Delhi", "National Capital Hub", 300, 100, 28.6139, 77.2090));
+        addLocation(new Location("New Delhi", "Delhi", "Central Vista & Connaught Place", 300, 100, 28.6139, 77.2090));
+        addLocation(new Location("Delhi Airport", "Delhi", "IGI Airport Terminal 3", 280, 120, 28.5562, 77.1000));
+        addLocation(new Location("India Gate", "Delhi", "War Memorial & Kartavya Path", 320, 95, 28.6129, 77.2295));
+        addLocation(new Location("Agra", "Uttar Pradesh", "City of the Taj", 350, 150, 27.1767, 78.0081));
+        addLocation(new Location("Taj Mahal", "Uttar Pradesh", "UNESCO World Wonder", 360, 155, 27.1751, 78.0421));
+        addLocation(new Location("Mumbai", "Maharashtra", "Gateway & Marine Drive", 150, 250, 18.9220, 72.8347));
+        addLocation(new Location("Gateway of India", "Maharashtra", "Colaba Waterfront", 150, 255, 18.9220, 72.8347));
+        addLocation(new Location("Mumbai Airport", "Maharashtra", "CSMIA Terminal 2", 160, 230, 19.0896, 72.8656));
+        addLocation(new Location("Munnar", "Kerala", "Tea Gardens & Western Ghats", 490, 220, 10.0889, 77.0595));
+        addLocation(new Location("Perinthalmanna", "Kerala", "Valluvanad Cultural Hub", 210, 80, 10.9760, 76.2254));
+        addLocation(new Location("Kochi", "Ernakulam", "Commercial Harbor & City", 220, 240, 9.9658, 76.2421));
     }
 
     private void addLocation(Location loc) {
@@ -87,7 +99,25 @@ public class MapService {
 
     public Optional<Location> getLocation(String name) {
         if (name == null) return Optional.empty();
-        return Optional.ofNullable(locations.get(name));
+        Location loc = locations.get(name);
+        if (loc != null) return Optional.of(loc);
+        for (Map.Entry<String, Location> e : locations.entrySet()) {
+            if (e.getKey().equalsIgnoreCase(name)) {
+                return Optional.of(e.getValue());
+            }
+        }
+        var prof = com.errorcab.copilot.destination.service.DestinationKnowledgeBase.find(name);
+        if (prof != null) {
+            return Optional.of(new Location(
+                    prof.getDestinationName(),
+                    prof.getDistrict() != null ? prof.getDistrict() : prof.getState(),
+                    prof.getShortDescription() != null ? prof.getShortDescription() : prof.getDestinationType(),
+                    300, 200,
+                    prof.getLatitude(),
+                    prof.getLongitude()
+            ));
+        }
+        return Optional.empty();
     }
 
     public double getDistanceKm(String from, String to) {

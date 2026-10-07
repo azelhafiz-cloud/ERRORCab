@@ -235,6 +235,13 @@ const App = {
         return m + ' mins';
     },
 
+    escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    },
+
     formatDate(dateStr) {
         if (!dateStr) return '--';
         try {
@@ -258,16 +265,18 @@ const App = {
             const d = new Date(cleanStr);
             if (isNaN(d.getTime())) return String(dateStr);
             const datePart = d.toLocaleDateString('en-IN', {
+                timeZone: 'Asia/Kolkata',
                 day: '2-digit',
                 month: 'short',
                 year: 'numeric'
             });
             const timePart = d.toLocaleTimeString('en-IN', {
-                hour: 'numeric',
+                timeZone: 'Asia/Kolkata',
+                hour: '2-digit',
                 minute: '2-digit',
                 hour12: true
             });
-            return `${datePart} • ${timePart}`;
+            return `${datePart}, ${timePart}`;
         } catch (e) {
             return String(dateStr);
         }

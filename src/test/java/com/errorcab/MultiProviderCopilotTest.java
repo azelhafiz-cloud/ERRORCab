@@ -142,14 +142,14 @@ public class MultiProviderCopilotTest {
 
         OpenRouterAiCopilotProvider openRouterProvider = new OpenRouterAiCopilotProvider(
                 "sk-or-v1-test-key",
-                "meta-llama/llama-3.3-70b-instruct:free",
+                "openrouter/free",
                 12,
                 fallback,
                 mockHttpClient
         );
 
         assertTrue(openRouterProvider.isAvailable());
-        assertEquals("OpenRouter AI (meta-llama/llama-3.3-70b-instruct:free)", openRouterProvider.getProviderName());
+        assertEquals("OpenRouter AI (openrouter/free)", openRouterProvider.getProviderName());
 
         CopilotTripRequest request = new CopilotTripRequest(1, "Tourism", "Munnar", "Full-day", "Moderate");
         CopilotContext context = new CopilotContext();
@@ -162,7 +162,50 @@ public class MultiProviderCopilotTest {
         assertTrue(response.isSuccess());
         assertEquals("Munnar Tea Trail Excursion", response.getTitle());
         assertEquals("AI_ASSISTED", response.getAssistanceType());
-        assertEquals("OpenRouter AI (meta-llama/llama-3.3-70b-instruct:free)", response.getProviderName());
+        assertEquals("OpenRouter AI (openrouter/free)", response.getProviderName());
+    }
+
+    @Test
+    public void testOpenRouterProvider404FallsBackSeamlesslyToRuleEngine() throws Exception {
+        RuleEngineCopilotProvider fallback = new RuleEngineCopilotProvider();
+        HttpClient mockHttpClient = mock(HttpClient.class);
+        @SuppressWarnings("unchecked")
+        HttpResponse<String> mockResponse = mock(HttpResponse.class);
+
+        when(mockResponse.statusCode()).thenReturn(404);
+        when(mockResponse.body()).thenReturn("{\"error\":{\"message\":\"No such model: invalid-model\",\"code\":404}}");
+        when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(mockResponse);
+
+        OpenRouterAiCopilotProvider openRouterProvider = new OpenRouterAiCopilotProvider(
+                "sk-or-v1-test-key",
+                "openrouter/free",
+                12,
+                fallback,
+                mockHttpClient
+        );
+
+        CopilotTripRequest request = new CopilotTripRequest(1, "Tourism", "Munnar", "Full-day", "Moderate");
+        CopilotContext context = new CopilotContext();
+        context.setPassengerId(1);
+        context.setResolvedPickupLocation("Kakkanad");
+
+        // When OpenRouter returns 404, provider must NOT throw; it falls back to Rule Engine
+        CopilotResponse response = openRouterProvider.generatePlan(context, request);
+        assertNotNull(response);
+        assertTrue(response.isSuccess());
+        assertEquals("Munnar", response.getDestination());
+        assertEquals("SMART_OFFLINE", response.getAssistanceType());
+        assertEquals("ERRORCab Local Rule Engine (Offline Foundation)", response.getProviderName());
+    }
+
+    @Test
+    public void testOpenRouterDiagnosticSanitizationNeverExposesSecrets() {
+        String sensitive = "Error with Bearer sk-or-v1-abcdef1234567890 and key=secret_val_12345";
+        String sanitized = OpenRouterAiCopilotProvider.sanitizeDiagnostic(sensitive);
+        assertFalse(sanitized.contains("abcdef1234567890"));
+        assertFalse(sanitized.contains("secret_val_12345"));
+        assertTrue(sanitized.contains("[REDACTED]"));
     }
 
     @Test
@@ -196,5 +239,30 @@ public class MultiProviderCopilotTest {
         assertEquals("SMART_OFFLINE", response.getAssistanceType());
         assertEquals("ERRORCab Local Rule Engine (Offline Foundation)", response.getProviderName());
         assertFalse(response.getItinerary().isEmpty());
+    }
+
+    @Test
+    public void testOpenRouterMinimalConnectivitySucceedsWithMockClient() throws Exception {
+        RuleEngineCopilotProvider fallback = new RuleEngineCopilotProvider();
+        HttpClient mockHttpClient = mock(HttpClient.class);
+        @SuppressWarnings("unchecked")
+        HttpResponse<String> mockResponse = mock(HttpResponse.class);
+
+        String sampleResp = "{\"choices\":[{\"message\":{\"role\":\"assistant\",\"content\":\"{\\\"status\\\":\\\"ok\\\",\\\"message\\\":\\\"ERRORCab OpenRouter test successful\\\"}\"}}]}";
+        when(mockResponse.statusCode()).thenReturn(200);
+        when(mockResponse.body()).thenReturn(sampleResp);
+        when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(mockResponse);
+
+        OpenRouterAiCopilotProvider provider = new OpenRouterAiCopilotProvider(
+                "sk-or-v1-test-key",
+                "openrouter/free",
+                12,
+                fallback,
+                mockHttpClient
+        );
+
+        boolean result = provider.testMinimalConnectivity();
+        assertTrue(result);
     }
 }

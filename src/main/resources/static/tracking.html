@@ -458,7 +458,9 @@
                 if (durEl) durEl.textContent = App.formatDuration(dur);
 
                 if (simMap) {
-                    simMap.setRoute(b.pickupLocation, b.destinationLocation || b.dropoffLocation, dist, dur);
+                    const pCoords = (b.pickupLatitude && b.pickupLongitude) ? { lat: b.pickupLatitude, lon: b.pickupLongitude } : null;
+                    const dCoords = (b.destinationLatitude && b.destinationLongitude) ? { lat: b.destinationLatitude, lon: b.destinationLongitude } : null;
+                    simMap.setRoute(b.pickupLocation, b.destinationLocation || b.dropoffLocation, dist, dur, pCoords, dCoords);
                 }
 
                 if (b.driverName) {

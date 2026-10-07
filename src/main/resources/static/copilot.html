@@ -1675,6 +1675,16 @@
     <script>
         const user = App.requireAuth(['PASSENGER']);
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        if (!App.escapeHtml) {
+            App.escapeHtml = escapeHtml;
+        }
+
         // Wizard step controller for mobile
         function goToCopilotStep(stepNum) {
             for (let i = 1; i <= 4; i++) {
@@ -1924,17 +1934,24 @@
 
                 setTimeout(() => {
                     loadingBox.style.display = 'none';
-                    currentGeneratedPlan = plan;
-                    renderPlan(plan);
-                    resultBox.style.display = 'block';
-                    resultBox.scrollIntoView({ behavior: 'smooth' });
+                    try {
+                        currentGeneratedPlan = plan;
+                        renderPlan(plan);
+                        resultBox.style.display = 'block';
+                        resultBox.scrollIntoView({ behavior: 'smooth' });
 
-                    if (plan.destinationResolved === false) {
-                        setMascotMood('idle', "Couldn't confidently locate <b>" + dest + "</b>. Try adding the district or state!");
-                        App.showToast('Unresolved Destination', 'Please add district or state for confident routing.', 'alertTriangle');
-                    } else {
-                        setMascotMood('success', 'Hurray! Your custom blueprint for <b>' + plan.destination + '</b> is ready with verified fares & rides!');
-                        App.showToast('Travel Plan Ready', 'Curated itinerary for ' + plan.destination + ' generated.', 'car');
+                        if (plan.destinationResolved === false) {
+                            setMascotMood('idle', "Couldn't confidently locate <b>" + dest + "</b>. Try adding the district or state!");
+                            App.showToast('Unresolved Destination', 'Please add district or state for confident routing.', 'alertTriangle');
+                        } else {
+                            setMascotMood('success', 'Hurray! Your custom blueprint for <b>' + (plan.destination || dest) + '</b> is ready with verified fares & rides!');
+                            App.showToast('Travel Plan Ready', 'Curated itinerary for ' + (plan.destination || dest) + ' generated.', 'car');
+                        }
+                    } catch (renderErr) {
+                        console.error('Plan rendering error:', renderErr);
+                        resultBox.style.display = 'block';
+                        setMascotMood('idle', 'Notice: Display issue occurred while rendering plan.');
+                        App.showToast('Display Notice', 'Rendered with available parameters.', 'alertTriangle');
                     }
                 }, 300);
             } catch (err) {
@@ -1979,12 +1996,14 @@
                     : (plan.providerName || 'Local Knowledge Base');
             }
 
+            const safeEscape = (s) => (App.escapeHtml ? App.escapeHtml(s) : escapeHtml(s));
+
             if (plan.weatherNote) {
                 weatherBadge.style.display = 'inline-flex';
-                weatherBadge.innerHTML = '<span class="material-symbols-rounded" style="font-size: 13px; vertical-align: -2px;">wb_sunny</span> ' + App.escapeHtml(plan.weatherNote);
+                weatherBadge.innerHTML = '<span class="material-symbols-rounded" style="font-size: 13px; vertical-align: -2px;">wb_sunny</span> ' + safeEscape(plan.weatherNote);
             } else if (plan.weather && plan.weather.available) {
                 weatherBadge.style.display = 'inline-flex';
-                weatherBadge.innerHTML = '<span class="material-symbols-rounded" style="font-size: 13px; vertical-align: -2px;">wb_sunny</span> ' + Math.round(plan.weather.temperatureC) + '°C, ' + App.escapeHtml(plan.weather.condition);
+                weatherBadge.innerHTML = '<span class="material-symbols-rounded" style="font-size: 13px; vertical-align: -2px;">wb_sunny</span> ' + Math.round(plan.weather.temperatureC) + '°C, ' + safeEscape(plan.weather.condition);
             } else {
                 weatherBadge.style.display = 'none';
             }
@@ -2002,8 +2021,8 @@
             ].filter(Boolean).join(' • ');
             document.getElementById('smartDestLocation').textContent = locationLine;
 
-            const lat = dResult.latitude || (rResult.destinationCoordinates ? rResult.destinationCoordinates.latitude : 0);
-            const lon = dResult.longitude || (rResult.destinationCoordinates ? rResult.destinationCoordinates.longitude : 0);
+            const lat = dResult.latitude || rResult.destinationLatitude || (rResult.destinationCoordinates ? rResult.destinationCoordinates.latitude : 0);
+            const lon = dResult.longitude || rResult.destinationLongitude || (rResult.destinationCoordinates ? rResult.destinationCoordinates.longitude : 0);
             document.getElementById('smartDestCoords').textContent = (lat && lon) ? (lat.toFixed(4) + '° N, ' + lon.toFixed(4) + '° E') : '--';
 
             const roadKm = rResult.distanceKm || 0;
@@ -2015,8 +2034,8 @@
             document.getElementById('resSummary').innerHTML = (plan.tripExplanation || plan.summary || '').replace(/\n\n/g, '<br><br>');
 
             // SECTION 6: ROUTE & FARE PREVIEW
-            document.getElementById('routeOrigin').textContent = rResult.origin || copilotContext?.resolvedPickupLocation || 'Home Hub';
-            document.getElementById('routeDestination').textContent = dResult.displayName || plan.destination || 'Destination';
+            document.getElementById('routeOrigin').textContent = rResult.originName || rResult.origin || copilotContext?.resolvedPickupLocation || 'Home Hub';
+            document.getElementById('routeDestination').textContent = dResult.displayName || rResult.destinationName || plan.destination || 'Destination';
             document.getElementById('routeKm').textContent = roadKm > 0 ? (roadKm + ' km') : '--';
             document.getElementById('routeDuration').textContent = rResult.durationFormatted || '--';
             document.getElementById('routeMethodBadge').textContent = rResult.method
@@ -2263,9 +2282,11 @@
             if (drv) {
                 drvCard.style.display = 'block';
                 document.getElementById('drvName').textContent = drv.driverName || 'Certified Driver';
-                document.getElementById('drvVehicleDetails').textContent = 'Vehicle: ' + (drv.vehicleModel || 'Prime Sedan') + ' (' + (drv.licensePlate || 'KL-07') + ') • ' + (drv.cabType || 'PREMIUM');
-                document.getElementById('drvRating').innerHTML = '<span class="material-symbols-rounded" style="font-size: 14px; vertical-align: -2px; color: #F59E0B;">star</span> ' + (drv.rating ? drv.rating.toFixed(1) : '4.9') + ' <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">(' + (drv.totalRides || 500) + ' rides)</span>';
-                document.getElementById('drvDistance').textContent = '~' + (drv.distanceKm ? drv.distanceKm.toFixed(1) : '3.2') + ' km away';
+                const plate = drv.plateNumber || drv.licensePlate || 'KL-07';
+                document.getElementById('drvVehicleDetails').textContent = 'Vehicle: ' + (drv.vehicleModel || 'Prime Sedan') + ' (' + plate + ') • ' + (drv.cabType || 'PREMIUM');
+                const completedRides = (drv.completedRides != null ? drv.completedRides : (drv.totalRides || 500));
+                document.getElementById('drvRating').innerHTML = '<span class="material-symbols-rounded" style="font-size: 14px; vertical-align: -2px; color: #F59E0B;">star</span> ' + (drv.rating ? drv.rating.toFixed(1) : '4.9') + ' <span style="font-size: 11px; color: var(--text-muted); font-weight: 600;">(' + completedRides + ' rides)</span>';
+                document.getElementById('drvDistance').textContent = drv.estimatedPickupDistance || (drv.distanceKm ? ('~' + drv.distanceKm.toFixed(1) + ' km away') : 'Nearest Active Cab');
                 document.getElementById('drvStatusBadge').innerHTML = drv.available
                     ? '<span class="material-symbols-rounded" style="font-size: 11px;">circle</span> Online & Available'
                     : '<span class="material-symbols-rounded" style="font-size: 11px;">circle</span> Dispatched on Request';

@@ -331,4 +331,24 @@ public class Booking {
     public void setScheduled(boolean scheduled) {
         isScheduled = scheduled;
     }
+
+    public double getPickupLatitude() {
+        var p = com.errorcab.copilot.destination.service.DestinationKnowledgeBase.find(pickupLocation);
+        return p != null ? p.getLatitude() : 0.0;
+    }
+
+    public double getPickupLongitude() {
+        var p = com.errorcab.copilot.destination.service.DestinationKnowledgeBase.find(pickupLocation);
+        return p != null ? p.getLongitude() : 0.0;
+    }
+
+    public double getDestinationLatitude() {
+        var p = com.errorcab.copilot.destination.service.DestinationKnowledgeBase.find(destinationLocation);
+        return p != null ? p.getLatitude() : 0.0;
+    }
+
+    public double getDestinationLongitude() {
+        var p = com.errorcab.copilot.destination.service.DestinationKnowledgeBase.find(destinationLocation);
+        return p != null ? p.getLongitude() : 0.0;
+    }
 }

@@ -68,11 +68,11 @@ public class AiCopilotService {
     @Value("${groq.model:${GROQ_MODEL:llama-3.3-70b-versatile}}")
     private String groqModel = "llama-3.3-70b-versatile";
 
-    @Value("${openrouter.api.key:}")
+    @Value("${openrouter.api.key:${OPENROUTER_API_KEY:}}")
     private String openrouterApiKey = "";
 
-    @Value("${openrouter.model:${OPENROUTER_MODEL:meta-llama/llama-3.3-70b-instruct:free}}")
-    private String openrouterModel = "meta-llama/llama-3.3-70b-instruct:free";
+    @Value("${openrouter.model:${OPENROUTER_MODEL:openrouter/free}}")
+    private String openrouterModel = "openrouter/free";
 
     private RuleEngineCopilotProvider ruleEngineProvider = new RuleEngineCopilotProvider();
     private GeminiAiCopilotProvider geminiProvider;
@@ -119,6 +119,9 @@ public class AiCopilotService {
         initProvider();
         if (this.geminiProvider != null && this.geminiProvider.isAvailable() && "gemini".equalsIgnoreCase(configuredProvider)) {
             this.geminiProvider.runStartupConnectivityTest();
+        }
+        if (this.openRouterProvider != null && this.openRouterProvider.isAvailable() && "openrouter".equalsIgnoreCase(configuredProvider)) {
+            this.openRouterProvider.testMinimalConnectivity();
         }
     }
 

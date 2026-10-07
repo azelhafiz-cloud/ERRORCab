@@ -85,10 +85,8 @@ public class GeminiAiCopilotProvider implements AiCopilotProvider {
             this.intelligenceService = new DestinationIntelligenceService();
         }
 
-        String keyLoadedStatus = (this.apiKey != null && !this.apiKey.isEmpty())
-                ? "YES (Length: " + this.apiKey.length() + ")"
-                : "NO (Not loaded / Empty)";
-        LOGGER.info(String.format("[GEMINI DEBUG] API Key Loaded: %s | Model: %s", keyLoadedStatus, this.modelName));
+        boolean keyLoaded = (this.apiKey != null && !this.apiKey.isBlank());
+        LOGGER.info(String.format("Gemini API key configured: %b", keyLoaded));
     }
 
     public GeminiAiCopilotProvider(String apiKey, String modelName) {

@@ -93,18 +93,18 @@ public class PaymentRepository {
             ps.setInt(2, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    list.add(java.util.Map.of(
-                            "id", rs.getInt("id"),
-                            "bookingId", rs.getInt("booking_id"),
-                            "bookingCode", rs.getString("booking_code"),
-                            "amount", rs.getDouble("amount"),
-                            "method", rs.getString("method"),
-                            "status", rs.getString("status"),
-                            "transactionRef", rs.getString("transaction_ref"),
-                            "paidAt", rs.getString("paid_at"),
-                            "pickupLocation", rs.getString("pickup_location"),
-                            "destinationLocation", rs.getString("destination_location")
-                    ));
+                    java.util.Map<String, Object> map = new java.util.LinkedHashMap<>();
+                    map.put("id", rs.getInt("id"));
+                    map.put("bookingId", rs.getInt("booking_id"));
+                    map.put("bookingCode", rs.getString("booking_code") != null ? rs.getString("booking_code") : "");
+                    map.put("amount", rs.getDouble("amount"));
+                    map.put("method", rs.getString("method") != null ? rs.getString("method") : "CASH");
+                    map.put("status", rs.getString("status") != null ? rs.getString("status") : "PAID");
+                    map.put("transactionRef", rs.getString("transaction_ref") != null ? rs.getString("transaction_ref") : "");
+                    map.put("paidAt", rs.getString("paid_at") != null ? rs.getString("paid_at") : "");
+                    map.put("pickupLocation", rs.getString("pickup_location") != null ? rs.getString("pickup_location") : "");
+                    map.put("destinationLocation", rs.getString("destination_location") != null ? rs.getString("destination_location") : "");
+                    list.add(map);
                 }
             }
         } catch (SQLException e) {
@@ -124,18 +124,18 @@ public class PaymentRepository {
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                list.add(java.util.Map.of(
-                        "id", rs.getInt("id"),
-                        "bookingId", rs.getInt("booking_id"),
-                        "bookingCode", rs.getString("booking_code"),
-                        "amount", rs.getDouble("amount"),
-                        "method", rs.getString("method"),
-                        "status", rs.getString("status"),
-                        "transactionRef", rs.getString("transaction_ref"),
-                        "paidAt", rs.getString("paid_at"),
-                        "pickupLocation", rs.getString("pickup_location"),
-                        "destinationLocation", rs.getString("destination_location")
-                ));
+                java.util.Map<String, Object> map = new java.util.LinkedHashMap<>();
+                map.put("id", rs.getInt("id"));
+                map.put("bookingId", rs.getInt("booking_id"));
+                map.put("bookingCode", rs.getString("booking_code") != null ? rs.getString("booking_code") : "");
+                map.put("amount", rs.getDouble("amount"));
+                map.put("method", rs.getString("method") != null ? rs.getString("method") : "CASH");
+                map.put("status", rs.getString("status") != null ? rs.getString("status") : "PAID");
+                map.put("transactionRef", rs.getString("transaction_ref") != null ? rs.getString("transaction_ref") : "");
+                map.put("paidAt", rs.getString("paid_at") != null ? rs.getString("paid_at") : "");
+                map.put("pickupLocation", rs.getString("pickup_location") != null ? rs.getString("pickup_location") : "");
+                map.put("destinationLocation", rs.getString("destination_location") != null ? rs.getString("destination_location") : "");
+                list.add(map);
             }
         } catch (SQLException e) {
             e.printStackTrace();

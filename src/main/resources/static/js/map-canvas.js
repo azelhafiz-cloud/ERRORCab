@@ -1,9 +1,9 @@
 /**
  * ERRORCab - Commercial Simulated GPS Map & Telemetry Canvas Engine
- * Kochi / Kerala Urban Road Network & Navigation Visualizer
- * High-performance HTML5 Canvas renderer with multi-tier road networks,
- * water bodies, animated glowing route paths, beacon radar pulses,
- * directional cab heading with headlight projection, and in-map telemetry HUD.
+ * India-Wide Dynamic Cartography & Navigation Visualizer
+ * Dynamic Geographic Projection: (lat, lon) -> Bounding Box -> Conformal Aspect Projection -> Canvas (x, y)
+ * Supports all Indian cities, interstate corridors, and local urban zones.
+ * Works completely offline with zero external paid map APIs.
  */
 
 class SimulatedMap {
@@ -21,28 +21,82 @@ class SimulatedMap {
         this.pulseTime = 0;
         this.dashOffset = 0;
 
-        // Kochi Landmark Coordinates mapped on 600x400 normalized space
-        this.locations = {
-            'Kakkanad': { x: 470, y: 135, name: 'Kakkanad', landmark: 'Infopark IT Hub', type: 'tech' },
-            'Edappally': { x: 335, y: 95, name: 'Edappally', landmark: 'Lulu Mall & Metro', type: 'commercial' },
-            'Palarivattom': { x: 330, y: 155, name: 'Palarivattom', landmark: 'Civil Line Junction', type: 'junction' },
-            'Kaloor': { x: 285, y: 195, name: 'Kaloor', landmark: 'JLN Stadium', type: 'metro' },
-            'Vyttila': { x: 365, y: 245, name: 'Vyttila', landmark: 'Mobility Hub', type: 'transit' },
-            'MG Road': { x: 220, y: 235, name: 'MG Road', landmark: 'Commercial Blvd', type: 'commercial' },
-            'Ernakulam South': { x: 240, y: 275, name: 'Ernakulam South', landmark: 'Central Railway', type: 'transit' },
-            'Thrippunithura': { x: 460, y: 295, name: 'Thrippunithura', landmark: 'Hill Palace', type: 'heritage' },
-            'Fort Kochi': { x: 85, y: 265, name: 'Fort Kochi', landmark: 'Chinese Fishing Nets', type: 'coastal' },
-            'Aluva': { x: 375, y: 32, name: 'Aluva', landmark: 'Periyar River Hub', type: 'transit' },
-            'Trivandrum': { x: 305, y: 375, name: 'Trivandrum', landmark: 'Technopark Hub', type: 'metro' },
-            'Kozhikode': { x: 175, y: 40, name: 'Kozhikode', landmark: 'Beach Road Hub', type: 'coastal' }
+        // Authoritative Coordinates Database across India (cities, hubs, airports, landmarks)
+        this.allLocations = {
+            // National Capital Region (Delhi / Agra / NCR)
+            'delhi': { lat: 28.6139, lon: 77.2090, name: 'Delhi', region: 'National Capital' },
+            'newdelhi': { lat: 28.6139, lon: 77.2090, name: 'New Delhi', region: 'National Capital' },
+            'delhiairport': { lat: 28.5562, lon: 77.1000, name: 'Delhi Airport (T3)', region: 'Delhi NCR' },
+            'delhiairportt3': { lat: 28.5562, lon: 77.1000, name: 'Delhi Airport (T3)', region: 'Delhi NCR' },
+            'indiagate': { lat: 28.6129, lon: 77.2295, name: 'India Gate', region: 'Delhi' },
+            'redfort': { lat: 28.6562, lon: 77.2410, name: 'Red Fort', region: 'Old Delhi' },
+            'qutubminar': { lat: 28.5245, lon: 77.1855, name: 'Qutub Minar', region: 'South Delhi' },
+            'connaughtplace': { lat: 28.6315, lon: 77.2167, name: 'Connaught Place', region: 'Central Delhi' },
+            'noida': { lat: 28.5355, lon: 77.3910, name: 'Noida', region: 'Uttar Pradesh' },
+            'gurugram': { lat: 28.4595, lon: 77.0266, name: 'Gurugram', region: 'Haryana' },
+            'agra': { lat: 27.1767, lon: 78.0081, name: 'Agra', region: 'Uttar Pradesh' },
+            'tajmahal': { lat: 27.1751, lon: 78.0421, name: 'Taj Mahal', region: 'Agra' },
+            'mathura': { lat: 27.4924, lon: 77.6737, name: 'Mathura', region: 'Uttar Pradesh' },
+
+            // Western India (Mumbai / Pune / Goa)
+            'mumbai': { lat: 18.9220, lon: 72.8347, name: 'Mumbai', region: 'Maharashtra' },
+            'gatewayofindia': { lat: 18.9220, lon: 72.8347, name: 'Gateway of India', region: 'South Mumbai' },
+            'mumbaiairport': { lat: 19.0896, lon: 72.8656, name: 'Mumbai Airport (T2)', region: 'Mumbai' },
+            'bandra': { lat: 19.0596, lon: 72.8295, name: 'Bandra', region: 'Mumbai' },
+            'marinedrive': { lat: 18.9432, lon: 72.8230, name: 'Marine Drive', region: 'Mumbai' },
+            'pune': { lat: 18.5204, lon: 73.8567, name: 'Pune', region: 'Maharashtra' },
+            'goa': { lat: 15.4909, lon: 73.8278, name: 'Goa', region: 'Goa' },
+
+            // Southern India (Bengaluru / Chennai / Hyderabad)
+            'bengaluru': { lat: 12.9716, lon: 77.5946, name: 'Bengaluru', region: 'Karnataka' },
+            'bangalore': { lat: 12.9716, lon: 77.5946, name: 'Bengaluru', region: 'Karnataka' },
+            'chennai': { lat: 13.0827, lon: 80.2707, name: 'Chennai', region: 'Tamil Nadu' },
+            'hyderabad': { lat: 17.3850, lon: 78.4867, name: 'Hyderabad', region: 'Telangana' },
+            'mysuru': { lat: 12.2958, lon: 76.6394, name: 'Mysuru', region: 'Karnataka' },
+            'coimbatore': { lat: 11.0168, lon: 76.9558, name: 'Coimbatore', region: 'Tamil Nadu' },
+
+            // Kerala Corridor & Destinations
+            'kochi': { lat: 9.9658, lon: 76.2421, name: 'Kochi', region: 'Kerala' },
+            'fortkochi': { lat: 9.9658, lon: 76.2421, name: 'Fort Kochi', region: 'Kochi' },
+            'kakkanad': { lat: 10.0159, lon: 76.3419, name: 'Kakkanad', region: 'Infopark IT Hub' },
+            'edappally': { lat: 10.0261, lon: 76.3125, name: 'Edappally', region: 'Lulu & Metro' },
+            'palarivattom': { lat: 10.0034, lon: 76.3075, name: 'Palarivattom', region: 'Civil Line' },
+            'kaloor': { lat: 9.9932, lon: 76.2934, name: 'Kaloor', region: 'JLN Stadium' },
+            'vyttila': { lat: 9.9678, lon: 76.3184, name: 'Vyttila', region: 'Mobility Hub' },
+            'mgroad': { lat: 9.9723, lon: 76.2825, name: 'MG Road', region: 'Commercial Blvd' },
+            'ernakulamsouth': { lat: 9.9654, lon: 76.2891, name: 'Ernakulam South', region: 'Central Junction' },
+            'thrippunithura': { lat: 9.9515, lon: 76.3508, name: 'Thrippunithura', region: 'Hill Palace' },
+            'aluva': { lat: 10.1076, lon: 76.3516, name: 'Aluva', region: 'Periyar River' },
+            'munnar': { lat: 10.0889, lon: 77.0595, name: 'Munnar', region: 'Idukki Tea Hills' },
+            'kozhikode': { lat: 11.2588, lon: 75.7804, name: 'Kozhikode', region: 'Malabar Coast' },
+            'calicut': { lat: 11.2588, lon: 75.7804, name: 'Kozhikode', region: 'Malabar Coast' },
+            'perinthalmanna': { lat: 10.9760, lon: 76.2254, name: 'Perinthalmanna', region: 'Valluvanad' },
+            'thrissur': { lat: 10.5276, lon: 76.2144, name: 'Thrissur', region: 'Cultural Capital' },
+            'alappuzha': { lat: 9.4981, lon: 76.3388, name: 'Alappuzha', region: 'Backwaters' },
+            'kottayam': { lat: 9.5916, lon: 76.5222, name: 'Kottayam', region: 'Central Kerala' },
+            'trivandrum': { lat: 8.5241, lon: 76.9366, name: 'Trivandrum', region: 'Technopark' },
+            'thiruvananthapuram': { lat: 8.5241, lon: 76.9366, name: 'Trivandrum', region: 'Technopark' },
+            'wayanad': { lat: 11.6103, lon: 76.0827, name: 'Wayanad', region: 'Highland Rainforest' },
+            'vagamon': { lat: 9.6869, lon: 76.9056, name: 'Vagamon', region: 'Pine Hills' },
+            'thekkady': { lat: 9.6031, lon: 77.1615, name: 'Thekkady', region: 'Periyar Reserve' },
+
+            // Eastern & Northern India
+            'kolkata': { lat: 22.5726, lon: 88.3639, name: 'Kolkata', region: 'West Bengal' },
+            'jaipur': { lat: 26.9124, lon: 75.7873, name: 'Jaipur', region: 'Pink City' },
+            'amritsar': { lat: 31.6340, lon: 74.8723, name: 'Amritsar', region: 'Punjab' },
+            'varanasi': { lat: 25.3176, lon: 82.9739, name: 'Varanasi', region: 'Uttar Pradesh' }
         };
 
+        this.pickupCoords = { lat: 10.0159, lon: 76.3419 }; // Kakkanad
+        this.destCoords = { lat: 9.9678, lon: 76.3184 };   // Vyttila
+        this.bounds = null;
         this.waypoints = [];
+
         this.resize();
 
         // Responsive resize listener
         window.addEventListener('resize', () => this.resize());
-        
+
         // Theme listener for reactive map surface updates
         window.addEventListener('themeChanged', () => this.render());
 
@@ -53,9 +107,8 @@ class SimulatedMap {
     startBeaconLoop() {
         const loop = (timestamp) => {
             this.pulseTime = (timestamp / 1000) % 3.0; // 0 to 3 seconds cycle
-            this.dashOffset = (timestamp / 50) % 24;   // Route flowing dash offset
+            this.dashOffset = (timestamp / 45) % 24;   // Route flowing dash offset
 
-            // If not actively animating trip steps, redraw beacon pulses
             if (!this.isTripAnimating) {
                 this.render();
             }
@@ -68,8 +121,8 @@ class SimulatedMap {
         if (!this.canvas) return;
         const rect = this.canvas.parentElement ? this.canvas.parentElement.getBoundingClientRect() : this.canvas.getBoundingClientRect();
         const dpr = window.devicePixelRatio || 1;
-        const displayWidth = rect.width || 600;
-        const displayHeight = rect.height || 420;
+        const displayWidth = Math.max(280, rect.width || 600);
+        const displayHeight = Math.max(200, rect.height || 420);
 
         this.canvas.width = displayWidth * dpr;
         this.canvas.height = displayHeight * dpr;
@@ -83,11 +136,64 @@ class SimulatedMap {
         this.width = displayWidth;
         this.height = displayHeight;
 
+        this.updateBoundingBox();
         this.updateWaypoints();
         this.render();
     }
 
-    setRoute(pickup, destination, distanceKm = null, durationMins = null) {
+    /**
+     * Resolves coordinates from given argument (object or destination name).
+     */
+    resolveCoords(nameOrCoords) {
+        if (!nameOrCoords) return { lat: 10.0159, lon: 76.3419 };
+        if (typeof nameOrCoords === 'object') {
+            const lat = Number(nameOrCoords.lat || nameOrCoords.latitude || 0);
+            const lon = Number(nameOrCoords.lon || nameOrCoords.lng || nameOrCoords.longitude || 0);
+            if (lat !== 0 && lon !== 0) {
+                return { lat, lon };
+            }
+        }
+
+        const raw = String(nameOrCoords).trim();
+        const key = raw.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        if (this.allLocations[key]) {
+            return { lat: this.allLocations[key].lat, lon: this.allLocations[key].lon };
+        }
+
+        // Substring / fuzzy match across registered Indian hubs
+        for (const [k, loc] of Object.entries(this.allLocations)) {
+            if (key === k || key.startsWith(k) || k.startsWith(key) || key.includes(k) || k.includes(key)) {
+                return { lat: loc.lat, lon: loc.lon };
+            }
+        }
+
+        // Asynchronous resolution fallback via server endpoint if available
+        if (typeof fetch === 'function' && !this.resolving) {
+            this.resolving = true;
+            fetch(`/api/map/resolve?query=${encodeURIComponent(raw)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.resolved && data.latitude && data.longitude) {
+                        this.allLocations[key] = { lat: data.latitude, lon: data.longitude, name: raw };
+                        this.updateBoundingBox();
+                        this.updateWaypoints();
+                        this.render();
+                    }
+                })
+                .catch(() => {})
+                .finally(() => { this.resolving = false; });
+        }
+
+        // Fallback to central Kochi coordinates if completely unknown
+        return { lat: 10.0159, lon: 76.3419 };
+    }
+
+    /**
+     * Sets the active route, computes dynamic geographic bounding box,
+     * fits both locations inside Canvas with padding, and animates the trajectory.
+     */
+    setRoute(pickup, destination, distanceKm = null, durationMins = null, pickupCoords = null, destCoords = null) {
         this.pickup = pickup || 'Kakkanad';
         this.destination = destination || 'Vyttila';
         this.progress = 0.0;
@@ -99,6 +205,10 @@ class SimulatedMap {
             this.durationText = Math.round(durationMins) + ' min';
         }
 
+        this.pickupCoords = this.resolveCoords(pickupCoords || pickup);
+        this.destCoords = this.resolveCoords(destCoords || destination);
+
+        this.updateBoundingBox();
         this.updateWaypoints();
         this.render();
     }
@@ -113,20 +223,118 @@ class SimulatedMap {
         this.render();
     }
 
+    /**
+     * Calculates the dynamic geographic bounding box with padding and conformal aspect ratio correction.
+     */
+    updateBoundingBox() {
+        const p1 = this.pickupCoords || { lat: 10.0159, lon: 76.3419 };
+        const p2 = this.destCoords || { lat: 9.9678, lon: 76.3184 };
+
+        let minLat = Math.min(p1.lat, p2.lat);
+        let maxLat = Math.max(p1.lat, p2.lat);
+        let minLon = Math.min(p1.lon, p2.lon);
+        let maxLon = Math.max(p1.lon, p2.lon);
+
+        // Ensure minimum geographic span (approx 6-8 km) so city-scale points do not collapse
+        const minSpan = 0.055;
+        if (maxLat - minLat < minSpan) {
+            const mid = (minLat + maxLat) / 2.0;
+            minLat = mid - minSpan / 2.0;
+            maxLat = mid + minSpan / 2.0;
+        }
+        if (maxLon - minLon < minSpan) {
+            const mid = (minLon + maxLon) / 2.0;
+            minLon = mid - minSpan / 2.0;
+            maxLon = mid + minSpan / 2.0;
+        }
+
+        // Generous margin padding (26%) so markers & badges fit comfortably inside canvas
+        const padRatio = 0.26;
+        const latSpan = maxLat - minLat;
+        const lonSpan = maxLon - minLon;
+        let bMinLat = minLat - latSpan * padRatio;
+        let bMaxLat = maxLat + latSpan * padRatio;
+        let bMinLon = minLon - lonSpan * padRatio;
+        let bMaxLon = maxLon + lonSpan * padRatio;
+
+        // Conformal aspect ratio correction to match Canvas dimensions
+        const w = this.width || 600;
+        const h = this.height || 420;
+        const padCanvas = 40;
+        const usableW = Math.max(120, w - padCanvas * 2);
+        const usableH = Math.max(100, h - padCanvas * 2);
+
+        const midLat = (bMinLat + bMaxLat) / 2.0;
+        const cosLat = Math.max(0.15, Math.cos((midLat * Math.PI) / 180));
+
+        const geoAspect = ((bMaxLon - bMinLon) * cosLat) / (bMaxLat - bMinLat);
+        const canvasAspect = usableW / usableH;
+
+        if (geoAspect > canvasAspect) {
+            // Geographically wider than canvas: expand latitude range vertically
+            const targetLatSpan = ((bMaxLon - bMinLon) * cosLat) / canvasAspect;
+            const diff = (targetLatSpan - (bMaxLat - bMinLat)) / 2.0;
+            bMinLat -= diff;
+            bMaxLat += diff;
+        } else {
+            // Geographically taller than canvas: expand longitude range horizontally
+            const targetLonSpan = ((bMaxLat - bMinLat) * canvasAspect) / cosLat;
+            const diff = (targetLonSpan - (bMaxLon - bMinLon)) / 2.0;
+            bMinLon -= diff;
+            bMaxLon += diff;
+        }
+
+        this.bounds = {
+            minLat: bMinLat,
+            maxLat: bMaxLat,
+            minLon: bMinLon,
+            maxLon: bMaxLon,
+            usableW,
+            usableH,
+            padX: padCanvas,
+            padY: padCanvas
+        };
+    }
+
+    /**
+     * Projects any geographic (lat, lon) to Canvas coordinate (x, y)
+     * using the current dynamic viewport bounding box.
+     */
+    project(lat, lon) {
+        if (!this.bounds) this.updateBoundingBox();
+        const b = this.bounds;
+        const x = b.padX + ((lon - b.minLon) / (b.maxLon - b.minLon)) * b.usableW;
+        // Canvas y=0 is at top, increasing downwards; latitude increases upwards (North)
+        const y = b.padY + ((b.maxLat - lat) / (b.maxLat - b.minLat)) * b.usableH;
+        return { x, y };
+    }
+
     updateWaypoints() {
-        const p1 = this.locations[this.pickup] || this.locations['Kakkanad'];
-        const p2 = this.locations[this.destination] || this.locations['Vyttila'];
+        this.updateBoundingBox();
+        const p1 = this.pickupCoords || { lat: 10.0159, lon: 76.3419 };
+        const p2 = this.destCoords || { lat: 9.9678, lon: 76.3184 };
 
-        const midX = (p1.x + p2.x) / 2.0;
-        const midY = (p1.y + p2.y) / 2.0;
-        const jitterX = (p2.y - p1.y) * 0.14;
-        const jitterY = (p1.x - p2.x) * 0.14;
+        const pt0 = this.project(p1.lat, p1.lon);
+        const pt2 = this.project(p2.lat, p2.lon);
 
-        this.waypoints = [
-            { x: p1.x, y: p1.y },
-            { x: midX + jitterX, y: midY + jitterY },
-            { x: p2.x, y: p2.y }
-        ];
+        const midX = (pt0.x + pt2.x) / 2.0;
+        const midY = (pt0.y + pt2.y) / 2.0;
+        const dx = pt2.x - pt0.x;
+        const dy = pt2.y - pt0.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        let pt1;
+        if (dist < 8) {
+            pt1 = { x: midX, y: midY };
+        } else {
+            // Perpendicular normal vector for natural road curve
+            const nx = -dy / dist;
+            const ny = dx / dist;
+            const curveOffset = Math.min(42, Math.max(14, dist * 0.13));
+            pt1 = { x: midX + nx * curveOffset, y: midY + ny * curveOffset };
+        }
+
+        this.waypoints = [pt0, pt1, pt2];
     }
 
     setCarProgress(t) {
@@ -159,7 +367,7 @@ class SimulatedMap {
         this.animationFrame = requestAnimationFrame(frame);
     }
 
-    // Bezier curve point interpolation with tangent rotation
+    // Quadratic Bezier curve point interpolation with tangent rotation
     getBezierPoint(p0, p1, p2, t) {
         const oneMinusT = 1.0 - t;
         const x = oneMinusT * oneMinusT * p0.x + 2.0 * oneMinusT * t * p1.x + t * t * p2.x;
@@ -179,19 +387,16 @@ class SimulatedMap {
         const h = this.height || 420;
 
         const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-
-        const scaleX = w / 600.0;
-        const scaleY = h / 400.0;
-        const minScale = Math.min(scaleX, scaleY);
+        const minScale = Math.min(w / 600.0, h / 400.0);
 
         ctx.clearRect(0, 0, w, h);
 
-        // 1. High-Tech Navigation Canvas Surface
-        ctx.fillStyle = isDark ? '#0B1120' : '#F1F5F9';
+        // 1. Navigation Surface Canvas
+        ctx.fillStyle = isDark ? '#0B1120' : '#F8FAFC';
         ctx.fillRect(0, 0, w, h);
 
         // 2. Subtle Cartography Coordinate Grid
-        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.025)' : 'rgba(15, 23, 42, 0.04)';
+        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(15, 23, 42, 0.04)';
         ctx.lineWidth = 1;
         const gridSize = 45;
         for (let x = 0; x < w; x += gridSize) {
@@ -207,113 +412,60 @@ class SimulatedMap {
             ctx.stroke();
         }
 
-        // 3. Kochi Waterway & Arabian Sea Coastal Contours
-        // Main coastal bay / Arabian Sea
-        ctx.fillStyle = isDark ? '#081D33' : '#E0F2FE';
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(75 * scaleX, 100 * scaleY, 45 * scaleX, 220 * scaleY, 0, 400 * scaleY);
-        ctx.lineTo(0, 0);
-        ctx.fill();
+        if (!this.bounds) this.updateBoundingBox();
+        const b = this.bounds;
 
-        // Coastal Waterline Accent
-        ctx.strokeStyle = isDark ? 'rgba(56, 189, 248, 0.18)' : 'rgba(2, 132, 199, 0.2)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // Vembanad Lake / Backwaters Estuary
-        ctx.fillStyle = isDark ? '#0A2542' : '#BAE6FD';
-        ctx.beginPath();
-        ctx.moveTo(110 * scaleX, 170 * scaleY);
-        ctx.bezierCurveTo(155 * scaleX, 215 * scaleY, 195 * scaleX, 285 * scaleY, 175 * scaleX, 360 * scaleY);
-        ctx.lineTo(135 * scaleX, 360 * scaleY);
-        ctx.bezierCurveTo(145 * scaleX, 275 * scaleY, 115 * scaleX, 215 * scaleY, 80 * scaleX, 180 * scaleY);
-        ctx.closePath();
-        ctx.fill();
-
-        // 4. City District Zones (Subtle Tech & Commercial Enclaves)
-        // Infopark IT Zone
-        ctx.fillStyle = isDark ? 'rgba(56, 189, 248, 0.04)' : 'rgba(2, 132, 199, 0.06)';
-        ctx.beginPath();
-        ctx.roundRect(430 * scaleX, 100 * scaleY, 85 * scaleX, 70 * scaleY, 12 * minScale);
-        ctx.fill();
-        ctx.strokeStyle = isDark ? 'rgba(56, 189, 248, 0.12)' : 'rgba(2, 132, 199, 0.12)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.fillStyle = isDark ? 'rgba(148, 163, 184, 0.4)' : 'rgba(100, 116, 139, 0.5)';
-        ctx.font = `800 ${Math.max(8, 9 * minScale)}px 'Plus Jakarta Sans', sans-serif`;
-        ctx.fillText('INFOPARK TECH ZONE', 438 * scaleX, 115 * scaleY);
-
-        // Fort Kochi Heritage Zone
-        ctx.fillStyle = isDark ? 'rgba(245, 158, 11, 0.03)' : 'rgba(217, 119, 6, 0.05)';
-        ctx.beginPath();
-        ctx.roundRect(55 * scaleX, 230 * scaleY, 70 * scaleX, 60 * scaleY, 10 * minScale);
-        ctx.fill();
-
-        // 5. Urban Road Network (Multi-Tier Arterials & Highways)
-        const majorHighways = [
-            // NH 66 Bypass Corridor
-            [{ x: 375, y: 32 }, { x: 335, y: 95 }, { x: 330, y: 155 }, { x: 365, y: 245 }, { x: 460, y: 295 }],
-            // Seaport-Airport Road
-            [{ x: 375, y: 32 }, { x: 470, y: 135 }, { x: 460, y: 295 }],
-            // Palarivattom - Kakkanad Link
-            [{ x: 330, y: 155 }, { x: 470, y: 135 }],
-            // Kaloor - MG Road Boulevard
-            [{ x: 335, y: 95 }, { x: 285, y: 195 }, { x: 220, y: 235 }, { x: 240, y: 275 }],
-            // Vyttila - SA Road - MG Road Link
-            [{ x: 365, y: 245 }, { x: 240, y: 275 }],
-            // Fort Kochi Link
-            [{ x: 220, y: 235 }, { x: 85, y: 265 }]
-        ];
-
-        // Highway Outer Border / Casing
-        ctx.strokeStyle = isDark ? '#1E293B' : '#CBD5E1';
-        ctx.lineWidth = 7 * minScale;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        majorHighways.forEach(r => {
+        // 3. Conditional Regional Coastal Waterways (ONLY rendered when viewport is focused on Kochi)
+        const isKochiFocused = (b.minLat >= 9.6 && b.maxLat <= 10.3 && b.minLon >= 76.0 && b.maxLon <= 76.6);
+        if (isKochiFocused) {
+            ctx.fillStyle = isDark ? '#081D33' : '#E0F2FE';
             ctx.beginPath();
-            ctx.moveTo(r[0].x * scaleX, r[0].y * scaleY);
-            for (let i = 1; i < r.length; i++) {
-                ctx.lineTo(r[i].x * scaleX, r[i].y * scaleY);
-            }
-            ctx.stroke();
-        });
+            const sea1 = this.project(10.15, 76.15);
+            const sea2 = this.project(9.85, 76.18);
+            ctx.moveTo(0, 0);
+            ctx.lineTo(sea1.x, 0);
+            ctx.bezierCurveTo(sea1.x + 20, (sea1.y + sea2.y) / 2, sea2.x + 20, sea2.y, 0, h);
+            ctx.closePath();
+            ctx.fill();
 
-        // Highway Inner Surface
-        ctx.strokeStyle = isDark ? '#334155' : '#E2E8F0';
-        ctx.lineWidth = 4 * minScale;
-        majorHighways.forEach(r => {
-            ctx.beginPath();
-            ctx.moveTo(r[0].x * scaleX, r[0].y * scaleY);
-            for (let i = 1; i < r.length; i++) {
-                ctx.lineTo(r[i].x * scaleX, r[i].y * scaleY);
-            }
+            ctx.strokeStyle = isDark ? 'rgba(56, 189, 248, 0.18)' : 'rgba(2, 132, 199, 0.2)';
+            ctx.lineWidth = 1.5;
             ctx.stroke();
-        });
-
-        // Kochi Metro Rapid Transit Line (Cyan Dashed Line)
-        const metroLine = [
-            { x: 375, y: 32 }, { x: 335, y: 95 }, { x: 330, y: 155 },
-            { x: 285, y: 195 }, { x: 220, y: 235 }, { x: 240, y: 275 }, { x: 365, y: 245 }
-        ];
-        ctx.strokeStyle = isDark ? 'rgba(56, 189, 248, 0.45)' : 'rgba(2, 132, 199, 0.45)';
-        ctx.lineWidth = 2 * minScale;
-        ctx.setLineDash([4 * minScale, 4 * minScale]);
-        ctx.beginPath();
-        ctx.moveTo(metroLine[0].x * scaleX, metroLine[0].y * scaleY);
-        for (let i = 1; i < metroLine.length; i++) {
-            ctx.lineTo(metroLine[i].x * scaleX, metroLine[i].y * scaleY);
         }
-        ctx.stroke();
-        ctx.setLineDash([]); // Reset line dash
 
-        // 6. Active Trip Route (Vibrant Flowing Gradient Line)
-        if (this.waypoints.length === 3) {
-            const w0 = { x: this.waypoints[0].x * scaleX, y: this.waypoints[0].y * scaleY };
-            const w1 = { x: this.waypoints[1].x * scaleX, y: this.waypoints[1].y * scaleY };
-            const w2 = { x: this.waypoints[2].x * scaleX, y: this.waypoints[2].y * scaleY };
+        // 4. Regional Highway Network / Transit Corridors between in-bounds locations
+        const inBoundsLocations = Object.values(this.allLocations).filter(loc => {
+            return loc.lat >= b.minLat && loc.lat <= b.maxLat && loc.lon >= b.minLon && loc.lon <= b.maxLon;
+        });
+
+        // Draw connecting secondary road links if 2+ regional hubs are visible
+        if (inBoundsLocations.length >= 2) {
+            ctx.strokeStyle = isDark ? '#1E293B' : '#CBD5E1';
+            ctx.lineWidth = 2 * minScale;
+            ctx.setLineDash([3 * minScale, 6 * minScale]);
+            for (let i = 0; i < Math.min(inBoundsLocations.length, 5); i++) {
+                for (let j = i + 1; j < Math.min(inBoundsLocations.length, 5); j++) {
+                    const l1 = inBoundsLocations[i];
+                    const l2 = inBoundsLocations[j];
+                    const pA = this.project(l1.lat, l1.lon);
+                    const pB = this.project(l2.lat, l2.lon);
+                    const d = Math.hypot(pB.x - pA.x, pB.y - pA.y);
+                    if (d < w * 0.7) {
+                        ctx.beginPath();
+                        ctx.moveTo(pA.x, pA.y);
+                        ctx.lineTo(pB.x, pB.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            ctx.setLineDash([]);
+        }
+
+        // 5. Active Trip Route (Vibrant Flowing Gradient Line)
+        if (this.waypoints && this.waypoints.length === 3) {
+            const w0 = this.waypoints[0];
+            const w1 = this.waypoints[1];
+            const w2 = this.waypoints[2];
 
             // Outer Path Glow
             ctx.strokeStyle = isDark ? 'rgba(14, 165, 233, 0.28)' : 'rgba(2, 132, 199, 0.22)';
@@ -354,83 +506,87 @@ class SimulatedMap {
             this.drawCarMarker(ctx, pos.x, pos.y, pos.angle, minScale, isDark);
         }
 
-        // 7. City Landmark Nodes & High-End Markers
-        Object.values(this.locations).forEach(loc => {
-            const lx = loc.x * scaleX;
-            const ly = loc.y * scaleY;
-            const isPickup = loc.name === this.pickup;
-            const isDest = loc.name === this.destination;
+        // 6. In-Bounds Regional Landmarks / Enroute Hubs (with collision avoidance)
+        const ptPickup = this.project(this.pickupCoords.lat, this.pickupCoords.lon);
+        const ptDest = this.project(this.destCoords.lat, this.destCoords.lon);
+        const labeledPoints = [
+            { x: ptPickup.x, y: ptPickup.y, r: 52 }, // Clear zone around pickup badge
+            { x: ptDest.x, y: ptDest.y, r: 52 }      // Clear zone around destination badge
+        ];
 
-            if (isPickup) {
-                // Pulsing Emerald Beacon Rings
-                const pulseRadius = 12 * minScale + (this.pulseTime * 8 * minScale);
-                const pulseAlpha = Math.max(0, 0.4 - (this.pulseTime * 0.13));
+        inBoundsLocations.forEach(loc => {
+            const isPickup = (loc.name.toLowerCase() === (this.pickup || '').toLowerCase());
+            const isDest = (loc.name.toLowerCase() === (this.destination || '').toLowerCase());
+            if (isPickup || isDest) return; // Highlighted separately
 
-                ctx.fillStyle = `rgba(16, 185, 129, ${pulseAlpha})`;
-                ctx.beginPath();
-                ctx.arc(lx, ly, pulseRadius, 0, Math.PI * 2);
-                ctx.fill();
+            const pt = this.project(loc.lat, loc.lon);
+            const collides = labeledPoints.some(lp => Math.hypot(lp.x - pt.x, lp.y - pt.y) < lp.r);
+            if (collides) return;
 
-                // Inner Glow Halo
-                ctx.fillStyle = 'rgba(16, 185, 129, 0.35)';
-                ctx.beginPath();
-                ctx.arc(lx, ly, 11 * minScale, 0, Math.PI * 2);
-                ctx.fill();
+            labeledPoints.push({ x: pt.x, y: pt.y, r: 32 });
 
-                // Solid Core Pin
-                ctx.fillStyle = '#10B981';
-                ctx.strokeStyle = '#FFFFFF';
-                ctx.lineWidth = 2 * minScale;
-                ctx.beginPath();
-                ctx.arc(lx, ly, 6 * minScale, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
+            ctx.fillStyle = isDark ? '#334155' : '#94A3B8';
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 2.5 * minScale, 0, Math.PI * 2);
+            ctx.fill();
 
-                // Floating Drop-Shadow Pill Label
-                this.drawPillBadge(ctx, lx, ly - 18 * minScale, `Pickup: ${loc.name}`, '#10B981', isDark, minScale);
-
-            } else if (isDest) {
-                // Cyan Beacon Ring
-                const pulseRadius = 12 * minScale + (((this.pulseTime + 1.5) % 3.0) * 8 * minScale);
-                const pulseAlpha = Math.max(0, 0.35 - (((this.pulseTime + 1.5) % 3.0) * 0.12));
-
-                ctx.fillStyle = `rgba(14, 165, 233, ${pulseAlpha})`;
-                ctx.beginPath();
-                ctx.arc(lx, ly, pulseRadius, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Inner Halo
-                ctx.fillStyle = 'rgba(14, 165, 233, 0.35)';
-                ctx.beginPath();
-                ctx.arc(lx, ly, 11 * minScale, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Solid Core Pin (Square for Destination)
-                ctx.fillStyle = '#0284C7';
-                ctx.strokeStyle = '#FFFFFF';
-                ctx.lineWidth = 2 * minScale;
-                ctx.beginPath();
-                ctx.roundRect(lx - 5 * minScale, ly - 5 * minScale, 10 * minScale, 10 * minScale, 2 * minScale);
-                ctx.fill();
-                ctx.stroke();
-
-                // Floating Pill Label
-                this.drawPillBadge(ctx, lx, ly - 18 * minScale, `Destination: ${loc.name}`, '#0284C7', isDark, minScale);
-
-            } else {
-                // Background Junction Node
-                ctx.fillStyle = isDark ? '#334155' : '#94A3B8';
-                ctx.beginPath();
-                ctx.arc(lx, ly, 3 * minScale, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = isDark ? '#64748B' : '#64748B';
-                ctx.font = `600 ${Math.max(9, 9.5 * minScale)}px 'Plus Jakarta Sans', sans-serif`;
-                ctx.fillText(loc.name, lx + 7 * minScale, ly + 3.5 * minScale);
-            }
+            ctx.fillStyle = isDark ? '#64748B' : '#94A3B8';
+            ctx.font = `500 ${Math.max(8.5, 9 * minScale)}px 'Plus Jakarta Sans', sans-serif`;
+            ctx.fillText(loc.name, pt.x + 6 * minScale, pt.y + 3 * minScale);
         });
 
-        // 8. In-Map Telemetry HUD Overlay (Glassmorphic Pill)
+        // 7. Prominent Pickup & Destination Location Pins
+
+        // Pickup Marker (Emerald Green Pulsing Beacon)
+        const pulseRadius1 = 12 * minScale + (this.pulseTime * 8 * minScale);
+        const pulseAlpha1 = Math.max(0, 0.4 - (this.pulseTime * 0.13));
+
+        ctx.fillStyle = `rgba(16, 185, 129, ${pulseAlpha1})`;
+        ctx.beginPath();
+        ctx.arc(ptPickup.x, ptPickup.y, pulseRadius1, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.35)';
+        ctx.beginPath();
+        ctx.arc(ptPickup.x, ptPickup.y, 11 * minScale, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#10B981';
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2 * minScale;
+        ctx.beginPath();
+        ctx.arc(ptPickup.x, ptPickup.y, 6 * minScale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        this.drawPillBadge(ctx, ptPickup.x, ptPickup.y - 18 * minScale, `Pickup: ${this.pickup}`, '#10B981', isDark, minScale);
+
+        // Destination Marker (Cyan / Deep Blue Pulsing Beacon)
+        const destPulse = (this.pulseTime + 1.5) % 3.0;
+        const pulseRadius2 = 12 * minScale + (destPulse * 8 * minScale);
+        const pulseAlpha2 = Math.max(0, 0.35 - (destPulse * 0.12));
+
+        ctx.fillStyle = `rgba(14, 165, 233, ${pulseAlpha2})`;
+        ctx.beginPath();
+        ctx.arc(ptDest.x, ptDest.y, pulseRadius2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(14, 165, 233, 0.35)';
+        ctx.beginPath();
+        ctx.arc(ptDest.x, ptDest.y, 11 * minScale, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#0284C7';
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2 * minScale;
+        ctx.beginPath();
+        ctx.roundRect(ptDest.x - 5 * minScale, ptDest.y - 5 * minScale, 10 * minScale, 10 * minScale, 2 * minScale);
+        ctx.fill();
+        ctx.stroke();
+
+        this.drawPillBadge(ctx, ptDest.x, ptDest.y - 18 * minScale, `Destination: ${this.destination}`, '#0284C7', isDark, minScale);
+
+        // 8. In-Map Telemetry HUD Overlay
         this.drawMapHUD(ctx, w, h, minScale, isDark);
     }
 
@@ -442,7 +598,7 @@ class SimulatedMap {
         const padY = 4 * minScale;
         const boxW = textWidth + padX * 2;
         const boxH = 20 * minScale;
-        const boxX = Math.max(4, Math.min(this.width - boxW - 4, x - boxW / 2));
+        const boxX = Math.max(6, Math.min(this.width - boxW - 6, x - boxW / 2));
         const boxY = y - boxH / 2;
 
         // Shadow
@@ -469,7 +625,7 @@ class SimulatedMap {
     drawMapHUD(ctx, w, h, minScale, isDark) {
         const hudX = 14 * minScale;
         const hudY = 14 * minScale;
-        const hudW = Math.min(270 * minScale, w - 28 * minScale);
+        const hudW = Math.min(280 * minScale, w - 28 * minScale);
         const hudH = 50 * minScale;
 
         // Backdrop
@@ -489,7 +645,7 @@ class SimulatedMap {
 
         ctx.fillStyle = isDark ? '#94A3B8' : '#64748B';
         ctx.font = `800 ${Math.max(9, 9.5 * minScale)}px 'Plus Jakarta Sans', sans-serif`;
-        ctx.fillText('SIMULATED GPS • KOCHI FLEET', hudX + 22 * minScale, hudY + 17 * minScale);
+        ctx.fillText('SIMULATED GPS • INDIA MOBILITY NETWORK', hudX + 22 * minScale, hudY + 17 * minScale);
 
         // Telemetry Row: Distance & Travel Time
         ctx.fillStyle = isDark ? '#F8FAFC' : '#0F172A';
@@ -551,9 +707,7 @@ class SimulatedMap {
 
         // 4. Windshield Glass (Front & Rear)
         ctx.fillStyle = '#0F172A';
-        // Front Windshield
         ctx.fillRect(2 * minScale, -7 * minScale, 6 * minScale, 14 * minScale);
-        // Rear Windshield
         ctx.fillRect(-10 * minScale, -6 * minScale, 4 * minScale, 12 * minScale);
 
         // 5. Taxi Amber Roof Sign
